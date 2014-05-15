@@ -40,8 +40,8 @@ int main()
   logger_log(log,"[IOLIB] Ready");
 #endif
   /* AIN 4,5,6 are Avalible */
-  mod1=setup_actuator_module("8.12","8.13","8.14","8.15","8.16",4);
-  mod2=setup_actuator_module("9.11","9.12","9.13","9.14","9.15",5);
+  mod1=setup_actuator_module("8.07","8.08","8.09","8.10","8.11",4);
+  mod2=setup_actuator_module("8.12","8.13","8.14","8.15","8.16",5);
   ex_force=setup_extern_force_device(6);
 
   logger_log(log,"[GUI] Creating GUI Object");
@@ -65,8 +65,8 @@ int main()
 
   logger_log(log,"[GUI] Displaying window");
   show_main(ui);
-  while(gui_running(ui)){
-    usleep(10000);
+  while(gui_running(ui)){ 
+    usleep(250000);
   }
 
   free(ex_grip);

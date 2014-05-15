@@ -27,34 +27,35 @@ void* run_motor(void* data)
       pin_high(mod->step_header,mod->step_pin);
       usleep(5);
       pin_low(mod->step_header,mod->step_pin);
-      usleep(100);
-    }
+      usleep(200);
+      }
   }
   //Main Control Loop
-  while(runner&&is_low(mod->near_sensor_header,mod->near_sensor_pin)){
-      usleep(5000);
-      pin_low(mod->dir_header,mod->dir_pin);
-      for(i=0;i<10;i++){
-	pin_high(mod->step_header,mod->step_pin);
-	usleep(5);
-	pin_low(mod->step_header,mod->step_pin);
-	usleep(100);
-      }
-
-#else
+  pin_low(mod->dir_header,mod->dir_pin);
+  while(runner&&is_high(mod->near_sensor_header,mod->near_sensor_pin)){
+      pin_high(mod->step_header,mod->step_pin);
+	    usleep(5);
+	    pin_low(mod->step_header,mod->step_pin);
+	    usleep(200);
+    pthread_mutex_lock(&mod->lock);
+    runner=mod->run;
+    pthread_mutex_unlock(&mod->lock);
+  }
+  
+#else //Regular computer
   while(runner){
     usleep(500000);
     if(mod->mode==1)
       printf("Controlling Motor Force.\tSet Value=%lf\n",mod->set_force);
     else
       printf("Controlling Motor Displacement.\tSet Value=%lf\n",mod->set_displacement);
-#endif
-
-    pthread_mutex_lock(&mod->lock);
+          pthread_mutex_lock(&mod->lock);
     runner=mod->run;
     pthread_mutex_unlock(&mod->lock);
   }
+#endif
 
+//End of test, return code
 #ifdef MICRO
   pin_low(mod->enable_header,mod->enable_pin);
   pin_high(mod->dir_header,mod->dir_pin);
@@ -63,7 +64,7 @@ void* run_motor(void* data)
       pin_high(mod->step_header,mod->step_pin);
       usleep(5);
       pin_low(mod->step_header,mod->step_pin); 
-      usleep(100);
+      usleep(200);
     }
   }
   pin_high(mod->enable_header,mod->enable_pin); 

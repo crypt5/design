@@ -1,11 +1,10 @@
 #!/bin/bash
 
 git pull
-rm includes/*
-rm libs/*
+rm includes/*.h
+rm libs/*.so
 
-cd ..
-cd Utilities
+cd ../Utilities
 git pull
 make -B
 
