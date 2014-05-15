@@ -1,6 +1,9 @@
 #ifndef CONTROL_H_
 #define CONTROL_H_
 
+#define MODE_FORCE 1
+#define MODE_DISPLACEMENT 2
+
 #include <pthread.h>
 #include "graphics.h"
 #include "data_structures.h"

@@ -14,6 +14,8 @@
 #define PEAK_LEN 5
 #define WAVE_LEN 100
 
+#define STEPS_PER_MM 26000
+
 /**************** MOTOR Section **************************/
 
 void* run_motor(void* data)
@@ -21,11 +23,14 @@ void* run_motor(void* data)
   struct module_t* mod=data;
   pthread_mutex_lock(&mod->lock);
   int runner=mod->run;
+  int mode=mod->mode;
+  double disp=mod->set_displacement;
   pthread_mutex_unlock(&mod->lock);
 
 
 #ifdef MICRO
   int i;
+  double steps=0;
   pin_low(mod->enable_header,mod->enable_pin);
   pin_high(mod->dir_header,mod->dir_pin);
   while(is_high(mod->far_sensor_header,mod->far_sensor_pin)){
@@ -36,10 +41,10 @@ void* run_motor(void* data)
       usleep(WAVE_LEN);
       }
   }
-  //Main Control Loop
+  //Main Control Loop for force
   int j;
   double voltage=0,old_voltage,differance,read_force,setpoint;
-  while(runner){
+  while(runner && mode==MODE_FORCE){
     old_voltage=voltage;
     voltage=0;
     BBBIO_ADCTSC_work(SAMPLE_SIZE); 
@@ -64,6 +69,7 @@ void* run_motor(void* data)
             usleep(PEAK_LEN);
             pin_low(mod->step_header,mod->step_pin);
             usleep(WAVE_LEN);
+            steps++;
           }
         }
         else {
@@ -78,6 +84,7 @@ void* run_motor(void* data)
              usleep(PEAK_LEN);
              pin_low(mod->step_header,mod->step_pin);
              usleep(WAVE_LEN);
+             steps--;
  	         }
          }
         else {
@@ -90,7 +97,58 @@ void* run_motor(void* data)
     runner=mod->run;
     setpoint=mod->set_force;
     mod->return_force=read_force;
+    mod->return_displacement=steps;
     pthread_mutex_unlock(&mod->lock);
+    usleep(1);
+  }
+  
+  //Main control loop for Displacement
+  steps=0;
+  while(runner && mode==MODE_DISPLACEMENT){
+    old_voltage=voltage;
+    voltage=0;
+    BBBIO_ADCTSC_work(SAMPLE_SIZE); 
+   	for(j = 0 ; j < SAMPLE_SIZE ; j++) {
+		  voltage=voltage+((double)mod->ain_buffer[j] / (double)4095.0) * (double)1.8;
+	  }
+    voltage=voltage/(double)SAMPLE_SIZE;
+	  read_force=((voltage/97.1)+0.00000019)/0.0004754;
+    
+    if(abs(steps-(disp*(double)STEPS_PER_MM))<0.01){
+      pin_high(mod->enable_header,mod->enable_pin);
+		  usleep(100);
+    }
+    else {
+      pin_low(mod->enable_header,mod->enable_pin);
+      if(steps<(disp*STEPS_PER_MM)){
+          if(is_high(mod->near_sensor_header,mod->near_sensor_pin)){
+            pin_low(mod->dir_header,mod->dir_pin);
+            for(i=0;i<10;i++){ //Moving in
+              pin_high(mod->step_header,mod->step_pin);
+              usleep(PEAK_LEN);
+              pin_low(mod->step_header,mod->step_pin);
+              usleep(WAVE_LEN);
+              steps++;
+            }
+          }
+          else{
+            pin_high(mod->enable_header,mod->enable_pin);
+          }
+      }
+      else {
+        printf("Steps: %lf\nDISP: %lf\n",steps,disp*STEPS_PER_MM);
+      }
+    
+    }
+     
+   	
+    pthread_mutex_lock(&mod->lock);
+    runner=mod->run;
+    setpoint=mod->set_force;
+    mod->return_force=read_force;
+    mod->return_displacement=steps;
+    pthread_mutex_unlock(&mod->lock);
+    usleep(1);
   }
   
   pin_low(mod->enable_header,mod->enable_pin);
@@ -216,9 +274,9 @@ void start_actuator(struct module_t* mod,int mode,double desired_value)
 {
   int create;
   mod->mode=mode;
-  if(mode==1)//Force Mode
+  if(mode==MODE_FORCE)//Force Mode
     mod->set_force=desired_value;
-  else if(mode==0)//Displacement mode
+  else if(mode==MODE_DISPLACEMENT)//Displacement mode
     mod->set_displacement=desired_value;
   mod->run=1;
   create=pthread_create(&mod->id,NULL,run_motor,mod);
@@ -272,6 +330,7 @@ double get_current_actuator_displacement(struct module_t* mod)
   double re;
   pthread_mutex_lock(&mod->lock);
   re=mod->return_displacement;
+  re=re/STEPS_PER_MM;
   pthread_mutex_unlock(&mod->lock);
   return re;
 }
