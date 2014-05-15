@@ -36,7 +36,7 @@ int main()
   config_load_file(config,"config/main.cfg");
   logger_log(log,"[Config] File Read, parsed, and loaded");
 
-  mod1=setup_actuator_module("8.12","8.13","8.14","8.15","8.16",0);
+  mod1=setup_actuator_module("8.12","8.13","8.14","8.15","8.16",2);
   mod2=setup_actuator_module("9.11","9.12","9.13","9.14","9.15",1);
   ex_force=setup_extern_force_device(0);
 
