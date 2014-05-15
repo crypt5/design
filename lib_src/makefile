@@ -3,7 +3,7 @@ CFLAGS=-g -Wall
 OFLAGS=-c -Iheaders -fPIC
 GUI_LIBS=graphics_label.o graphics_border.o graphics_button.o graphics_checkbox.o graphics_radio_button.o graphics_titled_border.o graphics_textfield.o graphics_picture.o graphics_combobox.o
 
-build-libs: logger config gui
+build-libs: gpio logger config gui
 
 #data structure builds (.o files)
 queue: code/queue.c headers/queue.h
@@ -11,6 +11,12 @@ queue: code/queue.c headers/queue.h
 
 link-list: code/link.c headers/link.h
 	$(CC) $(CFLAGS) $(OFLAGS) code/link.c
+
+#Gpio Library
+gpio: code/iolib.c
+	$(CC) $(CFLAGS) $(OFLAGS) code/iolib.c
+	$(CC) -shared -o output/libiolib.so iolib.o
+	cp headers/iolib.h output/iolib.h
 
 # logger build steps 
 logger: queue code/logger.c   

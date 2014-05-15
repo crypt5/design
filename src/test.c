@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "iolib.h"
 #include "graphics.h"
 
 void button_press(GUI* g, WIDGET* self, void* data)
@@ -23,6 +24,9 @@ int main()
   WIDGET* button=NULL;
 
   g=init_gui();
+  iolib_init();
+
+  iolib_setdir(8,12,DIR_OUT);
   create_main_window(g,"Widget Testing");
   set_main_size(g,500,500);
 
@@ -40,8 +44,16 @@ int main()
   add_to_main(g,button);
 
   show_main(g);
+int high;
   while(gui_running(g)){
+high=is_high(8,12);
+if(high==1)
+pin_low(8,12);
+else
+pin_high(8,12);
     usleep(100);
   }
+  pin_low(8,12);
   destroy_gui(g);
+  iolib_free();
 }
