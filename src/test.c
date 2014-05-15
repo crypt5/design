@@ -1,43 +1,66 @@
 #include <unistd.h>
 #include <stdio.h>
-#include "graphics.h"
+#include <stdlib.h>
+#include "BBBiolib.h"
 
-void click(GUI* g, WIDGET* welf, void* data)
+#define ENABLE 12
+#define STEP 14
+#define DIR 16
+
+#define BUFFER_SIZE 100
+#define SAMPLE_SIZE 10
+
+int main(int argc, char** argv)
 {
-  int enable;
-  WIDGET* box=(WIDGET*)data;
-  enable=get_textfield_enable(box);
+int i,j,sample;
+double vout=0,old_val,diff,lbs;
+int setpoint=atoi(argv[1]);
 
-  if(enable==1)
-    set_textfield_enable(box,0);
-  else
-    set_textfield_enable(box,1);
 
-  update_widget(g,box);
+iolib_init();
+BBBIO_ADCTSC_Init();
+iolib_setdir(8, ENABLE, BBBIO_DIR_OUT);
+iolib_setdir(8, STEP, BBBIO_DIR_OUT);
+iolib_setdir(8, DIR, BBBIO_DIR_OUT);
+
+const int clk_div = 160;
+const int open_dly = 0;
+const int sample_dly = 1;
+unsigned int buffer_AIN_0[BUFFER_SIZE] ={0};
+
+BBBIO_ADCTSC_module_ctrl(BBBIO_ADC_WORK_MODE_TIMER_INT, clk_div);
+BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN0, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, buffer_AIN_0, BUFFER_SIZE);
+
+BBBIO_ADCTSC_channel_enable(BBBIO_ADC_AIN0);
+
+pin_low(8,ENABLE);
+
+while(is_low(8,ENABLE)){
+	old_val=vout;
+	vout=0.0;
+	BBBIO_ADCTSC_work(SAMPLE_SIZE);
+	for(j = 0 ; j < SAMPLE_SIZE ; j++) {
+		sample = buffer_AIN_0[j];
+		vout=vout+((float)sample / (float)4095.0) * (float)1.8;
+	}
+	vout=vout/SAMPLE_SIZE;
+	vout=((vout/97.1)+0.00000019)/0.0004754;
+	diff=(double)setpoint-((double)vout-4.0);
+	if(diff<(double)0.1||diff<0){
+		pin_high(8,ENABLE);
+	}
+	printf("Diff: %lf\tVout: %lf\n",diff,vout-4);
+	pin_low(8,DIR);
+	for(i=0;i<100;i++){
+		pin_high(8,STEP);
+		usleep(3);
+		pin_low(8,STEP);
+		usleep(300);
+	}
+
+//	usleep(1000);
 }
 
-int main()
-{
-  GUI* g=NULL;
-  WIDGET* check=NULL;
-  WIDGET* button=NULL;
-
-  g=init_gui();
-  create_main_window(g,"Testing Window");
-  set_main_size(g,400,400);
-
-  check=create_textfield(10,10,40);
-
-  button=create_button("enable",10,50);
-  set_button_callback(button,click,check);
-
-  add_to_main(g,check);
-  add_to_main(g,button);
-
-  show_main(g);
-  while(gui_running(g)){
-    usleep(500000);
-  }
-
-  destroy_gui(g);
+iolib_free();
+return 0;
 }
