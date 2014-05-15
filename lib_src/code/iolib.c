@@ -114,7 +114,7 @@ iolib_setdir(char port, char pin, char dir)
 	// sanity checks
 	if (memh==0)
 		param_error=1;
-	if ((port<8) || (port>>9))
+	if ((port<8) || (port>9))
 		param_error=1;
 	if ((pin<1) || (pin>46))
 		param_error=1;
@@ -136,14 +136,15 @@ iolib_setdir(char port, char pin, char dir)
 	if (IOLIB_DBG) printf("iolib_setdir: bank is %d\n", bank[port-8][pin-1]);
 
 	reg=(void*)gpio_addr[bank[port-8][pin-1]]+GPIO_OE;
-	
+
 	if (dir==DIR_OUT)
 	{
-		*reg &= ~(port_bitmask[port-8][pin-1]);
+		*reg = (*reg) & ~(port_bitmask[port-8][pin-1]);
 	}
 	else if (dir==DIR_IN)
 	{
-		*reg |= port_bitmask[port-8][pin-1];
+		*reg = (*reg) | port_bitmask[port-8][pin-1];
+		if(IOLIB_DBG) printf("Pin set to Input\n");
 	}
 	
 	return(0);
