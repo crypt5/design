@@ -1,10 +1,13 @@
 CC=gcc
 CFLAGS=-g -Wall
+LINKCOM=-Iincludes -Llibs
+RPATH=-Wl,-rpath,libs
+LIBS=-llogger
 
-all: test
+all: main
 
-test: src/test.c includes/test.h
-	$(CC) $(CFALGS) src/test.c -o main
+main: src/main.c
+	$(CC) $(CFLAGS) $(LINKCOM) $(RPATH) src/main.c -o main $(LIBS)
 
 clean:
-
+	rm main
