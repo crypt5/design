@@ -1,12 +1,10 @@
-CC=clang
+CC=gcc
 CFLAGS=-g -Wall
 OFLAGS=-c -Iheaders -fPIC
+XFLAGS=`pkg-config --cflags --libs x11`
+GUI_LIBS=graphics_label.o
 
-build-libs: logger
-
-# Test file build
-test: config test.c
-	$(CC) $(CFLAGS) -Wl,-rpath,output -Loutput test.c -o test -lconfig
+build-libs: logger config gui
 
 #data structure builds (.o files)
 queue: code/queue.c headers/queue.h
@@ -15,28 +13,25 @@ queue: code/queue.c headers/queue.h
 link-list: code/link.c headers/link.h
 	$(CC) $(CFLAGS) $(OFLAGS) code/link.c
 
-# logger build steps (next 4)
-logger: queue logger.o log-share log-copy
-	rm logger.o queue.o
-
-logger.o: code/logger.c headers/logger.h 
+# logger build steps 
+logger: queue code/logger.c headers/logger.h  
 	$(CC) $(CFLAGS) $(OFLAGS) code/logger.c
-
-log-share:
 	$(CC) -shared -o output/liblogger.so logger.o queue.o
-
-log-copy:
 	cp headers/logger.h output/logger.h
 
-# config build steps (next 4)
-config: link-list config.o config-share config-copy
-	rm config.o link.o
-
-config.o: code/config.c headers/config.h
+# config build steps 
+config: link-list code/config.c headers/config.h
 	$(CC) $(CFLAGS) $(OFLAGS) code/config.c
-
-config-share:
 	$(CC) -shared -o output/libconfig.so config.o link.o
-
-config-copy:
 	cp headers/config.h output/config.h
+
+# GUI build steps
+gui: $(GUI_LIBS) code/graphics.c headers/graphics.h
+	$(CC) $(CFLAGS) $(OFLAGS) code/graphics.c $(XFLAGS)
+	$(CC) -shared -o output/libgraphics.so graphics.o $(GUI_LIBS)
+	cp headers/graphics*.h output/
+
+
+# GUI Elements Build
+graphics_label.o: code/graphics_label.c headers/graphics_label.h
+	$(CC) $(CFLAGS) $(OFLAGS) code/graphics_label.c
