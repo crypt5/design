@@ -1,13 +1,14 @@
-CC=gcc
+CC=clang
 CFLAGS=-g -Wall
 LINKCOM=-Iincludes -Llibs
 RPATH=-Wl,-rpath,libs
-LIBS=
+LIBS=-lgraphics
+XFLAGS=`pkg-config --cflags --libs x11`
 
 all: main
 
 main: libs src/main.c
-	$(CC) $(CFLAGS) $(LINKCOM) $(RPATH) src/main.c -o main $(LIBS)
+	$(CC) $(CFLAGS) $(LINKCOM) $(RPATH) $(XFLAGS) src/main.c -o main $(LIBS)
 
 libs:
 	cd lib_src && make

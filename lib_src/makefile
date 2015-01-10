@@ -1,7 +1,6 @@
 CC=gcc
 CFLAGS=-g -Wall
 OFLAGS=-c -Iheaders -fPIC
-XFLAGS=`pkg-config --cflags --libs x11`
 GUI_LIBS=graphics_label.o
 
 build-libs: logger config gui
@@ -27,7 +26,7 @@ config: link-list code/config.c headers/config.h
 
 # GUI build steps
 gui: $(GUI_LIBS) code/graphics.c headers/graphics.h
-	$(CC) $(CFLAGS) $(OFLAGS) code/graphics.c $(XFLAGS)
+	$(CC) $(CFLAGS) $(OFLAGS) code/graphics.c
 	$(CC) -shared -o output/libgraphics.so graphics.o $(GUI_LIBS)
 	cp headers/graphics*.h output/
 
