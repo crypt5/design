@@ -6,11 +6,13 @@ int main()
 {
   GUI* g=NULL;
   g=init_gui();
-  create_main_window(g,"test window",MODE_WINDOW);
+  set_main_background(g,0x00000000);
+  set_main_icon(g,"makefile");
+  create_main_window(g,"test window");
   set_main_size(g,600,1000);
   sleep(2);
   show_main(g);
-  sleep(2);
+  sleep(10);
   destroy_gui(g);
   return 0;
 }
