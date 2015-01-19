@@ -209,3 +209,21 @@ void list_destroy(LIST* l)
     free(l);
   }
 }
+
+void* list_get_pos(LIST* l,int index)
+{
+  int i;
+  struct list_node_t* temp=NULL;
+  if(l==NULL){
+    printf("List is NULL, can't search\n");
+    exit(-1);
+  }
+  if(index>l->elements)
+    return NULL;
+  
+  temp=l->head;
+  for(i=1;i<=index;i++){
+    temp=temp->next;
+  }
+  return temp->data;
+}

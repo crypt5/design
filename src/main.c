@@ -5,14 +5,20 @@
 int main()
 {
   GUI* g=NULL;
+  WIDGET* testLab=NULL;
+
+  testLab=create_label("Hello World!",10,10);
+
   g=init_gui();
-  set_main_background(g,0x00000000);
-  set_main_icon(g,"makefile");
-  create_main_window(g,"test window");
+  create_main_window(g,"Testing Window");
   set_main_size(g,600,1000);
-  sleep(2);
+  add_to_main(g,testLab);
+
   show_main(g);
-  sleep(10);
+
+  while(gui_running(g))
+    sleep(1);
+
   destroy_gui(g);
   return 0;
 }

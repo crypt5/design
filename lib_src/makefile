@@ -13,24 +13,24 @@ link-list: code/link.c headers/link.h
 	$(CC) $(CFLAGS) $(OFLAGS) code/link.c
 
 # logger build steps 
-logger: queue code/logger.c headers/logger.h  
+logger: queue code/logger.c   
 	$(CC) $(CFLAGS) $(OFLAGS) code/logger.c
 	$(CC) -shared -o output/liblogger.so logger.o queue.o
 	cp headers/logger.h output/logger.h
 
 # config build steps 
-config: link-list code/config.c headers/config.h
+config: link-list code/config.c 
 	$(CC) $(CFLAGS) $(OFLAGS) code/config.c
 	$(CC) -shared -o output/libconfig.so config.o link.o
 	cp headers/config.h output/config.h
 
 # GUI build steps
-gui: $(GUI_LIBS) code/graphics.c headers/graphics.h
+gui: $(GUI_LIBS) link-list code/graphics.c  
 	$(CC) $(CFLAGS) $(OFLAGS) code/graphics.c
-	$(CC) -shared -o output/libgraphics.so graphics.o $(GUI_LIBS)
+	$(CC) -shared -o output/libgraphics.so $(GUI_LIBS) link.o graphics.o
 	cp headers/graphics*.h output/
 
 
 # GUI Elements Build
-graphics_widget.o: code/graphics_widget.c headers/graphics_widget.h
+graphics_widget.o: code/graphics_widget.c
 	$(CC) $(CFLAGS) $(OFLAGS) code/graphics_widget.c

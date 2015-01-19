@@ -2,7 +2,7 @@ CC=clang
 CFLAGS=-g -Wall
 LINKCOM=-Iincludes -Llibs
 RPATH=-Wl,-rpath,libs
-LIBS=-lgraphics
+LIBS=-lpthread -lgraphics 
 XFLAGS=`pkg-config --cflags --libs x11`
 
 all: main
