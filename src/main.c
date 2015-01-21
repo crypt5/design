@@ -7,11 +7,14 @@ int main()
   GUI* g=NULL;
   WIDGET* testLab=NULL;
 
-  testLab=create_label("Hello World!",10,10);
+  testLab=create_label("I Love You Jess!!!",10,10);
 
   g=init_gui();
   create_main_window(g,"Testing Window");
   set_main_size(g,600,1000);
+  add_to_main(g,testLab);
+
+  testLab=create_label("Your My World Baby!",10,30);
   add_to_main(g,testLab);
 
   show_main(g);

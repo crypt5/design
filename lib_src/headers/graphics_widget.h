@@ -18,6 +18,5 @@ struct graphics_widget_t{
 extern WIDGET* create_label(char* message,int x,int y);
 
 extern void destroy_widget(void* w);
-extern int comp_widget(void* w1,void* w2);
 
 #endif

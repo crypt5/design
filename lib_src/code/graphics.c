@@ -23,6 +23,8 @@ struct graphics_t{
   Atom wm_protocols;
   Atom wm_delete_window;
   LIST* widgets;
+  GC text;
+  XFontStruct* font;
 };
 
 void* event_loop(void* data)
@@ -51,6 +53,7 @@ void* event_loop(void* data)
         }
 	break;
       default:
+	printf("Event Recieved!!!\n");
 	break;
       }
     }
@@ -94,7 +97,10 @@ GUI* init_gui()
   g->wm_protocols = XInternAtom(g->dsp, "WM_PROTOCOLS", False);
   g->wm_delete_window = XInternAtom(g->dsp, "WM_DELETE_WINDOW", False);
 
-  g->widgets=list_init(destroy_widget,comp_widget);
+  g->widgets=list_init(destroy_widget,NULL);
+
+
+
   return g;
 }
 
@@ -116,6 +122,9 @@ void create_main_window(GUI* g,char* title)
     XStoreName(g->dsp,w,title);
   else
     XStoreName(g->dsp,w,"No Title");
+
+  g->text=XCreateGC(g->dsp,g->mainWindow,0,NULL);
+  XSetForeground(g->dsp, g->text, g->blackColor);
 }
 
 void destroy_gui(GUI* g)
@@ -132,6 +141,7 @@ void destroy_gui(GUI* g)
 
   pthread_join(g->tid,NULL);
 
+  XFreeGC(g->dsp,g->text);
   XCloseDisplay(g->dsp);
   re=pthread_mutex_destroy(&g->lock);
   if(re!=0)
@@ -227,12 +237,9 @@ void add_to_main(GUI* g,WIDGET* w)
 
 void paint_widget(GUI* g,WIDGET* w)
 {
-  GC gc=XCreateGC(g->dsp,g->mainWindow,0,NULL);
   switch(w->type){
   case LABEL:
-    XSetForeground(g->dsp, gc, g->blackColor);
-    XDrawString(g->dsp,g->mainWindow,gc,w->x,w->y,(char*)w->data,strlen((char*)w->data));
+    XDrawString(g->dsp,g->mainWindow,g->text,w->x,w->y,(char*)w->data,strlen((char*)w->data));
     break;
   }
-  XFreeGC(g->dsp,gc);
 }

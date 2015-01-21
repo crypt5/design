@@ -37,6 +37,7 @@ void destroy_widget(void* w)
     exit(-1);
   }
   widget=(WIDGET*)w;
+
   switch(widget->type){
   case LABEL:
     free(widget->data);
@@ -44,10 +45,4 @@ void destroy_widget(void* w)
     widget=NULL;
     break;
   }
-}
-
-int comp_widget(void* w1,void* w2)
-{
-  //TODO
-  return 1;
 }
