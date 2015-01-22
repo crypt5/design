@@ -60,7 +60,7 @@ void* event_loop(void* data)
     pthread_mutex_lock(&g->lock);
     keep_running=g->run;
     pthread_mutex_unlock(&g->lock);
-    usleep(1000);
+    usleep(100);
   }
 
   return NULL;
@@ -99,7 +99,7 @@ GUI* init_gui()
 
   g->widgets=list_init(destroy_widget,NULL);
 
-
+  g->font=XLoadQueryFont(g->dsp,"*9x15*");
 
   return g;
 }
@@ -124,6 +124,7 @@ void create_main_window(GUI* g,char* title)
     XStoreName(g->dsp,w,"No Title");
 
   g->text=XCreateGC(g->dsp,g->mainWindow,0,NULL);
+  XSetFont(g->dsp,g->text,g->font->fid);
   XSetForeground(g->dsp, g->text, g->blackColor);
 }
 
@@ -141,6 +142,7 @@ void destroy_gui(GUI* g)
 
   pthread_join(g->tid,NULL);
 
+  XFreeFont(g->dsp,g->font);
   XFreeGC(g->dsp,g->text);
   XCloseDisplay(g->dsp);
   re=pthread_mutex_destroy(&g->lock);

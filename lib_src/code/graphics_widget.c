@@ -29,6 +29,33 @@ WIDGET* create_label(char* message,int x,int y)
   return w;
 }
 
+WIDGET* create_button(char* message,int x, int y,void(*ucallback)(void*),void* data)
+{
+  WIDGET* w=NULL;
+  char* d=NULL;
+
+  w=malloc(sizeof(WIDGET));
+  if(w==NULL){
+    printf("Widget Malloc Failed!\n");
+    exit(-1);
+  }
+
+  d=malloc(strlen(message)+1);
+  if(d==NULL){
+    printf("Message Malloc Failed!\n");
+    exit(-1);
+  }
+  strcpy(d,message);
+  w->type=BUTTON;
+  w->x=x;
+  w->y=y+10;
+  w->data=d;
+
+  //TODO ADD Button info Structure and info set up
+
+  return w;
+}
+
 void destroy_widget(void* w)
 {
   WIDGET* widget=NULL;

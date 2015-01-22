@@ -15,7 +15,17 @@ struct graphics_widget_t{
   void* data;
 };
 
+typedef void(*callback)(void* data);
+struct button_data_t{
+  char* text;
+  callback call;
+  void* call_data;
+};
+  
+
 extern WIDGET* create_label(char* message,int x,int y);
+
+extern WIDGET* create_button(char* message,int x, int y,void(*ucallback)(void*),void* data);
 
 extern void destroy_widget(void* w);
 
