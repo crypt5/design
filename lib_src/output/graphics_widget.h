@@ -5,6 +5,7 @@
 #define BUTTON 2
 #define TEXTBOX 3
 
+typedef void(*callback)(void* data);
 typedef struct graphics_widget_t WIDGET;
 struct graphics_widget_t{
   int type;
@@ -12,16 +13,11 @@ struct graphics_widget_t{
   int y;
   int height;
   int width;
+  callback call;
+  char* string;
   void* data;
 };
 
-typedef void(*callback)(void* data);
-struct button_data_t{
-  char* text;
-  callback call;
-  void* call_data;
-};
-  
 
 extern WIDGET* create_label(char* message,int x,int y);
 

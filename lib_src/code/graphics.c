@@ -239,9 +239,19 @@ void add_to_main(GUI* g,WIDGET* w)
 
 void paint_widget(GUI* g,WIDGET* w)
 {
+  int width;
+  GC gc;
   switch(w->type){
   case LABEL:
-    XDrawString(g->dsp,g->mainWindow,g->text,w->x,w->y,(char*)w->data,strlen((char*)w->data));
+    XDrawString(g->dsp,g->mainWindow,g->text,w->x,w->y,(char*)w->string,strlen((char*)w->string));
+    break;
+  case BUTTON:
+    width=XTextWidth(g->font,w->string,strlen(w->string));
+    gc=XCreateGC(g->dsp,g->mainWindow,0,NULL);
+    XSetForeground(g->dsp,gc,0x00AAAAAA);
+    XFillRectangle(g->dsp,g->mainWindow,gc,w->x,w->y,width+10,20);
+    XDrawString(g->dsp,g->mainWindow,g->text,w->x+5,w->y+15,(char*)w->string,strlen((char*)w->string));
+    XFreeGC(g->dsp,gc);
     break;
   }
 }

@@ -24,7 +24,7 @@ WIDGET* create_label(char* message,int x,int y)
   w->type=LABEL;
   w->x=x;
   w->y=y+10;
-  w->data=d;
+  w->string=d;
 
   return w;
 }
@@ -49,9 +49,9 @@ WIDGET* create_button(char* message,int x, int y,void(*ucallback)(void*),void* d
   w->type=BUTTON;
   w->x=x;
   w->y=y+10;
-  w->data=d;
-
-  //TODO ADD Button info Structure and info set up
+  w->data=data;
+  w->call=ucallback;
+  w->string=d;
 
   return w;
 }
@@ -67,7 +67,12 @@ void destroy_widget(void* w)
 
   switch(widget->type){
   case LABEL:
-    free(widget->data);
+    free(widget->string);
+    free(widget);
+    widget=NULL;
+    break;
+  case BUTTON:
+    free(widget->string);
     free(widget);
     widget=NULL;
     break;

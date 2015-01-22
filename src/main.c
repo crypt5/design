@@ -21,6 +21,7 @@ int main()
   create_main_window(g,"Testing Window");
   set_main_size(g,500,500);
   add_to_main(g,testLab);
+  add_to_main(g,testBut);
 
   show_main(g);
 
