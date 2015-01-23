@@ -4,6 +4,7 @@
 #include <string.h>
 #include "graphics_widget.h"
 
+
 WIDGET* create_label(char* message,int x,int y)
 {
   WIDGET* w=NULL;
@@ -20,10 +21,11 @@ WIDGET* create_label(char* message,int x,int y)
     printf("Message Malloc Failed!\n");
     exit(-1);
   }
+  w->flags=0;
   strcpy(d,message);
   w->type=LABEL;
   w->x=x;
-  w->y=y+10;
+  w->y=y;
   w->string=d;
 
   return w;
@@ -47,6 +49,7 @@ WIDGET* create_button(char* message,int x, int y,void(*ucallback)(void*),void* d
   }
   strcpy(d,message);
   w->type=BUTTON;
+  w->flags=CLICKABLE;
   w->x=x;
   w->y=y+10;
   w->data=data;

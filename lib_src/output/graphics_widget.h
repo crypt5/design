@@ -1,18 +1,22 @@
 #ifndef GRAPHICS_WIDGET_H_
 #define GRAPHICS_WIDGET_H_
 
+//Widget types
 #define LABEL 1
 #define BUTTON 2
-#define TEXTBOX 3
+
+//Widget FLags
+#define CLICKABLE 1
 
 typedef void(*callback)(void* data);
 typedef struct graphics_widget_t WIDGET;
 struct graphics_widget_t{
-  int type;
+  char type;
   int x;
   int y;
   int height;
   int width;
+  char flags;
   callback call;
   char* string;
   void* data;

@@ -10,6 +10,8 @@
 
 void destroy_gui(GUI* g);
 void paint_widget(GUI* g,WIDGET* w);
+WIDGET* get_at_coords(GUI* g,int x, int y);
+void update_mouse_down(GUI* g,WIDGET* w);
 
 struct graphics_t{
   Display* dsp;
@@ -32,6 +34,8 @@ void* event_loop(void* data)
   GUI* g=NULL;
   XEvent e;
   int keep_running;
+  WIDGET* active=NULL;
+  WIDGET* clicked=NULL;
 
   g=(GUI*)data;
   pthread_mutex_lock(&g->lock);
@@ -52,15 +56,45 @@ void* event_loop(void* data)
 	  pthread_mutex_unlock(&g->lock);
         }
 	break;
+      case ButtonPress:
+	if(e.xbutton.button==1){//Left mouse Button
+	  clicked=get_at_coords(g,e.xbutton.x, e.xbutton.y);
+	  if(clicked!=NULL){
+	    if((clicked->flags&CLICKABLE)>0){
+	      active=clicked;
+	      update_mouse_down(g,active);
+	    }
+	    else{
+	      active=NULL;
+	    }
+	  }
+	  else{
+	    active=NULL;
+	  }
+	}
+	break;
+      case ButtonRelease:
+	if(e.xbutton.button==1){//Left mouse Button
+	  clicked=get_at_coords(g,e.xbutton.x, e.xbutton.y);
+	  if(clicked!=NULL){
+	    if(clicked==active){
+	      active->call(active->data);
+	      paint_widget(g,active);
+	    }
+	    else{
+	      active=NULL;
+	    }
+	  }
+	}
+	break;
       default:
-	printf("Event Recieved!!!\n");
+	printf("Unhandled Event, Code: %d\n",e.type);
 	break;
       }
     }
     pthread_mutex_lock(&g->lock);
     keep_running=g->run;
     pthread_mutex_unlock(&g->lock);
-    usleep(100);
   }
 
   return NULL;
@@ -239,19 +273,49 @@ void add_to_main(GUI* g,WIDGET* w)
 
 void paint_widget(GUI* g,WIDGET* w)
 {
-  int width;
   GC gc;
+
   switch(w->type){
   case LABEL:
-    XDrawString(g->dsp,g->mainWindow,g->text,w->x,w->y,(char*)w->string,strlen((char*)w->string));
+    w->width=XTextWidth(g->font,w->string,strlen(w->string));
+    w->height=g->font->ascent;
+    XDrawString(g->dsp,g->mainWindow,g->text,w->x,w->y+w->height,(char*)w->string,strlen((char*)w->string));
     break;
   case BUTTON:
-    width=XTextWidth(g->font,w->string,strlen(w->string));
+    w->width=XTextWidth(g->font,w->string,strlen(w->string))+20;
+    w->height=g->font->ascent;
     gc=XCreateGC(g->dsp,g->mainWindow,0,NULL);
     XSetForeground(g->dsp,gc,0x00AAAAAA);
-    XFillRectangle(g->dsp,g->mainWindow,gc,w->x,w->y,width+10,20);
-    XDrawString(g->dsp,g->mainWindow,g->text,w->x+5,w->y+15,(char*)w->string,strlen((char*)w->string));
+    XFillRectangle(g->dsp,g->mainWindow,gc,w->x,w->y,w->width,w->height*2);
+    XDrawString(g->dsp,g->mainWindow,g->text,w->x+10,w->y+(w->height+w->height/2),(char*)w->string,strlen((char*)w->string));
+    w->height=w->height*2;
     XFreeGC(g->dsp,gc);
     break;
   }
 }
+
+WIDGET* get_at_coords(GUI* g,int x, int y)
+{
+  int i;
+  WIDGET* temp=NULL;
+
+  for(i=0;i<list_length(g->widgets);i++){
+    temp=list_get_pos(g->widgets,i);
+    if(x>temp->x&&x<temp->x+temp->width){
+      if(y>temp->y&&y<temp->y+temp->height){
+	return temp;
+      }
+    }
+  }
+  return NULL;
+}
+
+void update_mouse_down(GUI* g,WIDGET* w)
+{
+  //TODO Update Graphics Code
+  GC gc;
+  gc=XCreateGC(g->dsp,g->mainWindow,0,NULL);
+  XFillRectangle(g->dsp,g->mainWindow,gc,w->x,w->y,w->width,w->height);
+  XFreeGC(g->dsp,gc);
+}
+

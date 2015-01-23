@@ -8,6 +8,7 @@ typedef int(*ucomp)(void*,void*);
 struct list_node_t{
   void* data;
   struct list_node_t* next;
+  struct list_node_t* prev;
 };
 
 struct link_list_t{
@@ -59,6 +60,7 @@ void list_add(LIST* l,void* data)
   }
   else{
     l->tail->next=node;
+    node->prev=l->tail;
     l->tail=node;
   }
 
@@ -120,7 +122,7 @@ void list_delete(LIST* l,void* lookfor)
       comp=l->the_comp(lookfor,temp->data);
       if(comp==0){
 	if(temp==l->head){
-	  l->head=temp->next;
+	  l->head=temp->next;;
 	  l->the_free(temp->data);
 	  free(temp);
 	  l->elements--;
@@ -214,13 +216,14 @@ void* list_get_pos(LIST* l,int index)
 {
   int i;
   struct list_node_t* temp=NULL;
+
   if(l==NULL){
     printf("List is NULL, can't search\n");
     exit(-1);
   }
   if(index>l->elements)
     return NULL;
-  
+ 
   temp=l->head;
   for(i=1;i<=index;i++){
     temp=temp->next;

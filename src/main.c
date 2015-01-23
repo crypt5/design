@@ -4,7 +4,7 @@
 
 void my_print(void* data)
 {
-  printf("Hello World\n");
+  printf("Button Clicked!\n");
 }
 
 int main()
@@ -25,8 +25,9 @@ int main()
 
   show_main(g);
 
-  while(gui_running(g))
+  while(gui_running(g)){
     sleep(1);
+  }
 
   destroy_gui(g);
   return 0;
