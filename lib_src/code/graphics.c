@@ -26,6 +26,7 @@ struct graphics_t{
   Atom wm_delete_window;
   LIST* widgets;
   GC text;
+  GC draw;
   XFontStruct* font;
 };
 
@@ -78,12 +79,21 @@ void* event_loop(void* data)
 	  clicked=get_at_coords(g,e.xbutton.x, e.xbutton.y);
 	  if(clicked!=NULL){
 	    if(clicked==active){
-	      active->call(active->data);
-	      paint_widget(g,active);
+	      if((clicked->flags&CLICKABLE)>0){
+		active->call(active->data);
+		paint_widget(g,active);
+	      }
 	    }
 	    else{
+	      if(active!=NULL)
+		paint_widget(g,active);
 	      active=NULL;
 	    }
+	  }
+	  else{
+	    if(active!=NULL)
+	      paint_widget(g,active);
+	    active=NULL;
 	  }
 	}
 	break;
@@ -158,6 +168,7 @@ void create_main_window(GUI* g,char* title)
     XStoreName(g->dsp,w,"No Title");
 
   g->text=XCreateGC(g->dsp,g->mainWindow,0,NULL);
+  g->draw=XCreateGC(g->dsp,g->mainWindow,0,NULL);
   XSetFont(g->dsp,g->text,g->font->fid);
   XSetForeground(g->dsp, g->text, g->blackColor);
 }
@@ -178,6 +189,7 @@ void destroy_gui(GUI* g)
 
   XFreeFont(g->dsp,g->font);
   XFreeGC(g->dsp,g->text);
+  XFreeGC(g->dsp,g->draw);
   XCloseDisplay(g->dsp);
   re=pthread_mutex_destroy(&g->lock);
   if(re!=0)
@@ -185,6 +197,13 @@ void destroy_gui(GUI* g)
   list_destroy(g->widgets);
   free(g);
   g=NULL;
+}
+
+void shutdown_gui(GUI* g)
+{
+  pthread_mutex_lock(&g->lock);
+  g->run=0;
+  pthread_mutex_unlock(&g->lock);
 }
 
 void show_main(GUI* g)
@@ -273,8 +292,6 @@ void add_to_main(GUI* g,WIDGET* w)
 
 void paint_widget(GUI* g,WIDGET* w)
 {
-  GC gc;
-
   switch(w->type){
   case LABEL:
     w->width=XTextWidth(g->font,w->string,strlen(w->string));
@@ -284,12 +301,10 @@ void paint_widget(GUI* g,WIDGET* w)
   case BUTTON:
     w->width=XTextWidth(g->font,w->string,strlen(w->string))+20;
     w->height=g->font->ascent;
-    gc=XCreateGC(g->dsp,g->mainWindow,0,NULL);
-    XSetForeground(g->dsp,gc,0x00AAAAAA);
-    XFillRectangle(g->dsp,g->mainWindow,gc,w->x,w->y,w->width,w->height*2);
+    XSetForeground(g->dsp,g->draw,0x00AAAAAA);
+    XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height*2);
     XDrawString(g->dsp,g->mainWindow,g->text,w->x+10,w->y+(w->height+w->height/2),(char*)w->string,strlen((char*)w->string));
     w->height=w->height*2;
-    XFreeGC(g->dsp,gc);
     break;
   }
 }
@@ -312,10 +327,12 @@ WIDGET* get_at_coords(GUI* g,int x, int y)
 
 void update_mouse_down(GUI* g,WIDGET* w)
 {
-  //TODO Update Graphics Code
-  GC gc;
-  gc=XCreateGC(g->dsp,g->mainWindow,0,NULL);
-  XFillRectangle(g->dsp,g->mainWindow,gc,w->x,w->y,w->width,w->height);
-  XFreeGC(g->dsp,gc);
+  switch(w->type){
+  case BUTTON:
+    //TODO Pretty Button Down
+    XSetForeground(g->dsp,g->draw,0);
+    XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
+    break;
+  }
 }
 

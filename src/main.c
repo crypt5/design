@@ -2,9 +2,9 @@
 #include <unistd.h>
 #include "graphics.h"
 
-void my_print(void* data)
+void my_exit(void* data)
 {
-  printf("Button Clicked!\n");
+  shutdown_gui(data);
 }
 
 int main()
@@ -13,11 +13,12 @@ int main()
   WIDGET* testLab=NULL;
   WIDGET* testBut=NULL;
 
-  testLab=create_label("Hello World!",10,10);
-
-  testBut=create_button("Test Button",100,100,my_print,NULL);
-
   g=init_gui();
+
+  testLab=create_label("Hello World!",10,10);
+  testBut=create_button("Exit",430,455,my_exit,g);
+
+  
   create_main_window(g,"Testing Window");
   set_main_size(g,500,500);
   add_to_main(g,testLab);

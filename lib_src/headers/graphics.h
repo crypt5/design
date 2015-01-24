@@ -17,5 +17,6 @@ extern int gui_running(GUI* g);
 
 extern void add_to_main(GUI* g,WIDGET* w);
 
+extern void shutdown_gui(GUI* g);
 extern void destroy_gui(GUI* g);
 #endif

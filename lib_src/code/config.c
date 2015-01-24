@@ -5,6 +5,7 @@
 #include "link.h"
 
 struct key_value_t{
+  char type;
   char* key;
   void* value;
 };
@@ -50,6 +51,7 @@ struct key_value_t* process_int(char* buf)
 
   node->key=node_key;
   node->value=node_value;
+  node->type='I';
 
   return node;
 
@@ -83,7 +85,7 @@ struct key_value_t* process_double(char* buf)
 
   node->key=node_key;
   node->value=node_value;
-
+  node->type='D';
   return node;
 
 }
@@ -116,6 +118,7 @@ struct key_value_t* process_string(char* buf)
 
   node->key=node_key;
   node->value=node_value;
+  node->type='S';
 
   return node;
 }
@@ -151,7 +154,7 @@ struct key_value_t* process_boolean(char* buf)
 
   node->key=node_key;
   node->value=node_value;
-
+  node->type='B';
   return node;
 }
 
@@ -273,6 +276,8 @@ int config_get_int(CONFIG* c, char* key)
   if(node==NULL)
     return VALUE_NOT_FOUND;
   
+  if(node->type!='I')
+    printf("Requested INT by '%s' is not type INT\n",key);
   re=(int*)node->value;
   return *re;
 }
@@ -290,6 +295,8 @@ double config_get_double(CONFIG* c, char* key)
   if(node==NULL)
     return VALUE_NOT_FOUND;
   
+  if(node->type!='D')
+    printf("Requested DBL by '%s' is not type DBL\n",key);
   re=(double*)node->value;
   return *re;
 }
@@ -308,6 +315,8 @@ char* config_get_string(CONFIG* c, char* key)
   if(node==NULL)
     return (char*)VALUE_NOT_FOUND;
   
+  if(node->type!='S')
+    printf("Requested STRING by '%s' is not type STRING\n",key);
   re=(char*)node->value;
   return re;
 }
@@ -325,7 +334,9 @@ int config_get_boolean(CONFIG* c, char* key)
   node=list_get(c->list,key);
   if(node==NULL)
     return VALUE_NOT_FOUND;
-  
+
+  if(node->type!='I')
+    printf("Requested BOOL by '%s' is not type BOOL\n",key);
   re=*(int*)node->value;
   return re;
 }
