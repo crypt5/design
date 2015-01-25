@@ -62,8 +62,20 @@ void* event_loop(void* data)
 	  clicked=get_at_coords(g,e.xbutton.x, e.xbutton.y);
 	  if(clicked!=NULL){
 	    if((clicked->flags&CLICKABLE)>0){
-	      active=clicked;
-	      update_mouse_down(g,active);
+	      switch(clicked->type){
+	      case BUTTON:
+		active=clicked;
+		update_mouse_down(g,active);
+		break;
+	      case RADIO_BUTTON:
+		active=clicked;
+		if(*(int*)active->data==1)
+		  *(int*)active->data=0;
+		else
+		  *(int*)active->data=1;
+		update_mouse_down(g,active);
+		break;
+	      }
 	    }
 	    else{
 	      active=NULL;
@@ -80,13 +92,21 @@ void* event_loop(void* data)
 	  if(clicked!=NULL){
 	    if(clicked==active){
 	      if((clicked->flags&CLICKABLE)>0){
-		active->call(active->data);
-		paint_widget(g,active);
+		switch(clicked->type){
+		case BUTTON:
+		  active->call(active->data);
+		  paint_widget(g,active);
+		  break;
+		case RADIO_BUTTON:
+		  paint_widget(g,active);
+		  break;
+		}
 	      }
 	    }
 	    else{
-	      if(active!=NULL)
+	      if(active!=NULL){
 		paint_widget(g,active);
+	      }
 	      active=NULL;
 	    }
 	  }
@@ -130,7 +150,7 @@ GUI* init_gui()
 
   g->dsp=d;
   g->blackColor = BlackPixel(g->dsp, DefaultScreen(g->dsp));
-  g->whiteColor = BlackPixel(g->dsp, DefaultScreen(g->dsp));
+  g->whiteColor = WhitePixel(g->dsp, DefaultScreen(g->dsp));
   g->bgColor=0x00AD855C;
   g->run=1;
   re=pthread_mutex_init(&g->lock,NULL);
@@ -306,6 +326,20 @@ void paint_widget(GUI* g,WIDGET* w)
     XDrawString(g->dsp,g->mainWindow,g->text,w->x+10,w->y+(w->height+w->height/2),(char*)w->string,strlen((char*)w->string));
     w->height=w->height*2;
     break;
+  case RADIO_BUTTON:
+    w->height=g->font->ascent*2;
+    w->width=XTextWidth(g->font,w->string,strlen(w->string))+30;
+    XSetForeground(g->dsp,g->draw,g->whiteColor);
+    XFillArc(g->dsp,g->mainWindow,g->draw,w->x+3,w->y+(g->font->ascent/6),w->height-5,w->height-5,0,360*64);
+    XSetForeground(g->dsp,g->draw,g->blackColor);
+    XDrawArc(g->dsp,g->mainWindow,g->draw,w->x+3,w->y+(g->font->ascent/6),w->height-5,w->height-5,0,360*64);
+    XDrawString(g->dsp,g->mainWindow,g->text,w->x+28,w->y+w->height-(g->font->ascent/2),(char*)w->string,strlen((char*)w->string));
+
+    if(*(int*)w->data==1){
+      XSetForeground(g->dsp,g->draw,0x000000AA);
+      XFillArc(g->dsp,g->mainWindow,g->draw,w->x+4+(w->height-5)/4,w->y+(g->font->ascent/2),10,10,0,360*64);
+    }
+    break;
   }
 }
 
@@ -332,6 +366,12 @@ void update_mouse_down(GUI* g,WIDGET* w)
     //TODO Pretty Button Down
     XSetForeground(g->dsp,g->draw,0);
     XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
+    break;
+  case RADIO_BUTTON:
+    if(*(int*)w->data==1){
+      XSetForeground(g->dsp,g->draw,0x000000AA);
+      XFillArc(g->dsp,g->mainWindow,g->draw,w->x+4+(w->height-5)/4,w->y+(g->font->ascent/2),10,10,0,360*64);
+    }
     break;
   }
 }

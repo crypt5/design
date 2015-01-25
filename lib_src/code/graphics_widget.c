@@ -12,7 +12,7 @@ WIDGET* create_label(char* message,int x,int y)
 
   w=malloc(sizeof(WIDGET));
   if(w==NULL){
-    printf("Widget Malloc Failed!\n");
+    printf("Widget(Label) Malloc Failed!\n");
     exit(-1);
   }
 
@@ -26,6 +26,8 @@ WIDGET* create_label(char* message,int x,int y)
   w->type=LABEL;
   w->x=x;
   w->y=y;
+  w->data=NULL;
+  w->call=NULL;
   w->string=d;
 
   return w;
@@ -38,7 +40,7 @@ WIDGET* create_button(char* message,int x, int y,void(*ucallback)(void*),void* d
 
   w=malloc(sizeof(WIDGET));
   if(w==NULL){
-    printf("Widget Malloc Failed!\n");
+    printf("Widget(Simple Button) Malloc Failed!\n");
     exit(-1);
   }
 
@@ -51,9 +53,46 @@ WIDGET* create_button(char* message,int x, int y,void(*ucallback)(void*),void* d
   w->type=BUTTON;
   w->flags=CLICKABLE;
   w->x=x;
-  w->y=y+10;
+  w->y=y;
   w->data=data;
   w->call=ucallback;
+  w->string=d;
+
+  return w;
+}
+
+extern WIDGET* create_radio_button(char* message, int x, int y)
+{
+  WIDGET* w=NULL;
+  char* d=NULL;
+  int* clicked=NULL;
+
+  w=malloc(sizeof(WIDGET));
+  if(w==NULL){
+    printf("Widget(Radio Button) Malloc Failed!\n");
+    exit(-1);
+  }
+
+  d=malloc(strlen(message)+1);
+  if(d==NULL){
+    printf("Message Malloc Failed!\n");
+    exit(-1);
+  }
+  strcpy(d,message);
+
+  clicked=malloc(sizeof(int));
+  if(clicked==NULL){
+    printf("Toggle data Malloc Failed\n");
+    exit(-1);
+  }
+  *clicked=0;
+
+  w->type=RADIO_BUTTON;
+  w->flags=CLICKABLE;
+  w->x=x;
+  w->y=y;
+  w->data=clicked;
+  w->call=NULL;
   w->string=d;
 
   return w;
@@ -76,6 +115,12 @@ void destroy_widget(void* w)
     break;
   case BUTTON:
     free(widget->string);
+    free(widget);
+    widget=NULL;
+    break;
+  case RADIO_BUTTON:
+    free(widget->string);
+    free(widget->data);
     free(widget);
     widget=NULL;
     break;

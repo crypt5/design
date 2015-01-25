@@ -4,6 +4,7 @@
 //Widget types
 #define LABEL 1
 #define BUTTON 2
+#define RADIO_BUTTON 3
 
 //Widget FLags
 #define CLICKABLE 1
@@ -26,6 +27,8 @@ struct graphics_widget_t{
 extern WIDGET* create_label(char* message,int x,int y);
 
 extern WIDGET* create_button(char* message,int x, int y,void(*ucallback)(void*),void* data);
+
+extern WIDGET* create_radio_button(char* message, int x, int y);
 
 extern void destroy_widget(void* w);
 
