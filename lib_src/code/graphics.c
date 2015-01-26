@@ -12,6 +12,7 @@ void destroy_gui(GUI* g);
 void paint_widget(GUI* g,WIDGET* w);
 WIDGET* get_at_coords(GUI* g,int x, int y);
 void update_mouse_down(GUI* g,WIDGET* w);
+char process_keystroke(GUI* g, XEvent e);
 
 struct graphics_t{
   Display* dsp;
@@ -34,7 +35,7 @@ void* event_loop(void* data)
 {
   GUI* g=NULL;
   XEvent e;
-  int keep_running;
+  int keep_running,i;
   WIDGET* active=NULL;
   WIDGET* clicked=NULL;
 
@@ -75,6 +76,14 @@ void* event_loop(void* data)
 		  *(int*)active->data=1;
 		update_mouse_down(g,active);
 		break;
+	      case CHECKBOX:
+		active=clicked;
+		if(*(int*)active->data==1)
+		  *(int*)active->data=0;
+		else
+		  *(int*)active->data=1;
+		update_mouse_down(g,active);
+		break;
 	      }
 	    }
 	    else{
@@ -100,6 +109,9 @@ void* event_loop(void* data)
 		case RADIO_BUTTON:
 		  paint_widget(g,active);
 		  break;
+		case CHECKBOX:
+		  paint_widget(g,active);
+		  break;
 		}
 	      }
 	    }
@@ -116,6 +128,20 @@ void* event_loop(void* data)
 	    active=NULL;
 	  }
 	}
+	break;
+      case KeyRelease:
+	//TODO Process Key press
+	break;
+      case Expose://Parts or whole window is visible again
+      case MapNotify: 
+	//TODO Smart Repainting Code
+	for(i=0;i<list_length(g->widgets);i++){
+	  paint_widget(g,(WIDGET*)list_get_pos(g->widgets,i));
+	}
+	break;
+      case UnmapNotify:
+      case ConfigureNotify:
+	// Ignore these events
 	break;
       default:
 	printf("Unhandled Event, Code: %d\n",e.type);
@@ -179,7 +205,7 @@ void create_main_window(GUI* g,char* title)
 
   w = XCreateSimpleWindow(g->dsp,DefaultRootWindow(g->dsp),0,0,200,100,0,g->bgColor,g->bgColor);
 
-  XSelectInput(g->dsp, w, StructureNotifyMask|KeyPressMask|KeyReleaseMask|ButtonPressMask|ButtonReleaseMask);
+  XSelectInput(g->dsp, w, StructureNotifyMask|KeyReleaseMask|ButtonPressMask|ButtonReleaseMask|ExposureMask);
 
   g->mainWindow=w;
   if(title!=NULL)
@@ -312,6 +338,7 @@ void add_to_main(GUI* g,WIDGET* w)
 
 void paint_widget(GUI* g,WIDGET* w)
 {
+  int width;
   switch(w->type){
   case LABEL:
     w->width=XTextWidth(g->font,w->string,strlen(w->string));
@@ -339,6 +366,45 @@ void paint_widget(GUI* g,WIDGET* w)
       XSetForeground(g->dsp,g->draw,0x000000AA);
       XFillArc(g->dsp,g->mainWindow,g->draw,w->x+4+(w->height-5)/4,w->y+(g->font->ascent/2),10,10,0,360*64);
     }
+    break;
+  case CHECKBOX:
+    w->height=g->font->ascent*2;
+    w->width=XTextWidth(g->font,w->string,strlen(w->string))+30;
+    XSetForeground(g->dsp,g->draw,g->whiteColor);
+    XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x+5,w->y+(w->height/5),15,15);
+    XSetForeground(g->dsp,g->draw,g->blackColor);
+    XDrawRectangle(g->dsp,g->mainWindow,g->draw,w->x+5,w->y+(w->height/5),15,15);
+    XDrawString(g->dsp,g->mainWindow,g->text,w->x+28,w->y+w->height-(g->font->ascent/2),(char*)w->string,strlen((char*)w->string));
+
+    if(*(int*)w->data==1){
+      XSetForeground(g->dsp,g->draw,0x0000AA00);
+      //Short Leg
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+7,w->y+9,w->x+12,w->y+14);
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+7,w->y+10,w->x+12,w->y+15);
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+7,w->y+11,w->x+12,w->y+16);
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+7,w->y+12,w->x+12,w->y+17);
+      //Long Leg
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+12,w->y+14,w->x+17,w->y+5);
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+12,w->y+15,w->x+17,w->y+6);
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+12,w->y+16,w->x+17,w->y+7);
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+12,w->y+17,w->x+17,w->y+8);
+    }
+    break;
+  case BORDER:
+    XSetForeground(g->dsp,g->draw,g->blackColor);
+    XSetLineAttributes(g->dsp,g->draw,*(int*)w->data,LineSolid,CapButt,JoinMiter);
+    XDrawRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
+    XSetLineAttributes(g->dsp,g->draw,0,LineSolid,CapButt,JoinMiter);
+    break;
+  case TITLE_BORDER:
+    XSetForeground(g->dsp,g->draw,g->blackColor);
+    width=XTextWidth(g->font,w->string,strlen(w->string))+2;
+    XSetLineAttributes(g->dsp,g->draw,*(int*)w->data,LineSolid,CapButt,JoinMiter);
+    XDrawRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
+    XSetLineAttributes(g->dsp,g->draw,0,LineSolid,CapButt,JoinMiter);
+    XSetForeground(g->dsp,g->draw,g->bgColor);
+    XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x+5,w->y-(*(int*)w->data/2),width,*(int*)w->data);
+    XDrawString(g->dsp,g->mainWindow,g->text,w->x+6,w->y+(g->font->ascent/2),(char*)w->string,strlen((char*)w->string));
     break;
   }
 }
@@ -373,6 +439,25 @@ void update_mouse_down(GUI* g,WIDGET* w)
       XFillArc(g->dsp,g->mainWindow,g->draw,w->x+4+(w->height-5)/4,w->y+(g->font->ascent/2),10,10,0,360*64);
     }
     break;
+  case CHECKBOX:
+    if(*(int*)w->data==1){
+      XSetForeground(g->dsp,g->draw,0x0000AA00);
+      //Short Leg
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+7,w->y+9,w->x+12,w->y+14);
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+7,w->y+10,w->x+12,w->y+15);
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+7,w->y+11,w->x+12,w->y+16);
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+7,w->y+12,w->x+12,w->y+17);
+      //Long Leg
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+12,w->y+14,w->x+17,w->y+5);
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+12,w->y+15,w->x+17,w->y+6);
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+12,w->y+16,w->x+17,w->y+7);
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+12,w->y+17,w->x+17,w->y+8);
+    }
+    break;
   }
 }
 
+char process_keystroke(GUI* g, XEvent e)
+{
+  return 'A';
+}
