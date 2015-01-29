@@ -12,7 +12,7 @@ void destroy_gui(GUI* g);
 void paint_widget(GUI* g,WIDGET* w);
 WIDGET* get_at_coords(GUI* g,int x, int y);
 void update_mouse_down(GUI* g,WIDGET* w);
-char process_keystroke(GUI* g, XEvent e);
+char process_keystroke(GUI* g, XKeyEvent* e);
 
 struct graphics_t{
   Display* dsp;
@@ -130,7 +130,7 @@ void* event_loop(void* data)
 	}
 	break;
       case KeyRelease:
-	//TODO Process Key press
+	printf("Key: %c\n",process_keystroke(g,&e.xkey));
 	break;
       case Expose://Parts or whole window is visible again
       case MapNotify: 
@@ -457,7 +457,9 @@ void update_mouse_down(GUI* g,WIDGET* w)
   }
 }
 
-char process_keystroke(GUI* g, XEvent e)
+char process_keystroke(GUI* g, XKeyEvent* e)
 {
-  return 'A';
+  char buf[4];
+  XLookupString(e,buf,4,NULL,NULL);
+  return buf[0];
 }
