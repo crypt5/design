@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/XKBlib.h>
 #include <pthread.h>
 #include <string.h>
 #include "graphics.h"
@@ -459,7 +460,14 @@ void update_mouse_down(GUI* g,WIDGET* w)
 
 char process_keystroke(GUI* g, XKeyEvent* e)
 {
-  char buf[4];
-  XLookupString(e,buf,4,NULL,NULL);
-  return buf[0];
+  char re;
+  KeySym key_symbol=XkbKeycodeToKeysym(g->dsp, e->keycode, 0, e->state & ShiftMask ? 1 : 0);
+  /*
+  if (key_symbol >= XK_A && key_symbol <= XK_Z) 
+    re = key_symbol - XK_A + 'A';
+  if (key_symbol >= XK_a && key_symbol <= XK_z) 
+    re = key_symbol - XK_a + 'a';
+  */
+  re=key_symbol - XK_space + ' ';
+  return re;
 }
