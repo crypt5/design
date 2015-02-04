@@ -17,6 +17,7 @@ int main()
   WIDGET* simpleBorder=NULL;
   WIDGET* simpleLabel=NULL;
   WIDGET* hardBorder=NULL;
+  WIDGET* text=NULL;
 
   g=init_gui();
 
@@ -27,6 +28,7 @@ int main()
   simpleLabel=create_label("Simple Border Element",10,100);
   simpleBorder=create_border(5,95,25,200,3);
   hardBorder=create_titled_border("Titled Border",5,140,25,200,3);
+  text=create_textbox(10,200,20);
   
   create_main_window(g,"Testing Window");
   set_main_size(g,500,500);
@@ -37,6 +39,7 @@ int main()
   add_to_main(g,simpleLabel);
   add_to_main(g,simpleBorder);
   add_to_main(g,hardBorder);
+  add_to_main(g,text);
 
   show_main(g);
 

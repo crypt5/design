@@ -203,6 +203,52 @@ extern WIDGET* create_titled_border(char* message, int x, int y, int height, int
   w->string=d;
 
   return w;
+}
+
+WIDGET* create_textbox(int x, int y, int max_length)
+{
+  WIDGET* w=NULL;
+  char* d=NULL;
+  struct textbox_data_t* pos=NULL;
+  int i;
+
+  w=malloc(sizeof(WIDGET));
+  if(w==NULL){
+    printf("Widget(Titled Border) Malloc Failed!\n");
+    exit(-1);
+  }
+
+  if(max_length>0){
+    d=malloc(max_length+1);
+    if(d==NULL){
+      printf("Message Malloc Failed!\n");
+      exit(-1);
+    }
+  }
+  else{
+    printf("Error max_length Must be greater then 0\n");
+    exit(-1);
+  }
+  for(i=0;i<max_length+1;i++)
+    d[i]='\0';
+
+  pos=malloc(sizeof(struct textbox_data_t));
+  if(pos==NULL){
+    printf("Line Thickness Failed!\n");
+    exit(-1);
+  }
+  pos->max_length=max_length;
+  pos->current_pos=0;
+
+  w->flags=SELECTABLE;
+  w->type=TEXTBOX;
+  w->x=x;
+  w->y=y;
+  w->data=pos;
+  w->call=NULL;
+  w->string=d;
+
+  return w;
 
 }
 
@@ -244,6 +290,12 @@ void destroy_widget(void* w)
     widget=NULL;
     break;
   case TITLE_BORDER:
+    free(widget->data);
+    free(widget->string);
+    free(widget);
+    widget=NULL;
+    break;
+  case TEXTBOX:
     free(widget->data);
     free(widget->string);
     free(widget);

@@ -39,6 +39,7 @@ void* event_loop(void* data)
   int keep_running,i;
   WIDGET* active=NULL;
   WIDGET* clicked=NULL;
+  char key;
 
   g=(GUI*)data;
   pthread_mutex_lock(&g->lock);
@@ -131,7 +132,9 @@ void* event_loop(void* data)
 	}
 	break;
       case KeyRelease:
-	printf("Key: %c\n",process_keystroke(g,&e.xkey));
+	key=process_keystroke(g,&e.xkey);
+	if(key!=0)
+	  printf("Key: %c\n",key);
 	break;
       case Expose://Parts or whole window is visible again
       case MapNotify: 
@@ -407,6 +410,13 @@ void paint_widget(GUI* g,WIDGET* w)
     XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x+5,w->y-(*(int*)w->data/2),width,*(int*)w->data);
     XDrawString(g->dsp,g->mainWindow,g->text,w->x+6,w->y+(g->font->ascent/2),(char*)w->string,strlen((char*)w->string));
     break;
+  case TEXTBOX:
+    w->width=100;
+    w->height=20;
+    //TODO Finish
+    XSetForeground(g->dsp,g->draw,g->whiteColor);
+    XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,100,20);
+    break;
   }
 }
 
@@ -460,14 +470,11 @@ void update_mouse_down(GUI* g,WIDGET* w)
 
 char process_keystroke(GUI* g, XKeyEvent* e)
 {
-  char re;
+  char re=0;
   KeySym key_symbol=XkbKeycodeToKeysym(g->dsp, e->keycode, 0, e->state & ShiftMask ? 1 : 0);
-  /*
-  if (key_symbol >= XK_A && key_symbol <= XK_Z) 
-    re = key_symbol - XK_A + 'A';
-  if (key_symbol >= XK_a && key_symbol <= XK_z) 
-    re = key_symbol - XK_a + 'a';
-  */
-  re=key_symbol - XK_space + ' ';
+  if(key_symbol>=XK_space && key_symbol<=XK_asciitilde)
+    re=key_symbol - XK_space + ' ';
+  else
+    printf("Key still Unbound\n");
   return re;
 }
