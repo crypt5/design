@@ -14,6 +14,7 @@ void paint_widget(GUI* g,WIDGET* w);
 WIDGET* get_at_coords(GUI* g,int x, int y);
 void update_mouse_down(GUI* g,WIDGET* w);
 char process_keystroke(GUI* g, XKeyEvent* e);
+void update_textbox(char c,GUI* g, WIDGET* w);
 
 struct graphics_t{
   Display* dsp;
@@ -39,6 +40,7 @@ void* event_loop(void* data)
   int keep_running,i;
   WIDGET* active=NULL;
   WIDGET* clicked=NULL;
+  WIDGET* selected=NULL;
   char key;
 
   g=(GUI*)data;
@@ -64,7 +66,11 @@ void* event_loop(void* data)
 	if(e.xbutton.button==1){//Left mouse Button
 	  clicked=get_at_coords(g,e.xbutton.x, e.xbutton.y);
 	  if(clicked!=NULL){
-	    if((clicked->flags&CLICKABLE)>0){
+	    if(clicked!=selected&&selected!=NULL){
+	      paint_widget(g,selected);
+	      selected=NULL;
+	    }
+	    if((clicked->flags&(CLICKABLE|SELECTABLE))>0){
 	      switch(clicked->type){
 	      case BUTTON:
 		active=clicked;
@@ -86,6 +92,9 @@ void* event_loop(void* data)
 		  *(int*)active->data=1;
 		update_mouse_down(g,active);
 		break;
+	      case TEXTBOX:
+		active=clicked;
+		break;
 	      }
 	    }
 	    else{
@@ -94,6 +103,9 @@ void* event_loop(void* data)
 	  }
 	  else{
 	    active=NULL;
+	    if(selected!=NULL)
+	      paint_widget(g,selected);
+	    selected=NULL;
 	  }
 	}
 	break;
@@ -102,7 +114,7 @@ void* event_loop(void* data)
 	  clicked=get_at_coords(g,e.xbutton.x, e.xbutton.y);
 	  if(clicked!=NULL){
 	    if(clicked==active){
-	      if((clicked->flags&CLICKABLE)>0){
+	      if((clicked->flags&(CLICKABLE|SELECTABLE))>0){
 		switch(clicked->type){
 		case BUTTON:
 		  active->call(active->data);
@@ -113,6 +125,10 @@ void* event_loop(void* data)
 		  break;
 		case CHECKBOX:
 		  paint_widget(g,active);
+		  break;
+		case TEXTBOX:
+		  selected=active;
+		  update_mouse_down(g,active);
 		  break;
 		}
 	      }
@@ -132,9 +148,10 @@ void* event_loop(void* data)
 	}
 	break;
       case KeyRelease:
-	key=process_keystroke(g,&e.xkey);
-	if(key!=0)
-	  printf("Key: %c\n",key);
+	if(selected!=NULL){
+	  key=process_keystroke(g,&e.xkey);
+	  update_textbox(key,g,selected);
+	}
 	break;
       case Expose://Parts or whole window is visible again
       case MapNotify: 
@@ -343,6 +360,7 @@ void add_to_main(GUI* g,WIDGET* w)
 void paint_widget(GUI* g,WIDGET* w)
 {
   int width;
+  struct textbox_data_t* data=NULL;
   switch(w->type){
   case LABEL:
     w->width=XTextWidth(g->font,w->string,strlen(w->string));
@@ -411,11 +429,22 @@ void paint_widget(GUI* g,WIDGET* w)
     XDrawString(g->dsp,g->mainWindow,g->text,w->x+6,w->y+(g->font->ascent/2),(char*)w->string,strlen((char*)w->string));
     break;
   case TEXTBOX:
-    w->width=100;
-    w->height=20;
-    //TODO Finish
+    if(w->width==0){
+      data=w->data;
+      for(width=0;width<data->max_length;width++){
+	w->string[width]=' ';
+      }
+      w->width=XTextWidth(g->font,w->string,strlen(w->string))+8;
+      w->height=g->font->ascent*2;
+      for(width=0;width<data->max_length;width++){
+	w->string[width]='\0';
+      }
+    }
     XSetForeground(g->dsp,g->draw,g->whiteColor);
-    XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,100,20);
+    XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
+    XSetForeground(g->dsp,g->draw,g->blackColor);
+    XDrawRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
+    XDrawString(g->dsp,g->mainWindow,g->text,w->x+4,w->y+w->height/2+w->height/4,(char*)w->string,strlen((char*)w->string));
     break;
   }
 }
@@ -438,9 +467,10 @@ WIDGET* get_at_coords(GUI* g,int x, int y)
 
 void update_mouse_down(GUI* g,WIDGET* w)
 {
+  int i;
+  struct textbox_data_t* data=NULL;
   switch(w->type){
   case BUTTON:
-    //TODO Pretty Button Down
     XSetForeground(g->dsp,g->draw,0);
     XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
     break;
@@ -465,6 +495,11 @@ void update_mouse_down(GUI* g,WIDGET* w)
       XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+12,w->y+17,w->x+17,w->y+8);
     }
     break;
+  case TEXTBOX:
+    data=w->data;
+    i=XTextWidth(g->font,"A",1);
+    XDrawString(g->dsp,g->mainWindow,g->text,w->x+(i*data->current_pos),w->y+w->height/2+w->height/4,"|",1);
+    break;
   }
 }
 
@@ -472,9 +507,36 @@ char process_keystroke(GUI* g, XKeyEvent* e)
 {
   char re=0;
   KeySym key_symbol=XkbKeycodeToKeysym(g->dsp, e->keycode, 0, e->state & ShiftMask ? 1 : 0);
-  if(key_symbol>=XK_space && key_symbol<=XK_asciitilde)
+  if(key_symbol>=XK_space && key_symbol<=XK_asciitilde){
     re=key_symbol - XK_space + ' ';
-  else
-    printf("Key still Unbound\n");
+  }
+  else{
+    printf("Key: %x\n",key_symbol);
+    switch(key_symbol){
+    case XK_KP_End:
+      re='1';
+      break;
+    default:
+      printf("Key still Unbound\n");
+    }
+  }
   return re;
+}
+
+void update_textbox(char c,GUI* g, WIDGET* w)
+{
+  struct textbox_data_t* data=w->data;
+  if(c>=' '&&data->current_pos<data->max_length){
+    w->string[data->current_pos]=c;
+    data->current_pos++;
+  }
+  else{
+    switch(c){
+
+    default:
+      printf("Unknown Control Char: %d\n",c);
+    }
+  }
+  paint_widget(g,w);
+  update_mouse_down(g,w);
 }

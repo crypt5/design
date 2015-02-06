@@ -244,6 +244,7 @@ WIDGET* create_textbox(int x, int y, int max_length)
   w->type=TEXTBOX;
   w->x=x;
   w->y=y;
+  w->width=0;
   w->data=pos;
   w->call=NULL;
   w->string=d;
