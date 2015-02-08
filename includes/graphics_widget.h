@@ -43,4 +43,9 @@ extern WIDGET* create_textbox(int x, int y, int max_length);
 
 extern void destroy_widget(void* w);
 
+//Widget Interaction Functions
+extern char* get_text(WIDGET* w);
+extern int set_text(WIDGET* w,char* message);
+extern int is_checked(WIDGET* w);
+
 #endif

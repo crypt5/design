@@ -5,6 +5,7 @@ typedef struct graphics_t GUI;
 
 #include "graphics_widget.h"
 
+
 //These functions need to be called in this order
 extern GUI* init_gui();
 extern void set_main_background(GUI* g,int RGB); // Optional 
@@ -16,6 +17,7 @@ extern void show_main(GUI* g);
 extern int gui_running(GUI* g);
 
 extern void add_to_main(GUI* g,WIDGET* w);
+extern void update_widget(GUI* g, WIDGET* w);
 
 extern void shutdown_gui(GUI* g);
 extern void destroy_gui(GUI* g);

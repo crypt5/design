@@ -266,41 +266,105 @@ void destroy_widget(void* w)
   case LABEL:
     free(widget->string);
     free(widget);
-    widget=NULL;
     break;
   case BUTTON:
     free(widget->string);
     free(widget);
-    widget=NULL;
     break;
   case RADIO_BUTTON:
     free(widget->string);
     free(widget->data);
     free(widget);
-    widget=NULL;
     break;
   case CHECKBOX:
     free(widget->string);
     free(widget->data);
     free(widget);
-    widget=NULL;
     break;
   case BORDER:
     free(widget->data);
     free(widget);
-    widget=NULL;
     break;
   case TITLE_BORDER:
     free(widget->data);
     free(widget->string);
     free(widget);
-    widget=NULL;
     break;
   case TEXTBOX:
     free(widget->data);
     free(widget->string);
-    free(widget);
-    widget=NULL;
+    free(widget);;
     break;
   }
+}
+
+char* get_text(WIDGET* w)
+{
+  if(w==NULL){
+    printf("Can't get Text\nWidget is NULL\n");
+    return NULL;
+  }
+  if(w->type==BORDER){
+    printf("Simple Borders Dont have Text!\n");
+    return NULL;
+  }
+  return w->string;
+}
+
+int set_text(WIDGET* w,char* message)
+{
+  char* d=NULL;
+  int i;
+  struct textbox_data_t* data=NULL;
+  if(w==NULL){
+    printf("Can't Set Text\nWidget is NULL\n");
+    return -1;
+  }
+
+  switch(w->type){
+  case LABEL:
+  case BUTTON:
+  case RADIO_BUTTON:
+  case CHECKBOX:
+  case TITLE_BORDER:
+    d=malloc(strlen(message)+1);
+    if(d==NULL){
+      printf("Message Malloc Failed!\n");
+      exit(-1);
+    }
+    strcpy(d,message);
+    free(w->string);
+    w->string=d;
+    break;
+  case BORDER:
+    printf("Border does not have text element\n");
+    return -1;
+    break;
+  case TEXTBOX:
+    data=w->data;
+    if(strlen(message)<data->max_length){
+      for(i=0;i<data->max_length;i++)
+	w->string[i]='\0';
+      strcpy(w->string,message);
+    }
+    else{
+      printf("Message too long for Textbox\n");
+      return -1;
+    }
+    break;
+  }
+
+  return 1;
+}
+
+int is_checked(WIDGET* w)
+{
+  if(w==NULL){
+    printf("Can't Set Text\nWidget is NULL\n");
+    return -1;
+  }
+  if(w->type==CHECKBOX||w->type==RADIO_BUTTON)
+    return *(int*)w->data;
+  
+  return -1;
 }

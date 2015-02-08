@@ -9,6 +9,15 @@
 #include "graphics.h"
 #include "link.h"
 
+#define BACKSPACE 1
+#define TAB 2
+#define ENTER 3
+#define LEFT 4
+#define RIGHT 5
+#define UP 6
+#define DOWN 7
+#define DELETE 8
+
 void destroy_gui(GUI* g);
 void paint_widget(GUI* g,WIDGET* w);
 WIDGET* get_at_coords(GUI* g,int x, int y);
@@ -357,6 +366,11 @@ void add_to_main(GUI* g,WIDGET* w)
   list_add(g->widgets,w);
 }
 
+void update_widget(GUI* g, WIDGET* w)
+{
+  paint_widget(g,w);
+}
+
 void paint_widget(GUI* g,WIDGET* w)
 {
   int width;
@@ -365,6 +379,8 @@ void paint_widget(GUI* g,WIDGET* w)
   case LABEL:
     w->width=XTextWidth(g->font,w->string,strlen(w->string));
     w->height=g->font->ascent;
+    XSetForeground(g->dsp,g->draw,g->bgColor);
+    XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
     XDrawString(g->dsp,g->mainWindow,g->text,w->x,w->y+w->height,(char*)w->string,strlen((char*)w->string));
     break;
   case BUTTON:
@@ -511,13 +527,79 @@ char process_keystroke(GUI* g, XKeyEvent* e)
     re=key_symbol - XK_space + ' ';
   }
   else{
-    printf("Key: %x\n",key_symbol);
     switch(key_symbol){
+    case XK_KP_Insert:
+      re='0';
+      break;
     case XK_KP_End:
       re='1';
       break;
-    default:
-      printf("Key still Unbound\n");
+    case XK_KP_Down:
+      re='2';
+      break;
+    case XK_KP_Page_Down:
+      re='3';
+      break;
+    case XK_KP_Left:
+      re='4';
+      break;
+    case XK_KP_Begin:
+      re='5';
+      break;
+    case XK_KP_Right:
+      re='6';
+      break;
+    case XK_KP_Home:
+      re='7';
+      break;
+    case XK_KP_Up:
+      re='8';
+      break;
+    case XK_KP_Page_Up:
+      re='9';
+      break;
+   case XK_KP_Delete:
+      re='.';
+      break;
+    case XK_KP_Add:
+      re='+';
+      break;
+    case XK_KP_Subtract:
+      re='-';
+      break;
+    case XK_KP_Multiply:
+      re='*';
+      break;
+    case XK_KP_Divide:
+      re='/';
+      break;
+    case XK_BackSpace:
+      re=BACKSPACE;
+      break;
+    case XK_Tab:
+      re=TAB;
+      break;
+    case XK_Return:
+    case XK_KP_Enter:
+      re=ENTER;
+      break;
+    case XK_Left:
+      re=LEFT;
+      break;
+    case XK_Right:
+      re=RIGHT;
+      break;
+    case XK_Up:
+      re=UP;
+      break;
+    case XK_Down:
+      re=DOWN;
+      break;
+    case XK_Delete:
+      re=DELETE;
+      break;
+      /*default: //Upmapped Key we dont care about
+	printf("Key still Unbound\n");*/
     }
   }
   return re;
@@ -526,15 +608,58 @@ char process_keystroke(GUI* g, XKeyEvent* e)
 void update_textbox(char c,GUI* g, WIDGET* w)
 {
   struct textbox_data_t* data=w->data;
-  if(c>=' '&&data->current_pos<data->max_length){
-    w->string[data->current_pos]=c;
+  int i;
+  if(c>=' '&&strlen(w->string)<data->max_length){
+    if(w->string[data->current_pos]=='\0'){
+      w->string[data->current_pos]=c;
+    }
+    else{
+      for(i=data->max_length;i>data->current_pos;i--)
+	w->string[i]=w->string[i-1];
+      w->string[data->current_pos]=c;
+    }
     data->current_pos++;
   }
-  else{
+  else if(c<' '){
     switch(c){
-
+    case 0:
+      //No Operation return from key parsing function
+      break;
+    case BACKSPACE:
+      if(data->current_pos>0){
+	if(w->string[data->current_pos]=='\0'){
+	  data->current_pos--;
+	  w->string[data->current_pos]='\0';
+	}
+	else{
+	  data->current_pos--;
+	  for(i=data->current_pos;i<data->max_length;i++)
+	    w->string[i]=w->string[i+1];
+	}
+      }
+      break;
+    case DELETE:
+      if(data->current_pos<data->max_length&&w->string[data->current_pos]!='\0'){
+	for(i=data->current_pos;i<data->max_length;i++)
+	  w->string[i]=w->string[i+1];
+      }
+      break;
+    case LEFT:
+      if(data->current_pos>0)
+	data->current_pos--;
+      break;
+    case RIGHT:
+      if(data->current_pos<data->max_length&&w->string[data->current_pos]!='\0')
+	data->current_pos++;
+      break;
+    case ENTER:
+    case UP:
+    case DOWN:
+    case TAB:
+      //We dont care in a textbox
+      break;
     default:
-      printf("Unknown Control Char: %d\n",c);
+      printf("Unknown Control Operator: %d\n",c);
     }
   }
   paint_widget(g,w);
