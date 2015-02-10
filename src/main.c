@@ -18,17 +18,19 @@ int main()
   WIDGET* simpleLabel=NULL;
   WIDGET* hardBorder=NULL;
   WIDGET* text=NULL;
+  WIDGET* but=NULL;
 
   g=init_gui();
 
-  testLab=create_label("Hello World!",10,10);
-  testBut=create_button("Exit",430,455,my_exit,g);
-  testRadio=create_radio_button("Click Me!",10,30);
-  testBox=create_checkbox("Check me!",10,60);
+  testLab=create_label("Label",10,10);
+  testBut=create_button("Exit",430,465,my_exit,g);
+  testRadio=create_radio_button("Radio Button",10,30);
+  testBox=create_checkbox("Checkbox",10,60);
   simpleLabel=create_label("Simple Border Element",10,100);
   simpleBorder=create_border(5,95,25,200,3);
   hardBorder=create_titled_border("Titled Border",5,140,25,200,3);
   text=create_textbox(10,180,20);
+  but=create_button("Button",10,220,NULL,NULL);
   
   create_main_window(g,"Testing Window");
   set_main_size(g,500,500);
@@ -40,6 +42,7 @@ int main()
   add_to_main(g,simpleBorder);
   add_to_main(g,hardBorder);
   add_to_main(g,text);
+  add_to_main(g,but);
 
   show_main(g);
 

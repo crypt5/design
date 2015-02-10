@@ -126,7 +126,8 @@ void* event_loop(void* data)
 	      if((clicked->flags&(CLICKABLE|SELECTABLE))>0){
 		switch(clicked->type){
 		case BUTTON:
-		  active->call(active->data);
+		  if(active->call!=NULL)
+		    active->call(active->data);
 		  paint_widget(g,active);
 		  break;
 		case RADIO_BUTTON:
@@ -472,9 +473,11 @@ WIDGET* get_at_coords(GUI* g,int x, int y)
 
   for(i=0;i<list_length(g->widgets);i++){
     temp=list_get_pos(g->widgets,i);
-    if(x>temp->x&&x<temp->x+temp->width){
-      if(y>temp->y&&y<temp->y+temp->height){
-	return temp;
+    if(temp->type!=BORDER&&temp->type!=TITLE_BORDER){
+      if(x>temp->x&&x<temp->x+temp->width){
+	if(y>temp->y&&y<temp->y+temp->height){
+	  return temp;
+	}
       }
     }
   }
