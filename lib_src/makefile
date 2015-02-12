@@ -1,7 +1,7 @@
 CC=clang
 CFLAGS=-g -Wall
 OFLAGS=-c -Iheaders -fPIC
-GUI_LIBS=graphics_widget.o
+GUI_LIBS=graphics_widget.o graphics_label.o
 
 build-libs: logger config gui
 
@@ -34,3 +34,6 @@ gui: $(GUI_LIBS) link-list code/graphics.c
 # GUI Elements Build
 graphics_widget.o: code/graphics_widget.c
 	$(CC) $(CFLAGS) $(OFLAGS) code/graphics_widget.c
+
+graphics_label.o: code/graphics_label.c
+	$(CC) $(CFALGS) $(OFLAGS) code/graphics_label.c

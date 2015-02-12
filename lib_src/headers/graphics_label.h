@@ -14,6 +14,6 @@ int get_label_background(WIDGET* l);
 int get_label_text_color(WIDGET* l);
 char* get_label_text(WIDGET* l);
 
-void destroy_label(void* l);
+void destroy_label(WIDGET* l);
 
 #endif

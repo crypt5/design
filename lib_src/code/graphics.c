@@ -7,6 +7,7 @@
 #include <pthread.h>
 #include <string.h>
 #include "graphics.h"
+#include "graphics_widget.h"
 #include "link.h"
 
 #define BACKSPACE 1
@@ -25,22 +26,6 @@ void update_mouse_down(GUI* g,WIDGET* w);
 char process_keystroke(GUI* g, XKeyEvent* e);
 void update_textbox(char c,GUI* g, WIDGET* w);
 
-struct graphics_t{
-  Display* dsp;
-  Window mainWindow;
-  int blackColor;
-  int whiteColor;
-  int bgColor;
-  pthread_mutex_t lock;
-  pthread_t tid;
-  int run;
-  Atom wm_protocols;
-  Atom wm_delete_window;
-  LIST* widgets;
-  GC text;
-  GC draw;
-  XFontStruct* font;
-};
 
 void* event_loop(void* data)
 {
