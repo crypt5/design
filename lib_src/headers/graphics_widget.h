@@ -29,13 +29,14 @@ struct graphics_widget_t{
   int height;
   int width;
   char flags;
-  callback call;//Button Press callback
-  painter paint;//Function to paint widget
-  on_click click;//Function to paint when widget is clicked
-  on_select select;//Function to print widget when selected
-  free_widget ufree;//Function to free widget's memory
+  callback call;     //Button Press callback
+  painter paint;     //Function to paint widget
+  on_click click;    //Function to paint when widget is clicked
+  on_select select;  //Function to print widget when selected
+  free_widget ufree; //Function to free widget's memory
   char* string;
-  void* data;
+  void* data;        //callback data
+  void* widget_data; //Special widget data
 };
 
 struct textbox_data_t{
