@@ -20,7 +20,6 @@
 #define DELETE 8
 
 void destroy_gui(GUI* g);
-//void paint_widget(GUI* g,WIDGET* w);
 WIDGET* get_at_coords(GUI* g,int x, int y);
 void update_mouse_down(GUI* g,WIDGET* w);
 char process_keystroke(GUI* g, XKeyEvent* e);

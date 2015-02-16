@@ -22,14 +22,32 @@ void paint_label(GUI* g, WIDGET* w)
     XSetForeground(g->dsp,g->draw,g->bgColor);
     XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
   }
-  w->width=XTextWidth(g->font,w->string,strlen(w->string));
+  w->width=XTextWidth(g->font,w->string,strlen(w->string))+6;
   w->height=g->font->ascent*2;
-  XSetForeground(g->dsp,g->draw,g->bgColor);
-  XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
-  //TODO Text Color
-  //TODO Border and color
-  //TODO Enabled/disabled
-  XDrawString(g->dsp,g->mainWindow,g->text,w->x,w->y+w->height/2,(char*)w->string,strlen((char*)w->string));
+  if(w->enable==1){
+    if(data->background>=0)
+      XSetForeground(g->dsp,g->draw,data->background);
+    else
+      XSetForeground(g->dsp,g->draw,g->bgColor);
+    XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
+    if(data->text_color>0){
+      XSetForeground(g->dsp,g->text,data->text_color);
+      XDrawString(g->dsp,g->mainWindow,g->text,w->x+3,w->y+w->height/2+(w->height/4),(char*)w->string,strlen((char*)w->string));
+      XSetForeground(g->dsp,g->text,g->blackColor);
+    }
+    else{
+      XDrawString(g->dsp,g->mainWindow,g->text,w->x+3,w->y+w->height/2+(w->height/4),(char*)w->string,strlen((char*)w->string));
+    }
+    if(data->border_color>=0){
+      XSetForeground(g->dsp,g->draw,data->border_color);
+      XSetLineAttributes(g->dsp,g->draw,data->border_width,LineSolid,CapButt,JoinMiter);
+      XDrawRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
+      XSetLineAttributes(g->dsp,g->draw,0,LineSolid,CapButt,JoinMiter);
+    }
+  }
+  else{
+    //TODO Disabled Painting Code
+  }
 }
 
 WIDGET* create_label(char* message,int x, int y)
@@ -147,10 +165,20 @@ void set_label_enable(WIDGET* l, int enable)
     printf("Label is NULL!!!\n");
     exit(-1);
   }
-  if(enable==1||enable==0)
+  if(enable==1){
     l->enable=enable;
-  else
-    printf("Invalid Enable\n");
+    if(l->call!=NULL)
+      l->flags=l->flags|CLICKABLE;
+    if(l->select!=NULL)
+      l->flags=l->flags|SELECTABLE;
+  }
+  else if(enable==0){
+    l->enable=enable;
+    l->flags=NONE;
+  }
+  else{
+    printf("Invalid Enable Flag\nNo Action Taken\n");
+  }
 }
 
 int get_label_background(WIDGET* l)
@@ -213,4 +241,56 @@ void set_label_click_callback(WIDGET* l,void(*ucallback)(WIDGET* self,void* data
   }
   l->call=ucallback;
   l->data=data;
+  l->flags=l->flags|CLICKABLE;
+}
+
+void set_label_paint_click(WIDGET* l,void(*uclick)(GUI* g, WIDGET* l))
+{
+  if(l==NULL){
+    printf("Label is NULL!!!\n");
+    exit(-1);
+  }
+  l->click=uclick;
+  l->flags=l->flags|CLICKABLE;
+}
+
+void set_label_paint_select(WIDGET* l,void(*uselect)(GUI* g, WIDGET* l))
+{  
+  if(l==NULL){
+    printf("Label is NULL!!!\n");
+    exit(-1);
+  }
+  l->select=uselect;
+  l->flags=l->flags|SELECTABLE;
+}
+
+void remove_label_click_callback(WIDGET* l)
+{
+  if(l==NULL){
+    printf("Label is NULL!!!\n");
+    exit(-1);
+  }
+  l->call=NULL;
+  l->data=NULL;
+  l->flags=l->flags&(0xFF^CLICKABLE);
+}
+
+void remove_label_paint_click(WIDGET* l)
+{
+  if(l==NULL){
+    printf("Label is NULL!!!\n");
+    exit(-1);
+  }
+  l->click=NULL;
+  l->flags=l->flags&(0xFF^CLICKABLE);
+}
+
+void remove_label_paint_select(WIDGET* l)
+{
+  if(l==NULL){
+    printf("Label is NULL!!!\n");
+    exit(-1);
+  }
+  l->select=NULL;
+  l->flags=l->flags&(0xFF^SELECTABLE);
 }

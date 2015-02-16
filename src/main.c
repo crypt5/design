@@ -14,7 +14,10 @@ int main()
 
   g=init_gui();
 
-  testLab=create_label("Label",10,10);;
+  testLab=create_label("Label",10,10);
+  set_label_background(testLab,0x00000000);
+  set_label_text_color(testLab,0x00FFFFFF);
+  set_label_border(testLab,0x00FF0000, 2);
   
   create_main_window(g,"Testing Window");
   set_main_size(g,500,500);
