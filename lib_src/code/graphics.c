@@ -20,7 +20,7 @@
 #define DELETE 8
 
 void destroy_gui(GUI* g);
-void paint_widget(GUI* g,WIDGET* w);
+//void paint_widget(GUI* g,WIDGET* w);
 WIDGET* get_at_coords(GUI* g,int x, int y);
 void update_mouse_down(GUI* g,WIDGET* w);
 char process_keystroke(GUI* g, XKeyEvent* e);
@@ -35,6 +35,7 @@ void* event_loop(void* data)
   WIDGET* active=NULL;
   WIDGET* clicked=NULL;
   WIDGET* selected=NULL;
+  WIDGET* temp=NULL;
   char key;
 
   g=(GUI*)data;
@@ -61,35 +62,12 @@ void* event_loop(void* data)
 	  clicked=get_at_coords(g,e.xbutton.x, e.xbutton.y);
 	  if(clicked!=NULL){
 	    if(clicked!=selected&&selected!=NULL){
-	      paint_widget(g,selected);
+	      selected->paint(g,selected);
 	      selected=NULL;
 	    }
 	    if((clicked->flags&(CLICKABLE|SELECTABLE))>0){
-	      switch(clicked->type){
-	      case BUTTON:
 		active=clicked;
-		update_mouse_down(g,active);
-		break;
-	      case RADIO_BUTTON:
-		active=clicked;
-		if(*(int*)active->data==1)
-		  *(int*)active->data=0;
-		else
-		  *(int*)active->data=1;
-		update_mouse_down(g,active);
-		break;
-	      case CHECKBOX:
-		active=clicked;
-		if(*(int*)active->data==1)
-		  *(int*)active->data=0;
-		else
-		  *(int*)active->data=1;
-		update_mouse_down(g,active);
-		break;
-	      case TEXTBOX:
-		active=clicked;
-		break;
-	      }
+		active->click(g,active);
 	    }
 	    else{
 	      active=NULL;
@@ -98,7 +76,7 @@ void* event_loop(void* data)
 	  else{
 	    active=NULL;
 	    if(selected!=NULL)
-	      paint_widget(g,selected);
+	      selected->paint(g,selected);
 	    selected=NULL;
 	  }
 	}
@@ -109,50 +87,40 @@ void* event_loop(void* data)
 	  if(clicked!=NULL){
 	    if(clicked==active){
 	      if((clicked->flags&(CLICKABLE|SELECTABLE))>0){
-		switch(clicked->type){
-		case BUTTON:
-		  if(active->call!=NULL)
-		    active->call(active->data);
-		  paint_widget(g,active);
-		  break;
-		case RADIO_BUTTON:
-		  paint_widget(g,active);
-		  break;
-		case CHECKBOX:
-		  paint_widget(g,active);
-		  break;
-		case TEXTBOX:
-		  selected=active;
-		  update_mouse_down(g,active);
-		  break;
-		}
+		if(active->call!=NULL)
+		  active->call(active,active->data);
+		active->paint(g,active);
 	      }
 	    }
 	    else{
 	      if(active!=NULL){
-		paint_widget(g,active);
+		active->paint(g,active);
 	      }
 	      active=NULL;
 	    }
 	  }
 	  else{
 	    if(active!=NULL)
-	      paint_widget(g,active);
+	      active->paint(g,active);
 	    active=NULL;
 	  }
 	}
 	break;
       case KeyRelease:
 	if(selected!=NULL){
+	  /*
 	  key=process_keystroke(g,&e.xkey);
 	  update_textbox(key,g,selected);
+	  */
+	  //TODO Update Textbox
 	}
 	break;
       case Expose://Parts or whole window is visible again
       case MapNotify: 
 	//TODO Smart Repainting Code
 	for(i=0;i<list_length(g->widgets);i++){
-	  paint_widget(g,(WIDGET*)list_get_pos(g->widgets,i));
+	  temp=(WIDGET*)list_get_pos(g->widgets,i);
+	  temp->paint(g,temp);
 	}
 	break;
       case UnmapNotify:
@@ -170,6 +138,11 @@ void* event_loop(void* data)
   }
 
   return NULL;
+}
+
+void destroy_widget(void* w)
+{
+  free(w);
 }
 
 GUI* init_gui()
@@ -237,6 +210,7 @@ void create_main_window(GUI* g,char* title)
 
 void destroy_gui(GUI* g)
 {
+  WIDGET* w=NULL;
   int re;
 
   if(g==NULL){
@@ -256,6 +230,10 @@ void destroy_gui(GUI* g)
   re=pthread_mutex_destroy(&g->lock);
   if(re!=0)
     printf("Mutex Destroy Failed\n");
+  for(re=0;re<list_length(g->widgets);re++){
+    w=list_get_pos(g->widgets,re);
+    w->ufree(w);
+  }
   list_destroy(g->widgets);
   free(g);
   g=NULL;
@@ -272,6 +250,7 @@ void show_main(GUI* g)
 {
   XEvent e;
   int re,i;
+  WIDGET* w=NULL;
 
   if(g==NULL){
     printf("GUI Object is NULL, no wondow to show\n");
@@ -292,7 +271,8 @@ void show_main(GUI* g)
 
   
   for(i=0;i<list_length(g->widgets);i++){
-    paint_widget(g,(WIDGET*)list_get_pos(g->widgets,i));
+    w=(WIDGET*)list_get_pos(g->widgets,i);
+    w->paint(g,w);
   }
   
 }
@@ -352,11 +332,7 @@ void add_to_main(GUI* g,WIDGET* w)
   list_add(g->widgets,w);
 }
 
-void update_widget(GUI* g, WIDGET* w)
-{
-  paint_widget(g,w);
-}
-
+/*
 void paint_widget(GUI* g,WIDGET* w)
 {
   int width;
@@ -450,6 +426,8 @@ void paint_widget(GUI* g,WIDGET* w)
     break;
   }
 }
+*/
+
 
 WIDGET* get_at_coords(GUI* g,int x, int y)
 {
@@ -469,6 +447,8 @@ WIDGET* get_at_coords(GUI* g,int x, int y)
   return NULL;
 }
 
+
+/*
 void update_mouse_down(GUI* g,WIDGET* w)
 {
   int i;
@@ -506,7 +486,9 @@ void update_mouse_down(GUI* g,WIDGET* w)
     break;
   }
 }
+*/
 
+/*
 char process_keystroke(GUI* g, XKeyEvent* e)
 {
   char re=0;
@@ -586,13 +568,14 @@ char process_keystroke(GUI* g, XKeyEvent* e)
     case XK_Delete:
       re=DELETE;
       break;
-      /*default: //Upmapped Key we dont care about
-	printf("Key still Unbound\n");*/
+      default: //Upmapped Key we dont care about
+	printf("Key still Unbound\n");
     }
   }
   return re;
 }
-
+*/
+/*
 void update_textbox(char c,GUI* g, WIDGET* w)
 {
   struct textbox_data_t* data=w->data;
@@ -653,3 +636,4 @@ void update_textbox(char c,GUI* g, WIDGET* w)
   paint_widget(g,w);
   update_mouse_down(g,w);
 }
+*/
