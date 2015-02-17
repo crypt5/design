@@ -11,9 +11,9 @@
 #define TEXTBOX 7
 
 //Widget Action FLags
-#define NONE 0x00
-#define CLICKABLE 0x01
-#define SELECTABLE 0x02
+#define NONE 0 
+#define CLICKABLE 1
+#define SELECTABLE 2
 
 
 typedef struct graphics_widget_t WIDGET;

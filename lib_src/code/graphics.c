@@ -66,7 +66,8 @@ void* event_loop(void* data)
 	    }
 	    if((clicked->flags&(CLICKABLE|SELECTABLE))>0){
 		active=clicked;
-		active->click(g,active);
+		if(active->click!=NULL)
+		  active->click(g,active);
 	    }
 	    else{
 	      active=NULL;
