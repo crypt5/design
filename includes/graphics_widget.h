@@ -22,6 +22,7 @@ typedef void(*callback)(WIDGET* self,void* data);
 typedef void(*painter)(GUI* g, WIDGET* w);
 typedef void(*on_click)(GUI* g, WIDGET* w);
 typedef void(*on_select)(GUI* g, WIDGET* w);
+typedef void(*on_keypress)(WIDGET* w, char key);
 typedef void(*free_widget)(WIDGET* widget);
 struct graphics_widget_t{
   char type;
@@ -35,6 +36,7 @@ struct graphics_widget_t{
   painter paint;     //Function to paint widget
   on_click click;    //Function to paint when widget is clicked
   on_select select;  //Function to print widget when selected
+  on_keypress key_press; //Function to pass key press to
   free_widget ufree; //Function to free widget's memory
   char* string;
   void* data;        //callback data
@@ -42,5 +44,6 @@ struct graphics_widget_t{
 };
 
 #include "graphics_label.h"
+#include "graphics_button.h"
 
 #endif

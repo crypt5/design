@@ -108,11 +108,9 @@ void* event_loop(void* data)
 	break;
       case KeyRelease:
 	if(selected!=NULL){
-	  /*
 	  key=process_keystroke(g,&e.xkey);
-	  update_textbox(key,g,selected);
-	  */
-	  //TODO Update Textbox
+	  if(selected->key_press!=NULL)
+	    selected->key_press(selected,key);
 	}
 	break;
       case Expose://Parts or whole window is visible again
@@ -488,7 +486,7 @@ void update_mouse_down(GUI* g,WIDGET* w)
 }
 */
 
-/*
+
 char process_keystroke(GUI* g, XKeyEvent* e)
 {
   char re=0;
@@ -574,7 +572,7 @@ char process_keystroke(GUI* g, XKeyEvent* e)
   }
   return re;
 }
-*/
+
 /*
 void update_textbox(char c,GUI* g, WIDGET* w)
 {

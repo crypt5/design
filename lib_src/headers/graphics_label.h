@@ -21,7 +21,7 @@ int get_label_enable(WIDGET* l);
 
 void set_label_click_callback(WIDGET* l,void(*ucallback)(WIDGET* self,void* data),void* data);
 void set_label_paint_click(WIDGET* l,void(*uclick)(GUI* g, WIDGET* l));
-void set_label_paint_select(WIDGET* l,void(*uselect)(GUI* g, WIDGET* l));
+void set_label_paint_select(WIDGET* l,void(*uselect)(GUI* g, WIDGET* l),void(*ukey_press)(WIDGET* w, char key));
 
 void remove_label_click_callback(WIDGET* l);
 void remove_label_paint_click(WIDGET* l);

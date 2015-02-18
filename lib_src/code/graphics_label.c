@@ -107,6 +107,7 @@ WIDGET* create_label(char* message,int x, int y)
   w->paint=paint_label;
   w->click=NULL;
   w->select=NULL;
+  w->key_press=NULL;
   w->ufree=destroy_label;
   w->string=s;
   w->data=NULL;
@@ -320,7 +321,7 @@ void set_label_paint_click(WIDGET* l,void(*uclick)(GUI* g, WIDGET* l))
   l->flags=l->flags|CLICKABLE;
 }
 
-void set_label_paint_select(WIDGET* l,void(*uselect)(GUI* g, WIDGET* l))
+void set_label_paint_select(WIDGET* l,void(*uselect)(GUI* g, WIDGET* l),void(*ukey_press)(WIDGET* w,char key))
 {  
   if(l==NULL){
     printf("Label is NULL!!!\n");
@@ -331,6 +332,7 @@ void set_label_paint_select(WIDGET* l,void(*uselect)(GUI* g, WIDGET* l))
     exit(-3);
   }
   l->select=uselect;
+  l->key_press=ukey_press;
   l->flags=l->flags|SELECTABLE;
 }
 
@@ -374,5 +376,6 @@ void remove_label_paint_select(WIDGET* l)
     exit(-3);
   }
   l->select=NULL;
+  l->key_press=NULL;
   l->flags=l->flags&(0xFF^SELECTABLE);
 }
