@@ -1,50 +1,34 @@
-#include <stdio.h>
 #include <unistd.h>
-#include "graphics.h"
-
-void my_exit(WIDGET* self,void* data)
-{
-  shutdown_gui(data);
-}
+#include "logger.h"
+#include "config.h"
+#include "gui.h"
 
 int main()
 {
-  GUI* g=NULL;
-  WIDGET* testLab=NULL;
-  WIDGET* testBut=NULL;
-  WIDGET* testRadio=NULL;
-  WIDGET* testCheck=NULL;
-  WIDGET* testBorder=NULL;
-  WIDGET* titleBorder=NULL;
-  WIDGET* testText=NULL;
+  GUI* gui=NULL;
+  LOGGER* log=NULL;
+  CONFIG* con=NULL;
 
-  g=init_gui();
+  log=logger_init("logs/test.log");
+  logger_log(log,"Creating Config Reader");
+  con=config_init();
+  logger_log(log,"Config reader ready");
+  logger_log(log,"No config files to load");
+  logger_log(log,"Building GUI");
+  gui=build_gui();
+  logger_log(log,"GUI built");
+  logger_log(log,"Entering Main loop");
 
-  testLab=create_label("Hello World!",10,10);
-  testBut=create_button("This is a Button!",10,40);
-  //set_button_callback(testBut,my_exit,g);
-  testRadio=create_radio_button("Click me!",10,70);
-  testCheck=create_checkbox("Click Me!",10,100);
-  testBorder=create_simple_border(5,7,120,200);
-  titleBorder=create_titled_border("Titled Border",5,140,40,200);
-  testText=create_textbox(10,200,20);
-  
-  create_main_window(g,"Testing Window");
-  set_main_size(g,500,500);
-  add_to_main(g,testLab);
-  add_to_main(g,testBut);
-  add_to_main(g,testRadio);
-  add_to_main(g,testCheck);
-  add_to_main(g,testBorder);
-  add_to_main(g,titleBorder);
-  add_to_main(g,testText);
-
-  show_main(g);
-
-  while(gui_running(g)){
+  while(is_open(gui)){
     usleep(100);
+    //This is where data collection can take place
   }
 
-  destroy_gui(g);
-  return 0;
+  logger_log(log,"Exiting main Loop");
+  logger_log(log,"Shutting down GUI");
+  clean_up_gui(gui);
+  logger_log(log,"Cleaning up the config reader");
+  config_destroy(con);
+  logger_log(log,"Shutting down Logger");
+  logger_shutdown(log);
 }

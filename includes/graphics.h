@@ -3,6 +3,7 @@
 
 #include <X11/Xlib.h>
 #include "link.h"
+#include "queue.h"
 
 #define BACKSPACE 1
 #define TAB 2
@@ -26,6 +27,7 @@ struct graphics_t{
   Atom wm_protocols;
   Atom wm_delete_window;
   LIST* widgets;
+  QUEUE* updates;
   GC text;
   GC draw;
   XFontStruct* font;
@@ -45,6 +47,8 @@ void show_main(GUI* g);
 int gui_running(GUI* g);
 
 void add_to_main(GUI* g,WIDGET* w);
+
+void update_widget(GUI* g,WIDGET* w);
 
 void shutdown_gui(GUI* g);
 void destroy_gui(GUI* g);

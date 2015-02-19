@@ -18,7 +18,7 @@
 
 typedef struct graphics_widget_t WIDGET;
 #include "graphics.h"
-typedef void(*callback)(WIDGET* self,void* data);
+typedef void(*callback)(GUI* g,WIDGET* self,void* data);
 typedef void(*painter)(GUI* g, WIDGET* w);
 typedef void(*on_click)(GUI* g, WIDGET* w);
 typedef void(*on_select)(GUI* g, WIDGET* w);

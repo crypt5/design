@@ -19,7 +19,7 @@ void get_label_border(WIDGET* l,int* re_ARGB, int* re_thickness);
 int get_label_enable(WIDGET* l);
 
 
-void set_label_click_callback(WIDGET* l,void(*ucallback)(WIDGET* self,void* data),void* data);
+void set_label_click_callback(WIDGET* l,void(*ucallback)(GUI* g,WIDGET* self,void* data),void* data);
 void set_label_paint_click(WIDGET* l,void(*uclick)(GUI* g, WIDGET* l));
 void set_label_paint_select(WIDGET* l,void(*uselect)(GUI* g, WIDGET* l),void(*ukey_press)(GUI* g,WIDGET* w, char key));
 

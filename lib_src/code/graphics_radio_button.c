@@ -92,3 +92,62 @@ void destroy_radio_button(WIDGET* w)
   free(w->string);
   free(w->widget_data);
 }
+
+void set_radio_button_callback(WIDGET* w,void(*ucallback)(GUI* g,WIDGET* self, void* data),void* data)
+{
+  if(w==NULL){
+    printf("Radio Button is NULL!\n");
+    exit(-1);
+  }
+  if(w->type!=RADIO_BUTTON){
+    printf("Not a Radio Button!\n");
+    exit(-2);
+  }
+  w->call=ucallback;
+  w->data=data;
+}
+
+void remove_radio_button_callback(WIDGET* w)
+{
+  if(w==NULL){
+    printf("Radio Button is NULL!\n");
+    exit(-1);
+  }
+  if(w->type!=RADIO_BUTTON){
+    printf("Not a Radio Button!\n");
+    exit(-2);
+  }
+  w->call=NULL;
+  w->data=NULL;
+}
+
+void set_radio_button_check(WIDGET* w,int check)
+{
+  if(w==NULL){
+    printf("Radio Button is NULL!\n");
+    exit(-1);
+  }
+  if(w->type!=RADIO_BUTTON){
+    printf("Not a Radio Button!\n");
+    exit(-2);
+  }
+  if(check==1)
+    *(int*)w->widget_data=1;
+  else if (check==0)
+    *(int*)w->widget_data=0;
+  else
+    printf("Invalid Value, Checkbox not changed\n");
+}
+
+int get_radio_button_check(WIDGET* w)
+{
+  if(w==NULL){
+    printf("Radio Button is NULL!\n");
+    exit(-1);
+  }
+  if(w->type!=RADIO_BUTTON){
+    printf("Not a Radio Button!\n");
+    exit(-2);
+  }
+  return *(int*)w->widget_data;
+}

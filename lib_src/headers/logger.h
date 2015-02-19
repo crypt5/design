@@ -3,8 +3,8 @@
 
 typedef struct logger_t LOGGER;
 
-extern LOGGER *logger_init(char* filename);
-extern void logger_log(LOGGER *log,char* message);
-extern void logger_shutdown(LOGGER *log);
+LOGGER *logger_init(char* filename);
+void logger_log(LOGGER *log,char* message);
+void logger_shutdown(LOGGER *log);
 
 #endif

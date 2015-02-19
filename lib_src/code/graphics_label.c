@@ -292,7 +292,7 @@ int get_label_enable(WIDGET* l)
   return l->enable;
 }
 
-void set_label_click_callback(WIDGET* l,void(*ucallback)(WIDGET* self,void* data),void* data)
+void set_label_click_callback(WIDGET* l,void(*ucallback)(GUI* g,WIDGET* self,void* data),void* data)
 {
   if(l==NULL){
     printf("Label is NULL!!!\n");

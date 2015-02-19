@@ -9,11 +9,15 @@
 #include "graphics.h"
 #include "graphics_widget.h"
 #include "link.h"
+#include "queue.h"
 
 void destroy_gui(GUI* g);
 WIDGET* get_at_coords(GUI* g,int x, int y);
 char process_keystroke(GUI* g, XKeyEvent* e);
 
+void fake_free(void* data)
+{
+}
 
 void* event_loop(void* data)
 {
@@ -77,7 +81,7 @@ void* event_loop(void* data)
 	    if(clicked==active){
 	      if((clicked->flags&CLICKABLE)>0){
 		if(active->call!=NULL)
-		  active->call(active,active->data);
+		  active->call(g,active,active->data);
 		active->paint(g,active);
 	      }
 	      if((clicked->flags&SELECTABLE)>0){
@@ -122,6 +126,14 @@ void* event_loop(void* data)
 	printf("Unhandled Event, Code: %d\n",e.type);
 	break;
       }
+    }
+    else{
+      pthread_mutex_lock(&g->lock);
+      if(is_queue_empty(g->updates)!=1){
+	temp=dequeue(g->updates);
+	temp->paint(g,temp);
+      }
+      pthread_mutex_unlock(&g->lock);
     }
     pthread_mutex_lock(&g->lock);
     keep_running=g->run;
@@ -168,6 +180,7 @@ GUI* init_gui()
   g->wm_delete_window = XInternAtom(g->dsp, "WM_DELETE_WINDOW", False);
 
   g->widgets=list_init(destroy_widget,NULL);
+  g->updates=init_queue(fake_free);
 
   g->font=XLoadQueryFont(g->dsp,"*9x15*");
 
@@ -428,4 +441,15 @@ char process_keystroke(GUI* g, XKeyEvent* e)
     }
   }
   return re;
+}
+
+void update_widget(GUI* g,WIDGET* w)
+{
+  if(g==NULL){
+    printf("GUI object is NULL!\n");
+    exit(-1);
+  }
+  pthread_mutex_lock(&g->lock);
+  enqueue(g->updates,w);
+  pthread_mutex_unlock(&g->lock);
 }

@@ -84,7 +84,7 @@ void destroy_button(WIDGET* w)
   free(w->string);
 }
 
-void set_button_callback(WIDGET* w,void(*ucallback)(WIDGET* self, void* data),void* data)
+void set_button_callback(WIDGET* w,void(*ucallback)(GUI* g,WIDGET* self, void* data),void* data)
 {
   if(w==NULL){
     printf("Widget is NULL\n");

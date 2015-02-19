@@ -15,7 +15,7 @@ char* get_button_text(WIDGET* w);//TODO
 int get_button_enable(WIDGET* w);//TODO
 
 
-void set_button_callback(WIDGET* w,void(*ucallback)(WIDGET* self, void* data),void* data);
+void set_button_callback(WIDGET* w,void(*ucallback)(GUI* g,WIDGET* self, void* data),void* data);
 void set_button_paint_select(WIDGET* w,void(*uselect)(GUI* g, WIDGET* w),void(*ukey_press)(GUI* g,WIDGET* w,char key));
 
 void remove_button_click_callback(WIDGET* w);
