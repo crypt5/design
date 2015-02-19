@@ -4,6 +4,15 @@
 #include <X11/Xlib.h>
 #include "link.h"
 
+#define BACKSPACE 1
+#define TAB 2
+#define ENTER 3
+#define LEFT 4
+#define RIGHT 5
+#define UP 6
+#define DOWN 7
+#define DELETE 8
+
 typedef struct graphics_t GUI;
 struct graphics_t{
   Display* dsp;

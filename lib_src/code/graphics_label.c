@@ -321,7 +321,7 @@ void set_label_paint_click(WIDGET* l,void(*uclick)(GUI* g, WIDGET* l))
   l->flags=l->flags|CLICKABLE;
 }
 
-void set_label_paint_select(WIDGET* l,void(*uselect)(GUI* g, WIDGET* l),void(*ukey_press)(WIDGET* w,char key))
+void set_label_paint_select(WIDGET* l,void(*uselect)(GUI* g, WIDGET* l),void(*ukey_press)(GUI* g,WIDGET* w,char key))
 {  
   if(l==NULL){
     printf("Label is NULL!!!\n");

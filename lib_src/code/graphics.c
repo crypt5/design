@@ -10,20 +10,9 @@
 #include "graphics_widget.h"
 #include "link.h"
 
-#define BACKSPACE 1
-#define TAB 2
-#define ENTER 3
-#define LEFT 4
-#define RIGHT 5
-#define UP 6
-#define DOWN 7
-#define DELETE 8
-
 void destroy_gui(GUI* g);
 WIDGET* get_at_coords(GUI* g,int x, int y);
-void update_mouse_down(GUI* g,WIDGET* w);
 char process_keystroke(GUI* g, XKeyEvent* e);
-void update_textbox(char c,GUI* g, WIDGET* w);
 
 
 void* event_loop(void* data)
@@ -86,10 +75,14 @@ void* event_loop(void* data)
 	  clicked=get_at_coords(g,e.xbutton.x, e.xbutton.y);
 	  if(clicked!=NULL){
 	    if(clicked==active){
-	      if((clicked->flags&(CLICKABLE|SELECTABLE))>0){
+	      if((clicked->flags&CLICKABLE)>0){
 		if(active->call!=NULL)
 		  active->call(active,active->data);
 		active->paint(g,active);
+	      }
+	      if((clicked->flags&SELECTABLE)>0){
+		selected=clicked;
+		selected->click(g,selected);
 	      }
 	    }
 	    else{
@@ -110,7 +103,7 @@ void* event_loop(void* data)
 	if(selected!=NULL){
 	  key=process_keystroke(g,&e.xkey);
 	  if(selected->key_press!=NULL)
-	    selected->key_press(selected,key);
+	    selected->key_press(g,selected,key);
 	}
 	break;
       case Expose://Parts or whole window is visible again
@@ -330,101 +323,6 @@ void add_to_main(GUI* g,WIDGET* w)
   list_add(g->widgets,w);
 }
 
-/*
-void paint_widget(GUI* g,WIDGET* w)
-{
-  int width;
-  struct textbox_data_t* data=NULL;
-  switch(w->type){
-  case LABEL:
-    w->width=XTextWidth(g->font,w->string,strlen(w->string));
-    w->height=g->font->ascent;
-    XSetForeground(g->dsp,g->draw,g->bgColor);
-    XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
-    XDrawString(g->dsp,g->mainWindow,g->text,w->x,w->y+w->height,(char*)w->string,strlen((char*)w->string));
-    break;
-  case BUTTON:
-    w->width=XTextWidth(g->font,w->string,strlen(w->string))+20;
-    w->height=g->font->ascent;
-    XSetForeground(g->dsp,g->draw,0x00AAAAAA);
-    XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height*2);
-    XDrawString(g->dsp,g->mainWindow,g->text,w->x+10,w->y+(w->height+w->height/2),(char*)w->string,strlen((char*)w->string));
-    w->height=w->height*2;
-    break;
-  case RADIO_BUTTON:
-    w->height=g->font->ascent*2;
-    w->width=XTextWidth(g->font,w->string,strlen(w->string))+30;
-    XSetForeground(g->dsp,g->draw,g->whiteColor);
-    XFillArc(g->dsp,g->mainWindow,g->draw,w->x+3,w->y+(g->font->ascent/6),w->height-5,w->height-5,0,360*64);
-    XSetForeground(g->dsp,g->draw,g->blackColor);
-    XDrawArc(g->dsp,g->mainWindow,g->draw,w->x+3,w->y+(g->font->ascent/6),w->height-5,w->height-5,0,360*64);
-    XDrawString(g->dsp,g->mainWindow,g->text,w->x+28,w->y+w->height-(g->font->ascent/2),(char*)w->string,strlen((char*)w->string));
-
-    if(*(int*)w->data==1){
-      XSetForeground(g->dsp,g->draw,0x000000AA);
-      XFillArc(g->dsp,g->mainWindow,g->draw,w->x+4+(w->height-5)/4,w->y+(g->font->ascent/2),10,10,0,360*64);
-    }
-    break;
-  case CHECKBOX:
-    w->height=g->font->ascent*2;
-    w->width=XTextWidth(g->font,w->string,strlen(w->string))+30;
-    XSetForeground(g->dsp,g->draw,g->whiteColor);
-    XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x+5,w->y+(w->height/5),15,15);
-    XSetForeground(g->dsp,g->draw,g->blackColor);
-    XDrawRectangle(g->dsp,g->mainWindow,g->draw,w->x+5,w->y+(w->height/5),15,15);
-    XDrawString(g->dsp,g->mainWindow,g->text,w->x+28,w->y+w->height-(g->font->ascent/2),(char*)w->string,strlen((char*)w->string));
-
-    if(*(int*)w->data==1){
-      XSetForeground(g->dsp,g->draw,0x0000AA00);
-      //Short Leg
-      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+7,w->y+9,w->x+12,w->y+14);
-      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+7,w->y+10,w->x+12,w->y+15);
-      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+7,w->y+11,w->x+12,w->y+16);
-      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+7,w->y+12,w->x+12,w->y+17);
-      //Long Leg
-      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+12,w->y+14,w->x+17,w->y+5);
-      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+12,w->y+15,w->x+17,w->y+6);
-      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+12,w->y+16,w->x+17,w->y+7);
-      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+12,w->y+17,w->x+17,w->y+8);
-    }
-    break;
-  case BORDER:
-    XSetForeground(g->dsp,g->draw,g->blackColor);
-    XSetLineAttributes(g->dsp,g->draw,*(int*)w->data,LineSolid,CapButt,JoinMiter);
-    XDrawRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
-    XSetLineAttributes(g->dsp,g->draw,0,LineSolid,CapButt,JoinMiter);
-    break;
-  case TITLE_BORDER:
-    XSetForeground(g->dsp,g->draw,g->blackColor);
-    width=XTextWidth(g->font,w->string,strlen(w->string))+2;
-    XSetLineAttributes(g->dsp,g->draw,*(int*)w->data,LineSolid,CapButt,JoinMiter);
-    XDrawRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
-    XSetLineAttributes(g->dsp,g->draw,0,LineSolid,CapButt,JoinMiter);
-    XSetForeground(g->dsp,g->draw,g->bgColor);
-    XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x+5,w->y-(*(int*)w->data/2),width,*(int*)w->data);
-    XDrawString(g->dsp,g->mainWindow,g->text,w->x+6,w->y+(g->font->ascent/2),(char*)w->string,strlen((char*)w->string));
-    break;
-  case TEXTBOX:
-    if(w->width==0){
-      data=w->data;
-      for(width=0;width<data->max_length;width++){
-	w->string[width]=' ';
-      }
-      w->width=XTextWidth(g->font,w->string,strlen(w->string))+8;
-      w->height=g->font->ascent*2;
-      for(width=0;width<data->max_length;width++){
-	w->string[width]='\0';
-      }
-    }
-    XSetForeground(g->dsp,g->draw,g->whiteColor);
-    XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
-    XSetForeground(g->dsp,g->draw,g->blackColor);
-    XDrawRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
-    XDrawString(g->dsp,g->mainWindow,g->text,w->x+4,w->y+w->height/2+w->height/4,(char*)w->string,strlen((char*)w->string));
-    break;
-  }
-}
-*/
 
 
 WIDGET* get_at_coords(GUI* g,int x, int y)
@@ -444,48 +342,6 @@ WIDGET* get_at_coords(GUI* g,int x, int y)
   }
   return NULL;
 }
-
-
-/*
-void update_mouse_down(GUI* g,WIDGET* w)
-{
-  int i;
-  struct textbox_data_t* data=NULL;
-  switch(w->type){
-  case BUTTON:
-    XSetForeground(g->dsp,g->draw,0);
-    XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
-    break;
-  case RADIO_BUTTON:
-    if(*(int*)w->data==1){
-      XSetForeground(g->dsp,g->draw,0x000000AA);
-      XFillArc(g->dsp,g->mainWindow,g->draw,w->x+4+(w->height-5)/4,w->y+(g->font->ascent/2),10,10,0,360*64);
-    }
-    break;
-  case CHECKBOX:
-    if(*(int*)w->data==1){
-      XSetForeground(g->dsp,g->draw,0x0000AA00);
-      //Short Leg
-      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+7,w->y+9,w->x+12,w->y+14);
-      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+7,w->y+10,w->x+12,w->y+15);
-      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+7,w->y+11,w->x+12,w->y+16);
-      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+7,w->y+12,w->x+12,w->y+17);
-      //Long Leg
-      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+12,w->y+14,w->x+17,w->y+5);
-      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+12,w->y+15,w->x+17,w->y+6);
-      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+12,w->y+16,w->x+17,w->y+7);
-      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+12,w->y+17,w->x+17,w->y+8);
-    }
-    break;
-  case TEXTBOX:
-    data=w->data;
-    i=XTextWidth(g->font,"A",1);
-    XDrawString(g->dsp,g->mainWindow,g->text,w->x+(i*data->current_pos),w->y+w->height/2+w->height/4,"|",1);
-    break;
-  }
-}
-*/
-
 
 char process_keystroke(GUI* g, XKeyEvent* e)
 {
@@ -567,71 +423,9 @@ char process_keystroke(GUI* g, XKeyEvent* e)
       re=DELETE;
       break;
       default: //Upmapped Key we dont care about
-	printf("Key still Unbound\n");
+	//printf("Key still Unbound\n");
+	;
     }
   }
   return re;
 }
-
-/*
-void update_textbox(char c,GUI* g, WIDGET* w)
-{
-  struct textbox_data_t* data=w->data;
-  int i;
-  if(c>=' '&&strlen(w->string)<data->max_length){
-    if(w->string[data->current_pos]=='\0'){
-      w->string[data->current_pos]=c;
-    }
-    else{
-      for(i=data->max_length;i>data->current_pos;i--)
-	w->string[i]=w->string[i-1];
-      w->string[data->current_pos]=c;
-    }
-    data->current_pos++;
-  }
-  else if(c<' '){
-    switch(c){
-    case 0:
-      //No Operation return from key parsing function
-      break;
-    case BACKSPACE:
-      if(data->current_pos>0){
-	if(w->string[data->current_pos]=='\0'){
-	  data->current_pos--;
-	  w->string[data->current_pos]='\0';
-	}
-	else{
-	  data->current_pos--;
-	  for(i=data->current_pos;i<data->max_length;i++)
-	    w->string[i]=w->string[i+1];
-	}
-      }
-      break;
-    case DELETE:
-      if(data->current_pos<data->max_length&&w->string[data->current_pos]!='\0'){
-	for(i=data->current_pos;i<data->max_length;i++)
-	  w->string[i]=w->string[i+1];
-      }
-      break;
-    case LEFT:
-      if(data->current_pos>0)
-	data->current_pos--;
-      break;
-    case RIGHT:
-      if(data->current_pos<data->max_length&&w->string[data->current_pos]!='\0')
-	data->current_pos++;
-      break;
-    case ENTER:
-    case UP:
-    case DOWN:
-    case TAB:
-      //We dont care in a textbox
-      break;
-    default:
-      printf("Unknown Control Operator: %d\n",c);
-    }
-  }
-  paint_widget(g,w);
-  update_mouse_down(g,w);
-}
-*/

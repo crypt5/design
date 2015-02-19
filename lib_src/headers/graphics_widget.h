@@ -22,7 +22,7 @@ typedef void(*callback)(WIDGET* self,void* data);
 typedef void(*painter)(GUI* g, WIDGET* w);
 typedef void(*on_click)(GUI* g, WIDGET* w);
 typedef void(*on_select)(GUI* g, WIDGET* w);
-typedef void(*on_keypress)(WIDGET* w, char key);
+typedef void(*on_keypress)(GUI* g,WIDGET* w, char key);
 typedef void(*free_widget)(WIDGET* widget);
 struct graphics_widget_t{
   char type;
@@ -49,5 +49,6 @@ struct graphics_widget_t{
 #include "graphics_checkbox.h"
 #include "graphics_border.h"
 #include "graphics_titled_border.h"
+#include "graphics_textbox.h"
 
 #endif

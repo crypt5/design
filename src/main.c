@@ -16,6 +16,7 @@ int main()
   WIDGET* testCheck=NULL;
   WIDGET* testBorder=NULL;
   WIDGET* titleBorder=NULL;
+  WIDGET* testText=NULL;
 
   g=init_gui();
 
@@ -26,6 +27,7 @@ int main()
   testCheck=create_checkbox("Click Me!",10,100);
   testBorder=create_simple_border(5,7,120,200);
   titleBorder=create_titled_border("Titled Border",5,140,40,200);
+  testText=create_textbox(10,200,20);
   
   create_main_window(g,"Testing Window");
   set_main_size(g,500,500);
@@ -35,6 +37,7 @@ int main()
   add_to_main(g,testCheck);
   add_to_main(g,testBorder);
   add_to_main(g,titleBorder);
+  add_to_main(g,testText);
 
   show_main(g);
 

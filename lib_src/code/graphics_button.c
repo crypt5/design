@@ -99,7 +99,7 @@ void set_button_callback(WIDGET* w,void(*ucallback)(WIDGET* self, void* data),vo
 
 }
 
-void set_button_paint_select(WIDGET* w,void(*uselect)(GUI* g, WIDGET* w),void(*ukey_press)(WIDGET* w,char key))
+void set_button_paint_select(WIDGET* w,void(*uselect)(GUI* g, WIDGET* w),void(*ukey_press)(GUI* g,WIDGET* w,char key))
 {
   if(w==NULL){
     printf("Widget is NULL\n");
