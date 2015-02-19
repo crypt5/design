@@ -45,5 +45,9 @@ struct graphics_widget_t{
 
 #include "graphics_label.h"
 #include "graphics_button.h"
+#include "graphics_radio_button.h"
+#include "graphics_checkbox.h"
+#include "graphics_border.h"
+#include "graphics_titled_border.h"
 
 #endif
