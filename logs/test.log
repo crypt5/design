@@ -1,10 +1,10 @@
-[Thu Feb 19 01:57:20 2015] Creating Config Reader
-[Thu Feb 19 01:57:20 2015] Config reader ready
-[Thu Feb 19 01:57:20 2015] No config files to load
-[Thu Feb 19 01:57:20 2015] Building GUI
-[Thu Feb 19 01:57:20 2015] GUI built
-[Thu Feb 19 01:57:20 2015] Entering Main loop
-[Thu Feb 19 02:04:14 2015] Exiting main Loop
-[Thu Feb 19 02:04:14 2015] Shutting down GUI
-[Thu Feb 19 02:04:14 2015] Cleaning up the config reader
-[Thu Feb 19 02:04:14 2015] Shutting down Logger
+[Thu Feb 19 13:57:35 2015] Creating Config Reader
+[Thu Feb 19 13:57:35 2015] Config reader ready
+[Thu Feb 19 13:57:35 2015] No config files to load
+[Thu Feb 19 13:57:35 2015] Building GUI
+[Thu Feb 19 13:57:36 2015] GUI built
+[Thu Feb 19 13:57:36 2015] Entering Main loop
+[Thu Feb 19 13:57:38 2015] Exiting main Loop
+[Thu Feb 19 13:57:38 2015] Shutting down GUI
+[Thu Feb 19 13:57:38 2015] Cleaning up the config reader
+[Thu Feb 19 13:57:38 2015] Shutting down Logger

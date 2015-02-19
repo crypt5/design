@@ -239,6 +239,7 @@ void destroy_gui(GUI* g)
     w->ufree(w);
   }
   list_destroy(g->widgets);
+  destroy_queue(g->updates);
   free(g);
   g=NULL;
 }

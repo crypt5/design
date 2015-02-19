@@ -125,6 +125,5 @@ void destroy_queue(QUEUE* q)
   while(is_queue_empty(q)==0){
     q->the_free(dequeue(q));
   }
-
   free(q);
 }
