@@ -11,12 +11,14 @@ void set_label_text_color(WIDGET* l,int ARGB);
 void set_label_text(WIDGET* l,char* message);
 void set_label_border(WIDGET* l, int ARGB, int thickness);
 void set_label_enable(WIDGET* l, int enable);
+void set_label_visible(WIDGET* l,int visible);//TODO
 
 int get_label_background(WIDGET* l);
 int get_label_text_color(WIDGET* l);
 char* get_label_text(WIDGET* l);
 void get_label_border(WIDGET* l,int* re_ARGB, int* re_thickness);
 int get_label_enable(WIDGET* l);
+int get_label_visible(WIDGET* l);//TODO
 
 
 void set_label_click_callback(WIDGET* l,void(*ucallback)(GUI* g,WIDGET* self,void* data),void* data);

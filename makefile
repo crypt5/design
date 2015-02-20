@@ -5,7 +5,10 @@ RPATH=-Wl,-rpath,libs
 LIBS=-lpthread -lgraphics -llogger -lconfig
 XFLAGS=`pkg-config --cflags --libs x11`
 
-all: main
+all: test
+
+test: libs src/test.c
+	$(CC) $(CFLAGS) $(LINKCOM) $(RPATH) $(XFLAGS) src/test.c -o main $(LIBS)
 
 main: libs helpers src/main.c
 	$(CC) $(CFLAGS) $(LINKCOM) $(RPATH) $(XFLAGS) src/main.c gui.o -o main $(LIBS)

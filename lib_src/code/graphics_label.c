@@ -39,8 +39,18 @@ int to_gray(int color)
 void paint_label(GUI* g, WIDGET* w)
 {
   struct label_data_t* data=NULL;
+
+  if(w->visible!=1){
+    if(w->height!=0){
+      XSetForeground(g->dsp,g->draw,g->bgColor);
+      XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
+    }
+    w->width=XTextWidth(g->font,w->string,strlen(w->string))+6;
+    w->height=g->font->ascent*2;
+    return;
+  }
+
   data=w->widget_data;
-  to_gray(0xFF000000);
   if(w->height!=0){
     XSetForeground(g->dsp,g->draw,g->bgColor);
     XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
@@ -99,6 +109,7 @@ WIDGET* create_label(char* message,int x, int y)
   w->type=LABEL;
   w->flags=NONE;
   w->enable=1;
+  w->visible=1;
   w->x=x;
   w->y=y;
   w->width=0;
@@ -220,6 +231,27 @@ void set_label_enable(WIDGET* l, int enable)
   }
 }
 
+void set_label_visible(WIDGET* l, int visible)
+{
+  if(l==NULL){
+    printf("Label is NULL!!!\n");
+    exit(-1);
+  }
+  if(l->type!=LABEL){
+    printf("NOT A LABEL!!!\n");
+    exit(-3);
+  }
+  if(visible==1){
+    l->visible=visible;
+  }
+  else if(visible==0){
+    l->visible=visible;
+  }
+  else{
+    printf("Invalid visible Flag\nNo Action Taken\n");
+  }
+}
+
 int get_label_background(WIDGET* l)
 {
   struct label_data_t* data=NULL;
@@ -290,6 +322,19 @@ int get_label_enable(WIDGET* l)
     exit(-3);
   }
   return l->enable;
+}
+
+int get_label_visible(WIDGET* l)
+{
+  if(l==NULL){
+    printf("Label is NULL!!!\n");
+    exit(-1);
+  }
+  if(l->type!=LABEL){
+    printf("NOT A LABEL!!!\n");
+    exit(-3);
+  }
+  return l->visible;
 }
 
 void set_label_click_callback(WIDGET* l,void(*ucallback)(GUI* g,WIDGET* self,void* data),void* data)

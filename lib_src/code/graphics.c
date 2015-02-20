@@ -239,6 +239,7 @@ void destroy_gui(GUI* g)
     w->ufree(w);
   }
   list_destroy(g->widgets);
+  destroy_queue(g->updates);
   free(g);
   g=NULL;
 }
@@ -345,7 +346,7 @@ WIDGET* get_at_coords(GUI* g,int x, int y)
 
   for(i=0;i<list_length(g->widgets);i++){
     temp=list_get_pos(g->widgets,i);
-    if(temp->type!=BORDER&&temp->type!=TITLE_BORDER){
+    if(temp->flags!=NONE&&temp->visible==1){
       if(x>temp->x&&x<temp->x+temp->width){
 	if(y>temp->y&&y<temp->y+temp->height){
 	  return temp;
