@@ -3,3 +3,5 @@
 main
 *.c#
 *.o
+*.log
+*.cfg
