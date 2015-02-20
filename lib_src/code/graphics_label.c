@@ -99,6 +99,7 @@ WIDGET* create_label(char* message,int x, int y)
   w->type=LABEL;
   w->flags=NONE;
   w->enable=1;
+  w->visible=1;
   w->x=x;
   w->y=y;
   w->width=0;

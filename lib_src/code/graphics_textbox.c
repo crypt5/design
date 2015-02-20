@@ -133,6 +133,7 @@ WIDGET* create_textbox(int x,int y,int max_length)
   w->type=TEXTBOX;
   w->flags=CLICKABLE|SELECTABLE;
   w->enable=1;
+  w->visible=1;
   w->x=x;
   w->y=y;
   w->height=0;

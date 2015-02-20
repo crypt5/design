@@ -45,6 +45,7 @@ WIDGET* create_titled_border(char* text,int x,int y,int height,int width)
   w->type=TITLE_BORDER;
   w->flags=NONE;
   w->enable=1;
+  w->visible=1;
   w->x=x;
   w->y=y;
   w->height=height;

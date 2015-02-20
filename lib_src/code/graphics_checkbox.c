@@ -80,6 +80,7 @@ WIDGET* create_checkbox(char* text,int x,int y)
   w->type=CHECKBOX;
   w->flags=CLICKABLE;
   w->enable=1;
+  w->visible=1;
   w->x=x;
   w->y=y;
   w->height=0;

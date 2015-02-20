@@ -62,6 +62,7 @@ WIDGET* create_radio_button(char* text,int x,int y)
   w->type=RADIO_BUTTON;
   w->flags=CLICKABLE;
   w->enable=1;
+  w->visible=1;
   w->x=x;
   w->y=y;
   w->height=0;

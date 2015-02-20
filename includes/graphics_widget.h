@@ -28,6 +28,7 @@ struct graphics_widget_t{
   char type;
   char flags;
   char enable;
+  char visible;
   int x;
   int y;
   int height;
