@@ -15,6 +15,35 @@ void destroy_gui(GUI* g);
 WIDGET* get_at_coords(GUI* g,int x, int y);
 char process_keystroke(GUI* g, XKeyEvent* e);
 
+int to_gray(int color)
+{
+  int alpha,red,green,blue,avg,re;
+  if((color&0x00FFFFFF)==0)
+    return 0x00808080;
+  if((color&0x00FFFFFF)==0x00FFFFFF)
+    return 0x00AAAAAA;
+  alpha=(color&0xFF000000)>>24;
+  red=(color&0x00FF0000)>>16;
+  green=(color&0x0000FF00)>>8;
+  blue=color&0x000000FF;
+
+  avg=(red+green+blue)/3;
+
+  if(avg==red){
+    red=avg+0.1*red;
+    green=avg+0.1*green;
+    blue=avg+0.1*blue;
+  }
+  else{
+    red=avg+0.55*red;
+    green=avg+0.45*green;
+    blue=avg+0.15*blue;
+  }
+
+  re=(alpha<<24)|(red<<16)|(green<<8)|(blue);
+  return re;
+}
+
 void fake_free(void* data)
 {
 }
@@ -346,7 +375,7 @@ WIDGET* get_at_coords(GUI* g,int x, int y)
 
   for(i=0;i<list_length(g->widgets);i++){
     temp=list_get_pos(g->widgets,i);
-    if(temp->flags!=NONE&&temp->visible==1){
+    if(temp->flags!=NONE&&temp->visible==1&&temp->enable==1){
       if(x>temp->x&&x<temp->x+temp->width){
 	if(y>temp->y&&y<temp->y+temp->height){
 	  return temp;

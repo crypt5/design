@@ -14,28 +14,6 @@ struct label_data_t{
   int background;
 };
 
-int to_gray(int color)
-{
-  int alpha,red,green,blue,avg,re;
-  if((color&0x00FFFFFF)==0)
-    return 0x00808080;
-  if((color&0x00FFFFFF)==0x00FFFFFF)
-    return 0x00AAAAAA;
-  alpha=(color&0xFF000000)>>24;
-  red=(color&0x00FF0000)>>16;
-  green=(color&0x0000FF00)>>8;
-  blue=color&0x000000FF;
-
-  avg=(red+green+blue)/3;
-
-  red=avg+0.55*red;
-  green=avg+0.45*green;
-  blue=avg+0.15*blue;
-
-  re=(alpha<<24)|(red<<16)|(green<<8)|(blue);
-  return re;
-}
-
 void paint_label(GUI* g, WIDGET* w)
 {
   struct label_data_t* data=NULL;

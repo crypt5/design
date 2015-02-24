@@ -6,26 +6,49 @@
 #include "graphics_widget.h"
 #include "graphics_button.h"
 
+
 void paint_button(GUI* g, WIDGET* w)
 {
   if(w->width!=0){
     XSetForeground(g->dsp,g->draw,g->bgColor);
     XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
+    if(w->visible==0)
+      return;
   }
   w->width=XTextWidth(g->font,w->string,strlen(w->string))+20;
   w->height=g->font->ascent;
-  XSetForeground(g->dsp,g->draw,0x00AAAAAA);
+  XSetForeground(g->dsp,g->draw,w->enable==1 ? 0x00AAAAAA : 0x00CCCCCC);
   XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height*2);
-  //TODO Text Color
-  //TODO Enable/Disable
-  XDrawString(g->dsp,g->mainWindow,g->text,w->x+10,w->y+(w->height+w->height/2),w->string,strlen(w->string));
+  if(*(int*)w->widget_data>0){
+    XSetForeground(g->dsp,g->text,w->enable==1 ? *(int*)w->widget_data : to_gray(*(int*)w->widget_data));
+    XDrawString(g->dsp,g->mainWindow,g->text,w->x+10,w->y+(w->height+w->height/2),w->string,strlen(w->string));
+    XSetForeground(g->dsp,g->text,g->blackColor);
+  }
+  else{
+    if(w->enable==0){
+      XSetForeground(g->dsp,g->text,0x00EEEEEE);
+      XDrawString(g->dsp,g->mainWindow,g->text,w->x+10,w->y+(w->height+w->height/2),w->string,strlen(w->string));
+      XSetForeground(g->dsp,g->text,g->blackColor);
+    }
+    else {
+      XDrawString(g->dsp,g->mainWindow,g->text,w->x+10,w->y+(w->height+w->height/2),w->string,strlen(w->string));
+    }
+  }
   w->height=w->height*2;
 }
 
 void paint_click(GUI* g, WIDGET* w)
 {
-  XSetForeground(g->dsp,g->draw,0);
+  XSetForeground(g->dsp,g->draw,0x00808080);
   XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
+  if(*(int*)w->widget_data<0){
+    XDrawString(g->dsp,g->mainWindow,g->text,w->x+10,w->y+(w->height+w->height/2),w->string,strlen(w->string));
+  }
+  else {
+    XSetForeground(g->dsp,g->text,*(int*)w->widget_data);
+    XDrawString(g->dsp,g->mainWindow,g->text,w->x+10,w->y+(w->height/2+w->height/4),w->string,strlen(w->string));
+    XSetForeground(g->dsp,g->text,g->blackColor);
+  }
 }
 
 WIDGET* create_button(char* text, int x, int y)
@@ -142,4 +165,122 @@ void remove_button_paint_select(WIDGET* w)
   w->select=NULL;
   w->key_press=NULL;
   w->flags=w->flags&(0xFF^SELECTABLE);
+}
+
+void set_button_text_color(WIDGET* w,int ARGB)
+{
+ if(w==NULL){
+    printf("Widget is NULL\n");
+    exit(-2);
+  }
+  if(w->type!=BUTTON){
+    printf("Widget not a button!\n");
+    exit(-2);
+  }
+  *(int*)w->widget_data=ARGB;
+}
+
+void set_button_text(WIDGET* w, char* message)
+{
+  char* s=NULL;
+ if(w==NULL){
+    printf("Widget is NULL\n");
+    exit(-2);
+  }
+  if(w->type!=BUTTON){
+    printf("Widget not a button!\n");
+    exit(-2);
+  }
+  free(w->string);
+  s=malloc(strlen(message)+1);
+  if(s==NULL){
+    printf("String re malloc failed!\n");
+    exit(-1);
+  }
+  strcpy(s,message);
+  w->string=s;
+}
+
+void set_button_enable(WIDGET* w,int enable)
+{
+ if(w==NULL){
+    printf("Widget is NULL\n");
+    exit(-2);
+  }
+  if(w->type!=BUTTON){
+    printf("Widget not a button!\n");
+    exit(-2);
+  }
+  if(enable==1||enable==0)
+    w->enable=enable;
+  else
+    printf("Invalid value for enable\nNo action taken\n");
+}
+
+void set_button_visible(WIDGET* w,int visible)
+{
+ if(w==NULL){
+    printf("Widget is NULL\n");
+    exit(-2);
+  }
+  if(w->type!=BUTTON){
+    printf("Widget not a button!\n");
+    exit(-2);
+  }
+  if(visible==1||visible==0)
+    w->visible=visible;
+  else
+    printf("Invalid value for visible\nNo action taken\n");
+}
+
+int get_button_text_color(WIDGET* w)
+{
+  if(w==NULL){
+    printf("Widget is NULL\n");
+    exit(-2);
+  }
+  if(w->type!=BUTTON){
+    printf("Widget not a button!\n");
+    exit(-2);
+  }
+  return *(int*)w->widget_data;
+}
+
+char* get_button_text(WIDGET* w)
+{
+  if(w==NULL){
+    printf("Widget is NULL\n");
+    exit(-2);
+  }
+  if(w->type!=BUTTON){
+    printf("Widget not a button!\n");
+    exit(-2);
+  }
+  return w->string;
+}
+
+int get_button_enable(WIDGET* w)
+{
+  if(w==NULL){
+    printf("Widget is NULL\n");
+    exit(-2);
+  }
+  if(w->type!=BUTTON){
+    printf("Widget not a button!\n");
+    exit(-2);
+  }
+  return w->enable;
+}
+
+int get_button_visible(WIDGET* w)
+{
+  if(w==NULL){
+    printf("Widget is NULL\n");
+    exit(-2);
+  }
+  if(w->type!=BUTTON){
+    printf("Widget not a button!\n");
+    exit(-2);
+  }
+  return w->visible;
 }

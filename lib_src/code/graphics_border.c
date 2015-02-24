@@ -6,29 +6,53 @@
 #include "graphics_widget.h"
 #include "graphics_border.h"
 
+struct border_data_t{
+  int color;
+  int thickness;
+};
+
 void paint_border(GUI* g, WIDGET* w)
 {
-  XSetForeground(g->dsp,g->draw,g->blackColor);
-  XSetLineAttributes(g->dsp,g->draw,*(int*)w->widget_data,LineSolid,CapButt,JoinMiter);
-  XDrawRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
-  XSetLineAttributes(g->dsp,g->draw,0,LineSolid,CapButt,JoinMiter);
+  struct border_data_t* data=NULL;
+  data=w->widget_data;
+  if(w->visible==0){
+    XSetForeground(g->dsp,g->draw,g->bgColor);
+    XSetLineAttributes(g->dsp,g->draw,data->thickness,LineSolid,CapButt,JoinMiter);
+    XDrawRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
+    XSetLineAttributes(g->dsp,g->draw,1,LineSolid,CapButt,JoinMiter);
+  }
+  else{
+    if(data->color>-1){
+      XSetForeground(g->dsp,g->draw,data->color);
+      XSetLineAttributes(g->dsp,g->draw,data->thickness,LineSolid,CapButt,JoinMiter);
+      XDrawRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
+      XSetLineAttributes(g->dsp,g->draw,1,LineSolid,CapButt,JoinMiter);
+    }
+    else {
+      XSetForeground(g->dsp,g->draw,g->blackColor);
+      XSetLineAttributes(g->dsp,g->draw,data->thickness,LineSolid,CapButt,JoinMiter);
+      XDrawRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
+      XSetLineAttributes(g->dsp,g->draw,1,LineSolid,CapButt,JoinMiter);
+    }
+  }
 }
 
 WIDGET* create_simple_border(int x,int y,int height,int width)
 {
   WIDGET* w=NULL;
-  int* d=NULL;
+  struct border_data_t* d=NULL;
   w=malloc(sizeof(WIDGET));
   if(w==NULL){
     printf("Border Malloc failed!\n");
     exit(-1);
   }
-  d=malloc(sizeof(int));
+  d=malloc(sizeof(struct border_data_t));
   if(d==NULL){
     printf("Data Malloc Failed!\n");
     exit(-1);
   }
-  *d=1;
+  d->color=-1;
+  d->thickness=1;
   w->type=BORDER;
   w->flags=NONE;
   w->enable=1;
@@ -61,4 +85,94 @@ void destroy_simple_border(WIDGET* w)
     exit(-2);
   }
   free(w->widget_data);
+}
+
+void set_simple_border_color(WIDGET* w, int ARGB)
+{
+  struct border_data_t* data=NULL;
+  if(w==NULL){
+    printf("Border is NULL!\n");
+    exit(-2);
+  }
+  if(w->type!=BORDER){
+    printf("Not a Border!\n");
+    exit(-2);
+  }
+  data=w->widget_data;
+  data->color=ARGB;
+}
+
+void set_simple_border_thickness(WIDGET* w,int thickness)
+{
+  struct border_data_t* data=NULL;
+  if(w==NULL){
+    printf("Border is NULL!\n");
+    exit(-2);
+  }
+  if(w->type!=BORDER){
+    printf("Not a Border!\n");
+    exit(-2);
+  }
+  data=w->widget_data;
+  data->thickness=thickness;
+}
+
+void set_simple_border_visible(WIDGET* w,int visible)
+{
+ if(w==NULL){
+    printf("Border is NULL!\n");
+    exit(-2);
+  }
+  if(w->type!=BORDER){
+    printf("Not a Border!\n");
+    exit(-2);
+  }
+  if(visible==1||visible==0){
+    w->visible=visible;
+  }
+  else{
+    printf("Invalid Visible input for border\nNo action taken\n");
+  }
+}
+
+
+int get_simple_border_color(WIDGET* w)
+{
+  struct border_data_t* data=NULL;
+  if(w==NULL){
+    printf("Border is NULL!\n");
+    exit(-2);
+  }
+  if(w->type!=BORDER){
+    printf("Not a Border!\n");
+    exit(-2);
+  }
+  return data->color;
+}
+
+int get_simple_border_thickness(WIDGET* w)
+{
+  struct border_data_t* data=NULL;
+  if(w==NULL){
+    printf("Border is NULL!\n");
+    exit(-2);
+  }
+  if(w->type!=BORDER){
+    printf("Not a Border!\n");
+    exit(-2);
+  }
+  return data->thickness;
+}
+
+int get_simple_border_visible(WIDGET* w)
+{
+  if(w==NULL){
+    printf("Border is NULL!\n");
+    exit(-2);
+  }
+  if(w->type!=BORDER){
+    printf("Not a Border!\n");
+    exit(-2);
+  }
+  return w->visible;
 }

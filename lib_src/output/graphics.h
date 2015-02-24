@@ -52,4 +52,7 @@ void update_widget(GUI* g,WIDGET* w);
 
 void shutdown_gui(GUI* g);
 void destroy_gui(GUI* g);
+
+int to_gray(int color);
+
 #endif

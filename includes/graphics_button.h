@@ -6,13 +6,15 @@
 WIDGET* create_button(char* text, int x, int y);
 void destroy_button(WIDGET* w);
 
-void set_button_text_color(WIDGET* w,int ARGB);//TODO
-void set_button_text(WIDGET* w, char* message);//TODO
-void set_button_enable(WIDGET* w,int enable);//TODO
+void set_button_text_color(WIDGET* w,int ARGB);
+void set_button_text(WIDGET* w, char* message);
+void set_button_enable(WIDGET* w,int enable);
+void set_button_visible(WIDGET* w,int visible);
 
-int get_button_text_color(WIDGET* w);//TODO
-char* get_button_text(WIDGET* w);//TODO
-int get_button_enable(WIDGET* w);//TODO
+int get_button_text_color(WIDGET* w);
+char* get_button_text(WIDGET* w);
+int get_button_enable(WIDGET* w);
+int get_button_visible(WIDGET* w);
 
 
 void set_button_callback(WIDGET* w,void(*ucallback)(GUI* g,WIDGET* self, void* data),void* data);
