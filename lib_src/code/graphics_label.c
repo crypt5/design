@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <X11/Xlib.h>
 #include <string.h>
 #include "graphics.h"

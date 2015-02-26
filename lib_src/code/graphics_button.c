@@ -12,29 +12,31 @@ void paint_button(GUI* g, WIDGET* w)
   if(w->width!=0){
     XSetForeground(g->dsp,g->draw,g->bgColor);
     XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
-    if(w->visible==0)
-      return;
   }
   w->width=XTextWidth(g->font,w->string,strlen(w->string))+20;
-  w->height=g->font->ascent;
+  w->height=g->font->ascent*2;
+  if(w->visible==0){
+    XSetForeground(g->dsp,g->draw,g->bgColor);
+    XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
+    return;
+  }
   XSetForeground(g->dsp,g->draw,w->enable==1 ? 0x00AAAAAA : 0x00CCCCCC);
-  XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height*2);
+  XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
   if(*(int*)w->widget_data>0){
     XSetForeground(g->dsp,g->text,w->enable==1 ? *(int*)w->widget_data : to_gray(*(int*)w->widget_data));
-    XDrawString(g->dsp,g->mainWindow,g->text,w->x+10,w->y+(w->height+w->height/2),w->string,strlen(w->string));
+    XDrawString(g->dsp,g->mainWindow,g->text,w->x+10,w->y+(w->height/2+w->height/4),w->string,strlen(w->string));
     XSetForeground(g->dsp,g->text,g->blackColor);
   }
   else{
     if(w->enable==0){
       XSetForeground(g->dsp,g->text,0x00EEEEEE);
-      XDrawString(g->dsp,g->mainWindow,g->text,w->x+10,w->y+(w->height+w->height/2),w->string,strlen(w->string));
+      XDrawString(g->dsp,g->mainWindow,g->text,w->x+10,w->y+(w->height/2+w->height/4),w->string,strlen(w->string));
       XSetForeground(g->dsp,g->text,g->blackColor);
     }
     else {
-      XDrawString(g->dsp,g->mainWindow,g->text,w->x+10,w->y+(w->height+w->height/2),w->string,strlen(w->string));
+      XDrawString(g->dsp,g->mainWindow,g->text,w->x+10,w->y+(w->height/2+w->height/4),w->string,strlen(w->string));
     }
   }
-  w->height=w->height*2;
 }
 
 void paint_click(GUI* g, WIDGET* w)
@@ -42,7 +44,7 @@ void paint_click(GUI* g, WIDGET* w)
   XSetForeground(g->dsp,g->draw,0x00808080);
   XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
   if(*(int*)w->widget_data<0){
-    XDrawString(g->dsp,g->mainWindow,g->text,w->x+10,w->y+(w->height+w->height/2),w->string,strlen(w->string));
+    XDrawString(g->dsp,g->mainWindow,g->text,w->x+10,w->y+(w->height/2+w->height/4),w->string,strlen(w->string));
   }
   else {
     XSetForeground(g->dsp,g->text,*(int*)w->widget_data);

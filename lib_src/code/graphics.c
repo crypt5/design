@@ -27,17 +27,21 @@ int to_gray(int color)
   green=(color&0x0000FF00)>>8;
   blue=color&0x000000FF;
 
-  avg=(red+green+blue)/3;
+  if(red==blue&&red==green){
+    avg=(red+green+blue)/3;
 
-  if(avg==red){
     red=avg+0.1*red;
     green=avg+0.1*green;
     blue=avg+0.1*blue;
   }
-  else{
-    red=avg+0.55*red;
-    green=avg+0.45*green;
-    blue=avg+0.15*blue;
+  else {
+    avg=red*0.21;
+    avg=avg+green*0.71;
+    avg=avg+blue*0.08;
+
+    red=avg;
+    green=avg;
+    blue=avg;
   }
 
   re=(alpha<<24)|(red<<16)|(green<<8)|(blue);
