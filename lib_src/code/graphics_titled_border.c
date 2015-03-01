@@ -6,24 +6,49 @@
 #include "graphics_widget.h"
 #include "graphics_titled_border.h"
 
+struct titled_border_data_t{
+  int thickness;
+  int border_color;
+  int text_color;
+};
+
 void paint_titled_border(GUI* g, WIDGET* w)
 {
   int width;
-  XSetForeground(g->dsp,g->draw,g->blackColor);
+  struct titled_border_data_t* data=w->widget_data;
   width=XTextWidth(g->font,w->string,strlen(w->string))+2;
-  XSetLineAttributes(g->dsp,g->draw,*(int*)w->widget_data,LineSolid,CapButt,JoinMiter);
+  XSetForeground(g->dsp,g->draw,g->bgColor);
+  XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y-g->font->ascent/2,w->width,g->font->ascent);
+  if(w->visible==0){
+    XSetLineAttributes(g->dsp,g->draw,data->thickness,LineSolid,CapButt,JoinMiter);
+    XDrawRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
+    XSetLineAttributes(g->dsp,g->draw,0,LineSolid,CapButt,JoinMiter);
+    return;
+  }
+  if(data->border_color>0)
+    XSetForeground(g->dsp,g->draw,data->border_color);
+  else
+    XSetForeground(g->dsp,g->draw,g->blackColor);
+  XSetLineAttributes(g->dsp,g->draw,data->thickness,LineSolid,CapButt,JoinMiter);
   XDrawRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
   XSetLineAttributes(g->dsp,g->draw,0,LineSolid,CapButt,JoinMiter);
   XSetForeground(g->dsp,g->draw,g->bgColor);
-  XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x+5,w->y-(*(int*)w->widget_data/2),width,*(int*)w->widget_data);
-  XDrawString(g->dsp,g->mainWindow,g->text,w->x+6,w->y+(g->font->ascent/2),(char*)w->string,strlen((char*)w->string));
+  XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x+5,w->y-data->thickness,width,data->thickness*2);
+  if(data->text_color>0){
+    XSetForeground(g->dsp,g->text,data->text_color);
+    XDrawString(g->dsp,g->mainWindow,g->text,w->x+6,w->y+(g->font->ascent/2),(char*)w->string,strlen((char*)w->string));
+    XSetForeground(g->dsp,g->text,g->blackColor);
+  }
+  else {
+    XDrawString(g->dsp,g->mainWindow,g->text,w->x+6,w->y+(g->font->ascent/2),(char*)w->string,strlen((char*)w->string));
+  }
 }
 
 WIDGET* create_titled_border(char* text,int x,int y,int height,int width)
 {
   WIDGET* w=NULL;
   char* s=NULL;
-  int* d=NULL;
+  struct titled_border_data_t* d=NULL;
   w=malloc(sizeof(WIDGET));
   if(w==NULL){
     printf("Widget is NULL!\n");
@@ -34,14 +59,16 @@ WIDGET* create_titled_border(char* text,int x,int y,int height,int width)
     printf("String malloc failed!\n");
     exit(-1);
   }
-  d=malloc(sizeof(int));
+  strcpy(s,text);
+  d=malloc(sizeof(struct titled_border_data_t));
   if(d==NULL){
     printf("Data malloc failed\n");
     exit(-1);
   }
-  strcpy(s,text);
-  *d=1;
-
+  d->thickness=1;
+  d->border_color=-1;
+  d->text_color=-1;
+  
   w->type=TITLE_BORDER;
   w->flags=NONE;
   w->enable=1;
@@ -75,4 +102,157 @@ void destroy_titled_border(WIDGET* w)
   }
   free(w->string);
   free(w->widget_data);
+}
+
+void set_titled_border_text(WIDGET *w,char* text)
+{
+  char *s=NULL;
+  if(w==NULL){
+    printf("Titled Border is NULL\n");
+    exit(-2);
+  }
+  if(w->type!=TITLE_BORDER){
+    printf("Nort a Titled Border!\n");
+    exit(-2);
+  }
+  s=malloc(strlen(text)+1);
+  if(s==NULL){
+    printf("String Malloc failed\n");
+    exit(-2);
+  }
+  strcpy(s,text);
+  free(w->string);
+  w->string=s;
+}
+
+void set_titled_border_color(WIDGET* w,int ARGB)
+{
+  struct titled_border_data_t* data=NULL;
+  if(w==NULL){
+    printf("Titled Border is NULL\n");
+    exit(-2);
+  }
+  if(w->type!=TITLE_BORDER){
+    printf("Nort a Titled Border!\n");
+    exit(-2);
+  }
+  data=w->widget_data;
+  data->border_color=ARGB;
+}
+
+void set_titled_border_text_color(WIDGET* w,int ARGB)
+{
+  struct titled_border_data_t* data=NULL;
+  if(w==NULL){
+    printf("Titled Border is NULL\n");
+    exit(-2);
+  }
+  if(w->type!=TITLE_BORDER){
+    printf("Nort a Titled Border!\n");
+    exit(-2);
+  }
+  data=w->widget_data;
+  data->text_color=ARGB;
+}
+
+void set_titled_border_thickness(WIDGET* w,int thick)
+{
+  struct titled_border_data_t* data=NULL;
+  if(w==NULL){
+    printf("Titled Border is NULL\n");
+    exit(-2);
+  }
+  if(w->type!=TITLE_BORDER){
+    printf("Nort a Titled Border!\n");
+    exit(-2);
+  }
+  data=w->widget_data;
+  data->thickness=thick;
+}
+
+void set_titled_border_visible(WIDGET* w,int visible)
+{
+  if(w==NULL){
+    printf("Titled Border is NULL\n");
+    exit(-2);
+  }
+  if(w->type!=TITLE_BORDER){
+    printf("Nort a Titled Border!\n");
+    exit(-2);
+  }
+  if(visible==0||visible==1)
+    w->visible=visible;
+  else
+    printf("Invalid visible Value\n");
+}
+
+char* get_titled_border_text(WIDGET* w)
+{
+  if(w==NULL){
+    printf("Titled Border is NULL\n");
+    exit(-2);
+  }
+  if(w->type!=TITLE_BORDER){
+    printf("Nort a Titled Border!\n");
+    exit(-2);
+  }
+  return w->string;
+}
+
+int get_titled_border_color(WIDGET* w)
+{
+  struct titled_border_data_t* data=NULL;
+  if(w==NULL){
+    printf("Titled Border is NULL\n");
+    exit(-2);
+  }
+  if(w->type!=TITLE_BORDER){
+    printf("Nort a Titled Border!\n");
+    exit(-2);
+  }
+  data=w->widget_data;
+  return data->border_color;
+}
+
+int get_titled_border_text_color(WIDGET* w)
+{
+  struct titled_border_data_t* data=NULL;
+  if(w==NULL){
+    printf("Titled Border is NULL\n");
+    exit(-2);
+  }
+  if(w->type!=TITLE_BORDER){
+    printf("Nort a Titled Border!\n");
+    exit(-2);
+  }
+  data=w->widget_data;
+  return data->text_color;
+}
+
+int get_titled_border_thickness(WIDGET* w)
+{  
+  struct titled_border_data_t* data=NULL;
+  if(w==NULL){
+    printf("Titled Border is NULL\n");
+    exit(-2);
+  }
+  if(w->type!=TITLE_BORDER){
+    printf("Nort a Titled Border!\n");
+    exit(-2);
+  }
+  data=w->widget_data;
+  return data->thickness;
+}
+
+int get_titled_border_visible(WIDGET* w)
+{
+  if(w==NULL){
+    printf("Titled Border is NULL\n");
+    exit(-2);
+  }
+  if(w->type!=TITLE_BORDER){
+    printf("Nort a Titled Border!\n");
+    exit(-2);
+  }
+  return w->visible;
 }

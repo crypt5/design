@@ -3,44 +3,32 @@
 
 void button_callback(GUI* g,WIDGET* w,void* data)
 {
-  WIDGET* radio=data;
-  int enabled=get_radio_button_enable(radio);
-  if(enabled==1)
-    enabled=0;
-  else
-    enabled=1;
-  set_radio_button_enable(radio,enabled);
-  update_widget(g,radio);
+  WIDGET* text=data;
+  set_titled_border_visible(text,0);
+  update_widget(g,text);
 }
 
 int main()
 {
   GUI* g=NULL;
-  WIDGET* label=NULL;
-  WIDGET* border=NULL;
   WIDGET* button=NULL;
-  WIDGET* radio=NULL;
+  WIDGET* border=NULL;
 
   g=init_gui();
   create_main_window(g,"Widget Testing");
   set_main_size(g,500,500);
 
-  label=create_label("Hello World",10,10);
-  border=create_simple_border(8,8,30,120);
   button=create_button("Click me!",10,45);
+  border=create_titled_border("Hello World",5,5,200,200);
+  set_titled_border_thickness(border,3);
+  set_titled_border_color(border,0x00FF00FF);
+  set_titled_border_text_color(border,0x0000FF00);
 
-  radio=create_radio_button("Check me!",10,70);
-  set_radio_button_text_color(radio,0x00FF00FF);
-  set_radio_button_check_color(radio,0x00FF00FF);
-  set_radio_button_check(radio,1);
-
-  add_to_main(g,label);
-  add_to_main(g,border);
   add_to_main(g,button);
-  add_to_main(g,radio);
+  add_to_main(g,border);
 
 
-  set_button_callback(button,button_callback,radio);
+  set_button_callback(button,button_callback,border);
 
   show_main(g);
   while(gui_running(g)){
