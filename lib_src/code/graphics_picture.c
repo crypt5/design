@@ -13,14 +13,14 @@ struct picture_data_t{
 
 void paint_picture(GUI* g, WIDGET *w)
 {
-  //TODO Printing Code
+  struct picture_data_t* data=w->widget_data;
+
 }
 
 WIDGET* create_picture(GUI* g,char* filename,int x,int y)
 {
   WIDGET* w=NULL;
   struct picture_data_t* data=NULL;
-  int one,two;
   unsigned int height,width;
 
   w=malloc(sizeof(WIDGET));
@@ -34,9 +34,9 @@ WIDGET* create_picture(GUI* g,char* filename,int x,int y)
     exit(-1);
   }
 
-  if(strstr(filename, ".xbm") != NULL){
+  if(strstr(filename, ".xpm") != NULL){
     if(access(filename,R_OK)!=-1){
-      XReadBitmapFile(g->dsp,g->mainWindow,filename,&width,&height,&data->img,&one,&two);
+      XReadBitmapFile(g->dsp,g->mainWindow,filename,&width,&height,&data->img,0,0);
     }
   }
 

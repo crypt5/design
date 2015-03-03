@@ -11,7 +11,7 @@ int main()
   create_main_window(g,"Widget Testing");
   set_main_size(g,500,500);
 
-  pic=create_picture(g,"res/test.xbm",10,10);
+  pic=create_picture(g,"res/test.xpm",10,10);
 
   add_to_main(g,pic);
 

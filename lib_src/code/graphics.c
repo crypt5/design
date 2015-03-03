@@ -223,9 +223,8 @@ void create_main_window(GUI* g,char* title)
     printf("Can't create window, GUI is NULL\n");
     exit(-1);
   }
-
-  w = XCreateSimpleWindow(g->dsp,DefaultRootWindow(g->dsp),0,0,200,100,0,g->bgColor,g->bgColor);
-
+  w = XCreateSimpleWindow(g->dsp,DefaultRootWindow(g->dsp),0,0,100,100,0,0,g->bgColor);
+  
   XSelectInput(g->dsp, w, StructureNotifyMask|KeyReleaseMask|ButtonPressMask|ButtonReleaseMask|ExposureMask);
 
   g->mainWindow=w;
