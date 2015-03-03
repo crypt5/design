@@ -112,6 +112,7 @@ void destroy_label(WIDGET* w)
   }
   free(w->string);
   free(w->widget_data);
+  free(w);
 }
 
 void set_label_background(WIDGET* l,int ARGB)

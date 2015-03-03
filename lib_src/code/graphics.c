@@ -176,11 +176,6 @@ void* event_loop(void* data)
   return NULL;
 }
 
-void destroy_widget(void* w)
-{
-  free(w);
-}
-
 GUI* init_gui()
 {
   GUI* g=NULL;
@@ -212,7 +207,7 @@ GUI* init_gui()
   g->wm_protocols = XInternAtom(g->dsp, "WM_PROTOCOLS", False);
   g->wm_delete_window = XInternAtom(g->dsp, "WM_DELETE_WINDOW", False);
 
-  g->widgets=list_init(destroy_widget,NULL);
+  g->widgets=list_init(fake_free,NULL);
   g->updates=init_queue(fake_free);
 
   g->font=XLoadQueryFont(g->dsp,"*9x15*");
@@ -260,10 +255,6 @@ void destroy_gui(GUI* g)
 
   pthread_join(g->tid,NULL);
 
-  XFreeFont(g->dsp,g->font);
-  XFreeGC(g->dsp,g->text);
-  XFreeGC(g->dsp,g->draw);
-  XCloseDisplay(g->dsp);
   re=pthread_mutex_destroy(&g->lock);
   if(re!=0)
     printf("Mutex Destroy Failed\n");
@@ -273,6 +264,10 @@ void destroy_gui(GUI* g)
   }
   list_destroy(g->widgets);
   destroy_queue(g->updates);
+  XFreeFont(g->dsp,g->font);
+  XFreeGC(g->dsp,g->text);
+  XFreeGC(g->dsp,g->draw);
+  XCloseDisplay(g->dsp);
   free(g);
   g=NULL;
 }

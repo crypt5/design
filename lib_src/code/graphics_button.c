@@ -108,6 +108,7 @@ void destroy_button(WIDGET* w)
   }
   free(w->widget_data);
   free(w->string);
+  free(w);
 }
 
 void set_button_callback(WIDGET* w,void(*ucallback)(GUI* g,WIDGET* self, void* data),void* data)

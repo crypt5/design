@@ -102,6 +102,7 @@ void destroy_titled_border(WIDGET* w)
   }
   free(w->string);
   free(w->widget_data);
+  free(w);
 }
 
 void set_titled_border_text(WIDGET *w,char* text)

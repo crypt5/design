@@ -85,6 +85,7 @@ void destroy_simple_border(WIDGET* w)
     exit(-2);
   }
   free(w->widget_data);
+  free(w);
 }
 
 void set_simple_border_color(WIDGET* w, int ARGB)

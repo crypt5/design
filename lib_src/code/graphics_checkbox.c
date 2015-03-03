@@ -129,6 +129,7 @@ void destroy_checkbox(WIDGET* w)
   }
   free(w->string);
   free(w->widget_data);
+  free(w);
 }
 
 void set_checkbox_text(WIDGET* w,char* text)

@@ -13,9 +13,6 @@ struct textbox_data_t{
   int background_color;
   int editable;
 };
-/*TODO 
-colors
-*/
 void paint_textbox(GUI* g,WIDGET* w)
 {
   int width;
@@ -199,6 +196,7 @@ void destroy_textbox(WIDGET* w)
   }
   free(w->string);
   free(w->widget_data);
+  free(w);
 }
 
 void set_textbox_text(WIDGET* w,char* text)

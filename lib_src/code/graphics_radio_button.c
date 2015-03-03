@@ -118,6 +118,7 @@ void destroy_radio_button(WIDGET* w)
   }
   free(w->string);
   free(w->widget_data);
+  free(w);
 }
 
 void set_radio_button_callback(WIDGET* w,void(*ucallback)(GUI* g,WIDGET* self, void* data),void* data)
