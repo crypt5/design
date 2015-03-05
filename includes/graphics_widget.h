@@ -10,6 +10,7 @@
 #define TITLE_BORDER 6
 #define TEXTBOX 7
 #define PICTURE 8
+#define COMBOBOX 9
 
 //Widget Action FLags
 #define NONE 0 
@@ -53,5 +54,6 @@ struct graphics_widget_t{
 #include "graphics_titled_border.h"
 #include "graphics_textbox.h"
 #include "graphics_picture.h"
+#include "graphics_combobox.h"
 
 #endif

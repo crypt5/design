@@ -38,7 +38,7 @@ struct graphics_t{
 //These functions need to be called in this order
 GUI* init_gui();
 void set_main_background(GUI* g,int RGB); // Optional 
-void set_main_icon(GUI* g,char* filename);//Optional //TODO
+void set_main_icon(GUI* g,char* filename);//Optional
 void create_main_window(GUI* g,char* title);
 void set_main_size(GUI* g,int height, int width);
 

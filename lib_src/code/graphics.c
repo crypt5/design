@@ -4,6 +4,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/XKBlib.h>
+#include <X11/xpm.h>
 #include <pthread.h>
 #include <string.h>
 #include "graphics.h"
@@ -143,9 +144,10 @@ void* event_loop(void* data)
 	    selected->key_press(g,selected,key);
 	}
 	break;
-      case Expose://Parts or whole window is visible again
-      case MapNotify: 
+      case Expose:
 	//TODO Smart Repainting Code
+	//break;
+      case MapNotify: 
 	for(i=0;i<list_length(g->widgets);i++){
 	  temp=(WIDGET*)list_get_pos(g->widgets,i);
 	  temp->paint(g,temp);
@@ -235,6 +237,8 @@ void create_main_window(GUI* g,char* title)
 
   g->text=XCreateGC(g->dsp,g->mainWindow,0,NULL);
   g->draw=XCreateGC(g->dsp,g->mainWindow,0,NULL);
+  XSetGraphicsExposures(g->dsp, g->draw, 0);
+  XSetGraphicsExposures(g->dsp,g->text,0);
   XSetFont(g->dsp,g->text,g->font->fid);
   XSetForeground(g->dsp, g->text, g->blackColor);
 }
@@ -327,20 +331,35 @@ void set_main_background(GUI* g,int RGB)
   g->bgColor=RGB;
 }
 
-void set_main_icon(GUI* g,char* filename) //TODO
+void set_main_icon(GUI* g,char* filename)
 {
   XWMHints* hint=NULL;
+  Pixmap p;
   if(g==NULL){
     printf("Can't set Icon, GUI is NULL\n");
     exit(-1);
   }
-  if(access(filename,R_OK)!=-1){
-    hint=XAllocWMHints();
-    //File exists, create icon pixmap
-    XFree(hint);
+  if(strstr(filename, ".xpm") != NULL){
+    if(access(filename,R_OK)!=-1){
+      XpmReadFileToPixmap(g->dsp,g->mainWindow,filename,&p,NULL,NULL);
+      hint=XAllocWMHints();
+      hint->flags=IconPixmapHint;
+      hint->icon_pixmap=p;
+      hint->icon_x=0;
+      hint->icon_y=0;
+      XSetWMHints(g->dsp,g->mainWindow,hint);
+      XFree(hint);
+      //XFreePixmap(g->dsp,p);
+    }
+    else{
+      printf("Read access to picture denied or it doens't exist!\n");
+      exit(-2);
+    }
   }
-  else {
-    printf("Invalid File, Default icon used\n");
+  else{
+    printf("Invalid Format!\nHas to be X11 *.xpm format");
+    printf("GIMP can convert images to this format.\n");
+    exit(-2);
   }
 }
 

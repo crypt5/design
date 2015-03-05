@@ -7,16 +7,16 @@
 WIDGET* create_picture(GUI* g,char* filename,int x,int y);
 void destroy_picture(WIDGET* w);
 
-void set_picture_visible(WIDGET* w,int visible);//TODO
+void set_picture_visible(WIDGET* w,int visible);
 
-int get_picture_visible(WIDGET* w);//TODO
+int get_picture_visible(WIDGET* w);
 
-void set_label_click_callback(WIDGET* l,void(*ucallback)(GUI* g,WIDGET* self,void* data),void* data);//TODO
-void set_label_paint_click(WIDGET* l,void(*uclick)(GUI* g, WIDGET* l));//TODO
-void set_label_paint_select(WIDGET* l,void(*uselect)(GUI* g, WIDGET* l),void(*ukey_press)(GUI* g,WIDGET* w, char key));//TODO
+void set_picture_click_callback(WIDGET* w,void(*ucallback)(GUI* g,WIDGET* self,void* data),void* data);
+void set_picture_paint_click(WIDGET* w,void(*uclick)(GUI* g, WIDGET* w));
+void set_picture_paint_select(WIDGET* w,void(*uselect)(GUI* g, WIDGET* w),void(*ukey_press)(GUI* g,WIDGET* w, char key));
 
-void remove_label_click_callback(WIDGET* l);//TODO
-void remove_label_paint_click(WIDGET* l);//TODO
-void remove_label_paint_select(WIDGET* l);//TODO
+void remove_picture_click_callback(WIDGET* w);
+void remove_picture_paint_click(WIDGET* w);
+void remove_picture_paint_select(WIDGET* w);
 
 #endif

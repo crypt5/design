@@ -1,7 +1,7 @@
 CC=clang
 CFLAGS=-g -Wall
 OFLAGS=-c -Iheaders -fPIC
-GUI_LIBS=graphics_label.o graphics_button.o graphics_radio_button.o graphics_checkbox.o graphics_border.o graphics_titled_border.o graphics_textbox.o graphics_picture.o
+GUI_LIBS=graphics_label.o graphics_button.o graphics_radio_button.o graphics_checkbox.o graphics_border.o graphics_titled_border.o graphics_textbox.o graphics_picture.o graphics_combobox.o
 
 build-libs: logger config gui
 
@@ -54,3 +54,6 @@ graphics_textbox.o: code/graphics_textbox.c
 
 graphics_picture.o: code/graphics_picture.c
 	$(CC) $(CFLAGS) $(OFLAGS) code/graphics_picture.c
+
+graphics_combobox.o: code/graphics_combobox.c
+	$(CC) $(CFLAGS) $(OFLAGS) code/graphics_combobox.c
