@@ -12,6 +12,7 @@ struct combobox_data_t{
   int text_color;
   int background_color;
   Pixmap hidden;
+  Pixmap item_list;
   int dropdown;
   int max_display;
   int number_items;
@@ -23,14 +24,34 @@ struct combobox_data_t{
 
 void paint_combobox(GUI* g,WIDGET* w)
 {
-  printf("Need painting Code\n");
-  //TODO Painting Code
+  int i;
+  struct combobox_data_t* data=w->widget_data;
+  if(w->width==0){
+    for(i=0;i<data->max_length;i++)
+      w->string[i]=' ';
+    w->string[i]='\0';
+    w->width=XTextWidth(g->font,w->string,strlen(w->string))+20;
+    w->height=g->font->ascent*2;
+    for(i=0;i<data->max_length;i++)
+      w->string[i]='\0';
+  }
+  XSetForeground(g->dsp,g->draw,g->whiteColor);
+  XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width-20,w->height);
+  XSetForeground(g->dsp,g->draw,0x00AAAAAA);
+  XFillRectangle(g->dsp,g->mainWindow,g->draw,w->width-10,w->y,20,w->height);
+  XSetForeground(g->dsp,g->draw,g->blackColor);
+  XDrawRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width-20,w->height);
+  XDrawRectangle(g->dsp,g->mainWindow,g->draw,w->width-10,w->y,20,w->height);
+
+  //Draw Arrow
+  XDrawLine(g->dsp,g->mainWindow,g->draw,w->width-6,w->y+4,w->width+6,w->y+4);
+  XDrawLine(g->dsp,g->mainWindow,g->draw,w->width-6,w->y+4,w->width,w->y+18);
+  XDrawLine(g->dsp,g->mainWindow,g->draw,w->width,w->y+18,w->width+6,w->y+4);
 }
 
 void paint_combobox_clicked(GUI* g, WIDGET* w)
 {
-  printf("Combobox Clicked!\n");
-  //TODO Painting Code
+  printf("Click\n");
 }
 
 WIDGET* create_combobox(int display_width,int x,int y,char*(*ustring)(void* uitem))
@@ -49,7 +70,7 @@ WIDGET* create_combobox(int display_width,int x,int y,char*(*ustring)(void* uite
     printf("ComboBox data mallco Failed!\n");
     exit(-1);
   }
-  s=malloc(display_width);
+  s=malloc(display_width+1);
   if(s==NULL){
     printf("Combobox Display String malloc Failed\n");
     exit(-1);
@@ -250,4 +271,142 @@ void set_combobox_selected_item(WIDGET* w,int select)
   data=w->widget_data;
   if(select<=data->number_items)
     data->selected=select;
+}
+
+void set_combobox_enable(WIDGET* w,int enable)
+{
+  if(w==NULL){
+    printf("WIDGET is null!\n");
+    exit(-1);
+  }
+  if(w->type!=COMBOBOX){
+    printf("Not a Combobox!\n");
+    exit(-1);
+  }
+  if(enable==1||enable==0)
+    w->enable=enable;
+  else
+    printf("Invalid enable flag\n");
+
+}
+
+
+void set_combobox_visible(WIDGET* w,int visible)
+{
+  if(w==NULL){
+    printf("WIDGET is null!\n");
+    exit(-1);
+  }
+  if(w->type!=COMBOBOX){
+    printf("Not a Combobox!\n");
+    exit(-1);
+  }
+  if(visible==1||visible==0)
+    w->visible=visible;
+  else
+    printf("Invalid visible flag\n");
+}
+
+int get_combobox_items_displayed(WIDGET* w)
+{
+  struct combobox_data_t* data=NULL;
+  if(w==NULL){
+    printf("WIDGET is null!\n");
+    exit(-1);
+  }
+  if(w->type!=COMBOBOX){
+    printf("Not a Combobox!\n");
+    exit(-1);
+  }
+  data=w->widget_data;
+  return data->max_display;
+}
+
+int get_combobox_background_color(WIDGET* w)
+{
+  struct combobox_data_t* data=NULL;
+  if(w==NULL){
+    printf("WIDGET is null!\n");
+    exit(-1);
+  }
+  if(w->type!=COMBOBOX){
+    printf("Not a Combobox!\n");
+    exit(-1);
+  }
+  data=w->widget_data;
+  return data->background_color;
+}
+
+int get_combobox_text_color(WIDGET* w)
+{
+  struct combobox_data_t* data=NULL;
+  if(w==NULL){
+    printf("WIDGET is null!\n");
+    exit(-1);
+  }
+  if(w->type!=COMBOBOX){
+    printf("Not a Combobox!\n");
+    exit(-1);
+  }
+  data=w->widget_data;
+  return data->text_color;
+}
+
+void* get_combobox_selected_item(WIDGET* w)
+{
+  struct combobox_data_t* data=NULL;
+  if(w==NULL){
+    printf("WIDGET is null!\n");
+    exit(-1);
+  }
+  if(w->type!=COMBOBOX){
+    printf("Not a Combobox!\n");
+    exit(-1);
+  }
+  data=w->widget_data;
+  if(data->selected!=-1)
+    return data->items[data->selected];
+  else
+    return NULL;
+}
+
+int get_combobox_selected_index(WIDGET* w)
+{
+  struct combobox_data_t* data=NULL;
+  if(w==NULL){
+    printf("WIDGET is null!\n");
+    exit(-1);
+  }
+  if(w->type!=COMBOBOX){
+    printf("Not a Combobox!\n");
+    exit(-1);
+  }
+  data=w->widget_data;
+  return data->selected;
+}
+
+int get_combobox_enable(WIDGET* w)
+{
+  if(w==NULL){
+    printf("WIDGET is null!\n");
+    exit(-1);
+  }
+  if(w->type!=COMBOBOX){
+    printf("Not a Combobox!\n");
+    exit(-1);
+  }
+  return w->enable;
+}
+
+int get_combobox_visible(WIDGET* w)
+{
+  if(w==NULL){
+    printf("WIDGET is null!\n");
+    exit(-1);
+  }
+  if(w->type!=COMBOBOX){
+    printf("Not a Combobox!\n");
+    exit(-1);
+  }
+  return w->visible;
 }
