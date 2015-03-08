@@ -23,18 +23,18 @@ void paint_checkbox(GUI* g, WIDGET* w)
   }
   w->height=g->font->ascent*2;
   w->width=XTextWidth(g->font,w->string,strlen(w->string))+20;
-  if(w->visible==0){
+  if((w->status&STATUS_VISIBLE)==0){
      XSetForeground(g->dsp,g->draw,g->bgColor);
      XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
     return;
   }
-  XSetForeground(g->dsp,g->draw,w->enable==1 ? g->whiteColor : to_gray(g->whiteColor));
+  XSetForeground(g->dsp,g->draw,(w->status&STATUS_ENABLE)>0 ? g->whiteColor : to_gray(g->whiteColor));
   XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y+(w->height/5),15,15);
   XSetForeground(g->dsp,g->draw,g->blackColor);
   XDrawRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y+(w->height/5),15,15);
 
   if(data->text_color>0){
-    XSetForeground(g->dsp,g->text,w->enable==1 ? data->text_color : to_gray(data->text_color));
+    XSetForeground(g->dsp,g->text,(w->status&STATUS_ENABLE)>0 ? data->text_color : to_gray(data->text_color));
     XDrawString(g->dsp,g->mainWindow,g->text,w->x+18,w->y+w->height-(g->font->ascent/2),(char*)w->string,strlen((char*)w->string));
     XSetForeground(g->dsp,g->text,g->blackColor);
   }
@@ -44,9 +44,9 @@ void paint_checkbox(GUI* g, WIDGET* w)
 
   if(data->checked==1){
     if(data->check_color>0)
-      XSetForeground(g->dsp,g->draw,w->enable==1 ? data->check_color : to_gray(data->check_color));
+      XSetForeground(g->dsp,g->draw,(w->status&STATUS_ENABLE)>0 ? data->check_color : to_gray(data->check_color));
     else
-      XSetForeground(g->dsp,g->draw,w->enable==1 ? 0x0000AA00 : to_gray(0x0000AA00));
+      XSetForeground(g->dsp,g->draw,(w->status&STATUS_ENABLE)>0 ? 0x0000AA00 : to_gray(0x0000AA00));
     //Short Leg
     XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+2,w->y+9,w->x+7,w->y+14);
     XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+2,w->y+10,w->x+7,w->y+15);
@@ -98,8 +98,7 @@ WIDGET* create_checkbox(char* text,int x,int y)
 
   w->type=CHECKBOX;
   w->flags=CLICKABLE;
-  w->enable=1;
-  w->visible=1;
+  w->status=STATUS_VISIBLE|STATUS_ENABLE;;
   w->x=x;
   w->y=y;
   w->height=0;
@@ -207,8 +206,10 @@ void set_checkbox_enable(WIDGET* w, int enable)
     printf("Not a Checkbox!\n");
     exit(-2);
   }
-  if(enable==0||enable==1)
-    w->enable=enable;
+  if(enable==0)
+    w->status=w->status|STATUS_ENABLE;
+  else if(enable==0)
+    w->status=w->status&~STATUS_ENABLE;
   else
     printf("Invalid enable flag\nNo action taken\n");
 }
@@ -223,8 +224,10 @@ void set_checkbox_visible(WIDGET* w, int visible)
     printf("Not a Checkbox!\n");
     exit(-2);
   }
-  if(visible==0||visible==1)
-    w->visible=visible;
+  if(visible==1)
+    w->status=w->status|STATUS_VISIBLE;
+  else if(visible==0)
+    w->status=w->status&~STATUS_VISIBLE;
   else
     printf("Invalid visible flag\nNo action taken\n");
 }
@@ -297,7 +300,10 @@ int get_checkbox_enable(WIDGET* w)
     printf("Not a Checkbox!\n");
     exit(-2);
   }
-  return w->enable;
+  if((w->status&STATUS_ENABLE)>0)
+    return 1;
+  else 
+    return 0;
 }
 
 int get_checkbox_visible(WIDGET* w)
@@ -310,7 +316,10 @@ int get_checkbox_visible(WIDGET* w)
     printf("Not a Checkbox!\n");
     exit(-2);
   }
-  return w->visible;
+  if((w->status&STATUS_VISIBLE)>0)
+    return 1;
+  else 
+    return 0;
 }
 
 void set_checkbox_paint_select(WIDGET* w,void(*uselect)(GUI* g, WIDGET* l),void(*ukey_press)(GUI* g,WIDGET* w, char key))

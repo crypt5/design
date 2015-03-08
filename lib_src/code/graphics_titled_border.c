@@ -19,7 +19,7 @@ void paint_titled_border(GUI* g, WIDGET* w)
   width=XTextWidth(g->font,w->string,strlen(w->string))+2;
   XSetForeground(g->dsp,g->draw,g->bgColor);
   XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y-g->font->ascent/2,w->width,g->font->ascent);
-  if(w->visible==0){
+  if((w->status&STATUS_VISIBLE)==0){
     XSetLineAttributes(g->dsp,g->draw,data->thickness,LineSolid,CapButt,JoinMiter);
     XDrawRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
     XSetLineAttributes(g->dsp,g->draw,0,LineSolid,CapButt,JoinMiter);
@@ -71,8 +71,7 @@ WIDGET* create_titled_border(char* text,int x,int y,int height,int width)
   
   w->type=TITLE_BORDER;
   w->flags=NONE;
-  w->enable=1;
-  w->visible=1;
+  w->status=STATUS_ENABLE|STATUS_VISIBLE;
   w->x=x;
   w->y=y;
   w->height=height;
@@ -181,8 +180,10 @@ void set_titled_border_visible(WIDGET* w,int visible)
     printf("Nort a Titled Border!\n");
     exit(-2);
   }
-  if(visible==0||visible==1)
-    w->visible=visible;
+  if(visible==1)
+    w->status=w->status|STATUS_VISIBLE;
+  else if(visible==0)
+    w->status=w->status&~STATUS_VISIBLE;
   else
     printf("Invalid visible Value\n");
 }
@@ -255,5 +256,8 @@ int get_titled_border_visible(WIDGET* w)
     printf("Nort a Titled Border!\n");
     exit(-2);
   }
-  return w->visible;
+  if((w->status&STATUS_VISIBLE)>0)
+    return 1;
+  else
+    return 0;
 }

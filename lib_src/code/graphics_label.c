@@ -11,13 +11,14 @@ struct label_data_t{
   int border_color;
   int border_width;
   int background;
+  Pixmap map;
 };
 
 void paint_label(GUI* g, WIDGET* w)
 {
   struct label_data_t* data=NULL;
 
-  if(w->visible!=1){
+  if((w->status&STATUS_VISIBLE)==0){
     if(w->height!=0){
       XSetForeground(g->dsp,g->draw,g->bgColor);
       XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
@@ -35,12 +36,12 @@ void paint_label(GUI* g, WIDGET* w)
   w->width=XTextWidth(g->font,w->string,strlen(w->string))+6;
   w->height=g->font->ascent*2;
   if(data->background>=0)
-    XSetForeground(g->dsp,g->draw,w->enable==1 ? data->background : to_gray(data->background));
+    XSetForeground(g->dsp,g->draw,(w->status&STATUS_ENABLE)>0 ? data->background : to_gray(data->background));
   else
     XSetForeground(g->dsp,g->draw,g->bgColor);
   XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
   if(data->text_color>0){
-    XSetForeground(g->dsp,g->text,w->enable==1 ? data->text_color : to_gray(data->text_color));
+    XSetForeground(g->dsp,g->text,(w->status&STATUS_ENABLE)>0 ? data->text_color : to_gray(data->text_color));
     XDrawString(g->dsp,g->mainWindow,g->text,w->x+3,w->y+w->height/2+(w->height/4),(char*)w->string,strlen((char*)w->string));
     XSetForeground(g->dsp,g->text,g->blackColor);
   }
@@ -48,7 +49,7 @@ void paint_label(GUI* g, WIDGET* w)
     XDrawString(g->dsp,g->mainWindow,g->text,w->x+3,w->y+w->height/2+(w->height/4),(char*)w->string,strlen((char*)w->string));
   }
   if(data->border_color>=0){
-    XSetForeground(g->dsp,g->draw,w->enable==1 ? data->border_color : to_gray(data->border_color));
+    XSetForeground(g->dsp,g->draw,(w->status&STATUS_ENABLE)>0 ? data->border_color : to_gray(data->border_color));
     XSetLineAttributes(g->dsp,g->draw,data->border_width,LineSolid,CapButt,JoinMiter);
     XDrawRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
     XSetLineAttributes(g->dsp,g->draw,0,LineSolid,CapButt,JoinMiter);
@@ -85,8 +86,7 @@ WIDGET* create_label(char* message,int x, int y)
 
   w->type=LABEL;
   w->flags=NONE;
-  w->enable=1;
-  w->visible=1;
+  w->status=STATUS_VISIBLE|STATUS_ENABLE;
   w->x=x;
   w->y=y;
   w->width=0;
@@ -193,20 +193,13 @@ void set_label_enable(WIDGET* l, int enable)
     printf("NOT A LABEL!!!\n");
     exit(-3);
   }
-  if(enable==1){
-    l->enable=enable;
-    if(l->call!=NULL)
-      l->flags=l->flags|CLICKABLE;
-    if(l->select!=NULL)
-      l->flags=l->flags|SELECTABLE;
-  }
-  else if(enable==0){
-    l->enable=enable;
-    l->flags=NONE;
-  }
-  else{
+  if(enable==1)
+    l->status=l->status|STATUS_ENABLE;
+  else if(enable==0)
+    l->status=l->status&~STATUS_ENABLE;
+  else
     printf("Invalid Enable Flag\nNo Action Taken\n");
-  }
+  
 }
 
 void set_label_visible(WIDGET* l, int visible)
@@ -220,10 +213,10 @@ void set_label_visible(WIDGET* l, int visible)
     exit(-3);
   }
   if(visible==1){
-    l->visible=visible;
+    l->status=l->status|STATUS_VISIBLE;
   }
   else if(visible==0){
-    l->visible=visible;
+    l->status=l->status&~STATUS_VISIBLE;
   }
   else{
     printf("Invalid visible Flag\nNo Action Taken\n");
@@ -299,7 +292,10 @@ int get_label_enable(WIDGET* l)
     printf("NOT A LABEL!!!\n");
     exit(-3);
   }
-  return l->enable;
+  if((l->status&STATUS_ENABLE)>0)
+    return 1;
+  else
+    return 0;
 }
 
 int get_label_visible(WIDGET* l)
@@ -312,7 +308,10 @@ int get_label_visible(WIDGET* l)
     printf("NOT A LABEL!!!\n");
     exit(-3);
   }
-  return l->visible;
+  if((l->status&STATUS_VISIBLE)>0)
+    return 1;
+  else
+    return 0;
 }
 
 void set_label_click_callback(WIDGET* l,void(*ucallback)(GUI* g,WIDGET* self,void* data),void* data)
@@ -371,7 +370,7 @@ void remove_label_click_callback(WIDGET* l)
   }
   l->call=NULL;
   l->data=NULL;
-  l->flags=l->flags&(0xFF^CLICKABLE);
+  l->flags=l->flags&!CLICKABLE;
 }
 
 void remove_label_paint_click(WIDGET* l)
@@ -385,7 +384,7 @@ void remove_label_paint_click(WIDGET* l)
     exit(-3);
   }
   l->click=NULL;
-  l->flags=l->flags&(0xFF^CLICKABLE);
+  l->flags=l->flags&!CLICKABLE;
 }
 
 void remove_label_paint_select(WIDGET* l)
@@ -400,5 +399,5 @@ void remove_label_paint_select(WIDGET* l)
   }
   l->select=NULL;
   l->key_press=NULL;
-  l->flags=l->flags&(0xFF^SELECTABLE);
+  l->flags=l->flags&!SELECTABLE;
 }

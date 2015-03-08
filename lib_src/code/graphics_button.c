@@ -15,20 +15,21 @@ void paint_button(GUI* g, WIDGET* w)
   }
   w->width=XTextWidth(g->font,w->string,strlen(w->string))+20;
   w->height=g->font->ascent*2;
-  if(w->visible==0){
+  if((w->status&STATUS_VISIBLE)==0){
+    printf("NOT VISIBLE\nSTATUS: %d\n",w->status);
     XSetForeground(g->dsp,g->draw,g->bgColor);
     XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
     return;
   }
-  XSetForeground(g->dsp,g->draw,w->enable==1 ? 0x00AAAAAA : 0x00CCCCCC);
+  XSetForeground(g->dsp,g->draw,(w->status&STATUS_ENABLE)>0 ? 0x00AAAAAA : 0x00CCCCCC);
   XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
   if(*(int*)w->widget_data>0){
-    XSetForeground(g->dsp,g->text,w->enable==1 ? *(int*)w->widget_data : to_gray(*(int*)w->widget_data));
+    XSetForeground(g->dsp,g->text,(w->status&STATUS_ENABLE)>0 ? *(int*)w->widget_data : to_gray(*(int*)w->widget_data));
     XDrawString(g->dsp,g->mainWindow,g->text,w->x+10,w->y+(w->height/2+w->height/4),w->string,strlen(w->string));
     XSetForeground(g->dsp,g->text,g->blackColor);
   }
   else{
-    if(w->enable==0){
+    if((w->status&STATUS_ENABLE)==0){
       XSetForeground(g->dsp,g->text,0x00EEEEEE);
       XDrawString(g->dsp,g->mainWindow,g->text,w->x+10,w->y+(w->height/2+w->height/4),w->string,strlen(w->string));
       XSetForeground(g->dsp,g->text,g->blackColor);
@@ -77,8 +78,7 @@ WIDGET* create_button(char* text, int x, int y)
   strcpy(d,text);
   w->type=BUTTON;
   w->flags=CLICKABLE;
-  w->enable=1;
-  w->visible=1;
+  w->status=STATUS_VISIBLE|STATUS_ENABLE;
   w->x=x;
   w->y=y;
   w->height=0;
@@ -214,8 +214,10 @@ void set_button_enable(WIDGET* w,int enable)
     printf("Widget not a button!\n");
     exit(-2);
   }
-  if(enable==1||enable==0)
-    w->enable=enable;
+  if(enable==1)
+    w->status=w->status|STATUS_ENABLE;
+  else if(enable==0)
+    w->status=w->status&~STATUS_ENABLE;
   else
     printf("Invalid value for enable\nNo action taken\n");
 }
@@ -230,8 +232,10 @@ void set_button_visible(WIDGET* w,int visible)
     printf("Widget not a button!\n");
     exit(-2);
   }
-  if(visible==1||visible==0)
-    w->visible=visible;
+  if(visible==1)
+    w->status=w->status|STATUS_VISIBLE;
+  else if(visible==0)
+    w->status=w->status&~STATUS_VISIBLE;
   else
     printf("Invalid value for visible\nNo action taken\n");
 }
@@ -272,7 +276,10 @@ int get_button_enable(WIDGET* w)
     printf("Widget not a button!\n");
     exit(-2);
   }
-  return w->enable;
+  if((w->status&STATUS_ENABLE)>0)
+    return 1;
+  else
+    return 0;
 }
 
 int get_button_visible(WIDGET* w)
@@ -285,5 +292,8 @@ int get_button_visible(WIDGET* w)
     printf("Widget not a button!\n");
     exit(-2);
   }
-  return w->visible;
+  if((w->status&STATUS_VISIBLE)>0)
+    return 1;
+  else
+    return 0;
 }

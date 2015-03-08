@@ -8,14 +8,20 @@
 #define CHECKBOX 4
 #define BORDER 5
 #define TITLE_BORDER 6
-#define TEXTBOX 7
+#define TEXTFIELD 7
 #define PICTURE 8
 #define COMBOBOX 9
 
 //Widget Action FLags
-#define NONE 0 
-#define CLICKABLE 1
-#define SELECTABLE 2
+#define NONE 0x00 
+#define CLICKABLE 0x01
+#define SELECTABLE 0x02
+
+//Widget Status Flags
+#define STATUS_NONE 0
+#define STATUS_VISIBLE 0x01
+#define STATUS_ENABLE 0x02
+#define STATUS_REPAINT 0x04
 
 
 typedef struct graphics_widget_t WIDGET;
@@ -29,8 +35,7 @@ typedef void(*free_widget)(WIDGET* widget);
 struct graphics_widget_t{
   char type;
   char flags;
-  char enable;
-  char visible;
+  char status;
   int x;
   int y;
   int height;
@@ -52,7 +57,7 @@ struct graphics_widget_t{
 #include "graphics_checkbox.h"
 #include "graphics_border.h"
 #include "graphics_titled_border.h"
-#include "graphics_textbox.h"
+#include "graphics_textfield.h"
 #include "graphics_picture.h"
 #include "graphics_combobox.h"
 

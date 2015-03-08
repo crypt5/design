@@ -15,7 +15,7 @@ struct picture_data_t{
 void paint_picture(GUI* g, WIDGET *w)
 {
   struct picture_data_t* data=w->widget_data;
-  if(w->visible==1){
+  if((w->status&STATUS_VISIBLE)>0){
     XCopyArea(g->dsp,data->img,g->mainWindow,g->draw,0,0,w->width,w->height,w->x,w->y);
   }
   else{
@@ -62,8 +62,7 @@ WIDGET* create_picture(GUI* g,char* filename,int x,int y)
 
   w->type=PICTURE;
   w->flags=NONE;
-  w->enable=1;
-  w->visible=1;
+  w->status=STATUS_VISIBLE|STATUS_ENABLE;
   w->x=x;
   w->y=y;
   w->height=(int)height;
@@ -110,8 +109,10 @@ void set_picture_visible(WIDGET* w,int visible)
     printf("WIDGET is not a picture!\n");
     exit(-1);
   }
-  if(visible==0||visible==1)
-    w->visible=visible;
+  if(visible==1)
+    w->status=w->status|STATUS_VISIBLE;
+  else if(visible==0)
+    w->status=w->status&~STATUS_VISIBLE;
   else
     printf("Invalid Visible Flag\nNo Action Taken\n");
 }
@@ -126,7 +127,10 @@ int get_picture_visible(WIDGET* w)
     printf("WIDGET is not a picture!\n");
     exit(-1);
   }
-  return w->visible;
+  if((w->status&STATUS_VISIBLE)>0)
+    return 1;
+  else
+    return 0;
 }
 
 void set_picture_click_callback(WIDGET* w,void(*ucallback)(GUI* g,WIDGET* self,void* data),void* data)

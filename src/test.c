@@ -11,41 +11,20 @@ char* printer(void* data)
 
 int main()
 {
-  char** data=NULL;
-  int i;
   GUI* g=NULL;
-  WIDGET* combo=NULL;
-  
-  data=malloc(sizeof(char*)*5);
-  for(i=0;i<5;i++)
-    data[i]=malloc(10);
-  strcpy(data[0],"Hello");
-  strcpy(data[1],"From");
-  strcpy(data[2],"Beyond");
-  strcpy(data[3],"The");
-  strcpy(data[4],"Grave");
-  
+  WIDGET* label=NULL;
+
   g=init_gui();
   create_main_window(g,"Widget Testing");
   set_main_size(g,500,500);
 
-  combo=create_combobox(20,10,10,printer);
-  add_item_to_combobox(combo,data[0]);
-  add_item_to_combobox(combo,data[1]);
-  add_item_to_combobox(combo,data[2]);
-  add_item_to_combobox(combo,data[3]);
-  add_item_to_combobox(combo,data[4]);
+  label=create_label("Hello World!",10,10);
 
-  add_to_main(g,combo);
+  add_to_main(g,label);
 
   show_main(g);
   while(gui_running(g)){
     usleep(100);
   }
   destroy_gui(g);
-  
-  for(i=0;i<5;i++)
-    free(data[i]);
-  free(data);
-  
 }

@@ -21,17 +21,17 @@ void paint_radio(GUI* g, WIDGET* w)
   }
   w->height=g->font->ascent*2;
   w->width=XTextWidth(g->font,w->string,strlen(w->string))+25;
-  if(w->visible==0){
+  if((w->status&STATUS_VISIBLE)==0){
     XSetForeground(g->dsp,g->draw,g->bgColor);
     XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
     return;
   }
-  XSetForeground(g->dsp,g->draw,w->enable==1 ? g->whiteColor : to_gray(g->whiteColor));
+  XSetForeground(g->dsp,g->draw,(w->status&STATUS_ENABLE)>0 ? g->whiteColor : to_gray(g->whiteColor));
   XFillArc(g->dsp,g->mainWindow,g->draw,w->x,w->y+(w->height/12),w->height-5,w->height-5,0,360*64);
   XSetForeground(g->dsp,g->draw,g->blackColor);
   XDrawArc(g->dsp,g->mainWindow,g->draw,w->x,w->y+(w->height/12),w->height-5,w->height-5,0,360*64);
   if(data->text_color>0){
-    XSetForeground(g->dsp,g->text,w->enable==1 ? data->text_color : to_gray(data->text_color));
+    XSetForeground(g->dsp,g->text,(w->status&STATUS_ENABLE)>0 ? data->text_color : to_gray(data->text_color));
     XDrawString(g->dsp,g->mainWindow,g->text,w->x+25,w->y+w->height-(w->height/4),w->string,strlen(w->string));
     XSetForeground(g->dsp,g->text,g->blackColor);
   }
@@ -41,10 +41,10 @@ void paint_radio(GUI* g, WIDGET* w)
 
   if(data->checked==1){
     if(data->check_color>0){
-      XSetForeground(g->dsp,g->draw,w->enable==1 ? data->check_color : to_gray(data->check_color));
+      XSetForeground(g->dsp,g->draw,(w->status&STATUS_ENABLE)>0 ? data->check_color : to_gray(data->check_color));
     }
     else{
-      XSetForeground(g->dsp,g->draw,w->enable==1 ? 0x000000AA : to_gray(0x000000AA));
+      XSetForeground(g->dsp,g->draw,(w->status&STATUS_ENABLE)>0 ? 0x000000AA : to_gray(0x000000AA));
     }
       XFillArc(g->dsp,g->mainWindow,g->draw,w->x+w->height/4-1,w->y+w->height/4,10,10,0,360*64);
   }
@@ -87,8 +87,7 @@ WIDGET* create_radio_button(char* text,int x,int y)
 
   w->type=RADIO_BUTTON;
   w->flags=CLICKABLE;
-  w->enable=1;
-  w->visible=1;
+  w->status=STATUS_ENABLE|STATUS_VISIBLE;
   w->x=x;
   w->y=y;
   w->height=0;
@@ -243,8 +242,10 @@ void set_radio_button_enable(WIDGET* w, int enable)
     printf("Not a Radio Button!\n");
     exit(-2);
   }
-  if(enable==1||enable==0)
-    w->enable=enable;
+  if(enable==1)
+    w->status=w->status|STATUS_ENABLE;
+  else if(enable==0)
+    w->status=w->status&~STATUS_ENABLE;
   else
     printf("Invalid enable value\nRadio Button not changed\n");
 }
@@ -259,8 +260,10 @@ void set_radio_button_visible(WIDGET* w,int visible)
     printf("Not a Radio Button!\n");
     exit(-2);
   }
-  if(visible==1||visible==0)
-    w->visible=visible;
+  if(visible==1)
+    w->status=w->status|STATUS_VISIBLE;
+  else if(visible==0)
+    w->status=w->status&~STATUS_VISIBLE;
   else
     printf("Invalid visible value\nRadio Button not changed\n");
 }
@@ -318,7 +321,10 @@ int get_radio_button_enable(WIDGET* w)
     printf("Not a Radio Button!\n");
     exit(-2);
   }
-  return w->enable;
+  if((w->status&STATUS_ENABLE)>0)
+    return 1;
+  else 
+    return 0;
 }
 
 int get_radio_button_visible(WIDGET* w)
@@ -331,7 +337,10 @@ int get_radio_button_visible(WIDGET* w)
     printf("Not a Radio Button!\n");
     exit(-2);
   }
-  return w->visible;
+  if((w->status&STATUS_VISIBLE)>0)
+    return 1;
+  else 
+    return 0;
 }
 
 void set_radio_button_paint_select(WIDGET* w,void(*uselect)(GUI* g, WIDGET* l),void(*ukey_press)(GUI* g,WIDGET* w, char key))

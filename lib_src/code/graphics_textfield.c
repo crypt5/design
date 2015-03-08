@@ -4,19 +4,19 @@
 #include <X11/Xlib.h>
 #include "graphics.h"
 #include "graphics_widget.h"
-#include "graphics_textbox.h"
+#include "graphics_textfield.h"
 
-struct textbox_data_t{
+struct textfield_data_t{
   int max_length;
   int current_pos;
   int text_color;
   int background_color;
   int editable;
 };
-void paint_textbox(GUI* g,WIDGET* w)
+void paint_textfield(GUI* g,WIDGET* w)
 {
   int width;
-  struct textbox_data_t* data=w->widget_data;;
+  struct textfield_data_t* data=w->widget_data;;
   if(w->width==0){
     for(width=0;width<data->max_length;width++){
       w->string[width]=' ';
@@ -31,32 +31,32 @@ void paint_textbox(GUI* g,WIDGET* w)
     XSetForeground(g->dsp,g->draw,g->bgColor);
     XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
   }
-  if(w->visible==0)
+  if((w->status&STATUS_VISIBLE)==0)
     return ;
   if(data->background_color>-1)
-    XSetForeground(g->dsp,g->draw,w->enable==1 ? data->background_color : to_gray(data->background_color));
+    XSetForeground(g->dsp,g->draw,(w->status&STATUS_ENABLE)>0 ? data->background_color : to_gray(data->background_color));
   else
-    XSetForeground(g->dsp,g->draw,w->enable==1 ? g->whiteColor : to_gray(g->whiteColor));
+    XSetForeground(g->dsp,g->draw,(w->status&STATUS_ENABLE)>0 ? g->whiteColor : to_gray(g->whiteColor));
 
   XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
-  XSetForeground(g->dsp,g->draw,w->enable==1 ? g->blackColor : to_gray(g->blackColor));
+  XSetForeground(g->dsp,g->draw,(w->status&STATUS_ENABLE)>0 ? g->blackColor : to_gray(g->blackColor));
   XDrawRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
   if(data->text_color>0){
-    XSetForeground(g->dsp,g->text,w->enable==1 ? data->text_color : to_gray(data->text_color));
+    XSetForeground(g->dsp,g->text,(w->status&STATUS_ENABLE)>0 ? data->text_color : to_gray(data->text_color));
     XDrawString(g->dsp,g->mainWindow,g->text,w->x+4,w->y+w->height/2+w->height/4,w->string,strlen(w->string));
     XSetForeground(g->dsp,g->text,g->blackColor);
   }
   else{
-    XSetForeground(g->dsp,g->text,w->enable==1 ? g->blackColor : to_gray(g->blackColor));
+    XSetForeground(g->dsp,g->text,(w->status&STATUS_ENABLE)>0 ? g->blackColor : to_gray(g->blackColor));
     XDrawString(g->dsp,g->mainWindow,g->text,w->x+4,w->y+w->height/2+w->height/4,w->string,strlen(w->string));
     XSetForeground(g->dsp,g->text,g->blackColor);
   }
 }
 
-void paint_textbox_click(GUI* g, WIDGET* w)
+void paint_textfield_click(GUI* g, WIDGET* w)
 {
   int i;
-  struct textbox_data_t* data=NULL;
+  struct textfield_data_t* data=NULL;
   data=w->widget_data;
   if(data->editable==1){
     i=XTextWidth(g->font,"A",1);
@@ -71,9 +71,9 @@ void paint_textbox_click(GUI* g, WIDGET* w)
   }
 }
 
-void update_textbox(GUI* g,WIDGET* w, char c)
+void update_textfield(GUI* g,WIDGET* w, char c)
 {
-  struct textbox_data_t* data=w->widget_data;
+  struct textfield_data_t* data=w->widget_data;
   int i;
   if(data->editable==1&&c>=' '&&strlen(w->string)<data->max_length){
     if(w->string[data->current_pos]=='\0'){
@@ -129,14 +129,14 @@ void update_textbox(GUI* g,WIDGET* w, char c)
     }
   }
   // Update the graphics
-  paint_textbox(g,w);
-  paint_textbox_click(g,w);
+  paint_textfield(g,w);
+  paint_textfield_click(g,w);
 }
 
-WIDGET* create_textbox(int x,int y,int max_length)
+WIDGET* create_textfield(int x,int y,int max_length)
 {
   WIDGET* w=NULL;
-  struct textbox_data_t* data=NULL;
+  struct textfield_data_t* data=NULL;
   char* s=NULL;
   int i;
 
@@ -145,9 +145,9 @@ WIDGET* create_textbox(int x,int y,int max_length)
     printf("Widget malloc failed!\n");
     exit(-1);
   }
-  data=malloc(sizeof(struct textbox_data_t));
+  data=malloc(sizeof(struct textfield_data_t));
   if(data==NULL){
-    printf("Textbox data malloc failed!\n");
+    printf("Textfield data malloc failed!\n");
     exit(-1);
   }
   data->current_pos=0;
@@ -163,20 +163,19 @@ WIDGET* create_textbox(int x,int y,int max_length)
   for(i=0;i<=max_length;i++)
     s[i]='\0';
 
-  w->type=TEXTBOX;
+  w->type=TEXTFIELD;
   w->flags=CLICKABLE|SELECTABLE;
-  w->enable=1;
-  w->visible=1;
+  w->status=STATUS_ENABLE|STATUS_VISIBLE;
   w->x=x;
   w->y=y;
   w->height=0;
   w->width=0;
   w->call=NULL;
-  w->paint=paint_textbox;
-  w->click=paint_textbox_click;
+  w->paint=paint_textfield;
+  w->click=paint_textfield_click;
   w->select=NULL;
-  w->key_press=update_textbox;
-  w->ufree=destroy_textbox;
+  w->key_press=update_textfield;
+  w->ufree=destroy_textfield;
   w->string=s;
   w->data=NULL;
   w->widget_data=data;
@@ -184,14 +183,14 @@ WIDGET* create_textbox(int x,int y,int max_length)
   return w;
 }
 
-void destroy_textbox(WIDGET* w)
+void destroy_textfield(WIDGET* w)
 {
   if(w==NULL){
-    printf("Widgetis NULL!\n");
+    printf("Widget is NULL!\n");
     exit(-2);
   }
-  if(w->type!=TEXTBOX){
-    printf("Widget not a Textbox\n");
+  if(w->type!=TEXTFIELD){
+    printf("Widget not a Textfield\n");
     exit(-2);
   }
   free(w->string);
@@ -199,16 +198,16 @@ void destroy_textbox(WIDGET* w)
   free(w);
 }
 
-void set_textbox_text(WIDGET* w,char* text)
+void set_textfield_text(WIDGET* w,char* text)
 {
   char* s=NULL;
-  struct textbox_data_t* data=NULL;
+  struct textfield_data_t* data=NULL;
   if(w==NULL){
-    printf("Widgetis NULL!\n");
+    printf("Widget is NULL!\n");
     exit(-2);
   }
-  if(w->type!=TEXTBOX){
-    printf("Widget not a Textbox\n");
+  if(w->type!=TEXTFIELD){
+    printf("Widget not a Textfield\n");
     exit(-2);
   }
   data=w->widget_data;
@@ -228,77 +227,81 @@ void set_textbox_text(WIDGET* w,char* text)
   }
 }
 
-void set_textbox_text_color(WIDGET* w,int ARGB)
+void set_textfield_text_color(WIDGET* w,int ARGB)
 {
-  struct textbox_data_t* data=NULL;
+  struct textfield_data_t* data=NULL;
   if(w==NULL){
-    printf("Widgetis NULL!\n");
+    printf("Widget is NULL!\n");
     exit(-2);
   }
-  if(w->type!=TEXTBOX){
-    printf("Widget not a Textbox\n");
+  if(w->type!=TEXTFIELD){
+    printf("Widget not a Textfield\n");
     exit(-2);
   }
   data=w->widget_data;
   data->text_color=ARGB;
 }
 
-void set_textbox_background_color(WIDGET* w,int ARGB)
+void set_textfield_background_color(WIDGET* w,int ARGB)
 {
-  struct textbox_data_t* data=NULL;
-  if(w==NULL){
-    printf("Widgetis NULL!\n");
+  struct textfield_data_t* data=NULL;
+  if(w==NULL){ 
+    printf("Widget is NULL!\n");
     exit(-2);
   }
-  if(w->type!=TEXTBOX){
-    printf("Widget not a Textbox\n");
+  if(w->type!=TEXTFIELD){
+    printf("Widget not a Textfield\n");
     exit(-2);
   }
   data=w->widget_data;
   data->background_color=ARGB;
 }
 
-void set_textbox_enable(WIDGET* w, int enable)
+void set_textfield_enable(WIDGET* w, int enable)
 {
   if(w==NULL){
-    printf("Widgetis NULL!\n");
+    printf("Widget is NULL!\n");
     exit(-2);
   }
-  if(w->type!=TEXTBOX){
-    printf("Widget not a Textbox\n");
+  if(w->type!=TEXTFIELD){
+    printf("Widget not a Textfield\n");
     exit(-2);
   }
-  if(enable==1||enable==0)
-    w->enable=enable;
+  if(enable==1)
+    w->status=w->status|STATUS_ENABLE;
+  else if(enable==0)
+    w->status=w->status&~STATUS_ENABLE;
   else
     printf("Invalid enable flag\n");
 }
 
-void set_textbox_visible(WIDGET* w,int visible)
+void set_textfield_visible(WIDGET* w,int visible)
 {  
   if(w==NULL){
-    printf("Widgetis NULL!\n");
+    printf("Widget is NULL!\n");
     exit(-2);
   }
-  if(w->type!=TEXTBOX){
-    printf("Widget not a Textbox\n");
+  if(w->type!=TEXTFIELD){
+    printf("Widget not a Textfield\n");
     exit(-2);
   }
-  if(visible==1||visible==0)
-    w->visible=visible;
+  if(visible==1)
+    w->status=w->status|STATUS_VISIBLE;
+  else if(visible==0)
+    w->status=w->status&~STATUS_VISIBLE;
   else
     printf("Invalid visible flag\n");
 }
 
-void set_textbox_editable(WIDGET* w, int edit)
+void set_textfield_editable(WIDGET* w, int edit)
 {
-  struct textbox_data_t* data=NULL;
+  struct textfield_data_t* data=NULL;
   if(w==NULL){
-    printf("Widgetis NULL!\n");
+    printf("Widget is NULL!\n");
     exit(-2);
   }
-  if(w->type!=TEXTBOX){
-    printf("Widget not a Textbox\n");
+  if(w->type!=TEXTFIELD){
+    printf("Widget not a Textfield\n");
     exit(-2);
   }
   data=w->widget_data;
@@ -308,84 +311,90 @@ void set_textbox_editable(WIDGET* w, int edit)
     printf("Invalid Editable Flag\n");
 }
 
-char* get_textbox_text(WIDGET* w)
+char* get_textfield_text(WIDGET* w)
 {
   if(w==NULL){
-    printf("Widgetis NULL!\n");
+    printf("Widget is NULL!\n");
     exit(-2);
   }
-  if(w->type!=TEXTBOX){
-    printf("Widget not a Textbox\n");
+  if(w->type!=TEXTFIELD){
+    printf("Widget not a Textfield\n");
     exit(-2);
   }
   return w->string;
 }
 
-int get_textbox_text_color(WIDGET* w)
+int get_textfield_text_color(WIDGET* w)
 {
-  struct textbox_data_t* data=NULL;
+  struct textfield_data_t* data=NULL;
   if(w==NULL){
-    printf("Widgetis NULL!\n");
+    printf("Widget is NULL!\n");
     exit(-2);
   }
-  if(w->type!=TEXTBOX){
-    printf("Widget not a Textbox\n");
+  if(w->type!=TEXTFIELD){
+    printf("Widget not a Textfield\n");
     exit(-2);
   }
   data=w->widget_data;
   return data->text_color;
 }
 
-int get_textbox_background_color(WIDGET* w)
+int get_textfield_background_color(WIDGET* w)
 {
-  struct textbox_data_t* data=NULL;
+  struct textfield_data_t* data=NULL;
   if(w==NULL){
-    printf("Widgetis NULL!\n");
+    printf("Widget is NULL!\n");
     exit(-2);
   }
-  if(w->type!=TEXTBOX){
-    printf("Widget not a Textbox\n");
+  if(w->type!=TEXTFIELD){
+    printf("Widget not a Textfield\n");
     exit(-2);
   }
   data=w->widget_data;
   return data->background_color;
 }
 
-int get_textbox_enable(WIDGET* w)
+int get_textfield_enable(WIDGET* w)
 {
  if(w==NULL){
-    printf("Widgetis NULL!\n");
+    printf("Widget is NULL!\n");
     exit(-2);
   }
-  if(w->type!=TEXTBOX){
-    printf("Widget not a Textbox\n");
+  if(w->type!=TEXTFIELD){
+    printf("Widget not a Textfield\n");
     exit(-2);
   }
-  return w->enable;
+  if((w->status&STATUS_ENABLE)>0)
+    return 1;
+  else
+    return 0;
 }
 
-int get_textbox_visible(WIDGET* w)
+int get_textfield_visible(WIDGET* w)
 {
  if(w==NULL){
-    printf("Widgetis NULL!\n");
+    printf("Widget is NULL!\n");
     exit(-2);
   }
-  if(w->type!=TEXTBOX){
-    printf("Widget not a Textbox\n");
+  if(w->type!=TEXTFIELD){
+    printf("Widget not a Textfield\n");
     exit(-2);
   }
-  return w->visible;
+  if((w->status&STATUS_VISIBLE)>0)
+    return 1;
+  else 
+    return 0;
 }
 
-int get_textbox_editable(WIDGET* w)
+int get_textfield_editable(WIDGET* w)
 {
-  struct textbox_data_t* data=NULL;
+  struct textfield_data_t* data=NULL;
   if(w==NULL){
-    printf("Widgetis NULL!\n");
+    printf("Widget is NULL!\n");
     exit(-2);
   }
-  if(w->type!=TEXTBOX){
-    printf("Widget not a Textbox\n");
+  if(w->type!=TEXTFIELD){
+    printf("Widget not a Textfield\n");
     exit(-2);
   }
   data=w->widget_data;

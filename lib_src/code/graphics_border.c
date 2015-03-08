@@ -15,7 +15,7 @@ void paint_border(GUI* g, WIDGET* w)
 {
   struct border_data_t* data=NULL;
   data=w->widget_data;
-  if(w->visible==0){
+  if((w->status&STATUS_VISIBLE)==0){
     XSetForeground(g->dsp,g->draw,g->bgColor);
     XSetLineAttributes(g->dsp,g->draw,data->thickness,LineSolid,CapButt,JoinMiter);
     XDrawRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
@@ -53,10 +53,10 @@ WIDGET* create_simple_border(int x,int y,int height,int width)
   }
   d->color=-1;
   d->thickness=1;
+
   w->type=BORDER;
   w->flags=NONE;
-  w->enable=1;
-  w->visible=1;
+  w->status=STATUS_VISIBLE|STATUS_ENABLE;
   w->x=x;
   w->y=y;
   w->height=height;
@@ -128,12 +128,12 @@ void set_simple_border_visible(WIDGET* w,int visible)
     printf("Not a Border!\n");
     exit(-2);
   }
-  if(visible==1||visible==0){
-    w->visible=visible;
-  }
-  else{
+  if(visible==1)
+    w->status=w->status|STATUS_VISIBLE;
+  else if(visible==0)
+    w->status=w->status&~STATUS_VISIBLE;
+  else
     printf("Invalid Visible input for border\nNo action taken\n");
-  }
 }
 
 
@@ -175,5 +175,8 @@ int get_simple_border_visible(WIDGET* w)
     printf("Not a Border!\n");
     exit(-2);
   }
-  return w->visible;
+  if((w->status&STATUS_VISIBLE)>0)
+    return 1;
+  else
+    return 0;
 }

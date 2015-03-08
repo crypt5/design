@@ -392,7 +392,7 @@ WIDGET* get_at_coords(GUI* g,int x, int y)
 
   for(i=0;i<list_length(g->widgets);i++){
     temp=list_get_pos(g->widgets,i);
-    if(temp->flags!=NONE&&temp->visible==1&&temp->enable==1){
+    if((temp->flags!=NONE)&&((temp->status&STATUS_VISIBLE)>0)&&((temp->status&STATUS_ENABLE)>0)){
       if(x>temp->x&&x<temp->x+temp->width){
 	if(y>temp->y&&y<temp->y+temp->height){
 	  return temp;

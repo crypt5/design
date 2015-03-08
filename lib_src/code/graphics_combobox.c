@@ -88,8 +88,7 @@ WIDGET* create_combobox(int display_width,int x,int y,char*(*ustring)(void* uite
 
   w->type=COMBOBOX;
   w->flags=CLICKABLE;
-  w->enable=1;
-  w->visible=1;
+  w->status=STATUS_ENABLE|STATUS_VISIBLE;
   w->x=x;
   w->y=y;
   w->height=0;
@@ -283,8 +282,10 @@ void set_combobox_enable(WIDGET* w,int enable)
     printf("Not a Combobox!\n");
     exit(-1);
   }
-  if(enable==1||enable==0)
-    w->enable=enable;
+  if(enable==1)
+    w->status=w->status|STATUS_ENABLE;
+  else if(enable==0)
+    w->status=w->status&~STATUS_ENABLE;
   else
     printf("Invalid enable flag\n");
 
@@ -301,8 +302,10 @@ void set_combobox_visible(WIDGET* w,int visible)
     printf("Not a Combobox!\n");
     exit(-1);
   }
-  if(visible==1||visible==0)
-    w->visible=visible;
+  if(visible==1)
+    w->status=w->status|STATUS_VISIBLE;
+  else if(visible==0)
+    w->status=w->status&~STATUS_VISIBLE;
   else
     printf("Invalid visible flag\n");
 }
@@ -395,7 +398,10 @@ int get_combobox_enable(WIDGET* w)
     printf("Not a Combobox!\n");
     exit(-1);
   }
-  return w->enable;
+  if((w->status&STATUS_ENABLE)>0)
+    return 1;
+  else 
+    return 0;
 }
 
 int get_combobox_visible(WIDGET* w)
@@ -408,5 +414,8 @@ int get_combobox_visible(WIDGET* w)
     printf("Not a Combobox!\n");
     exit(-1);
   }
-  return w->visible;
+  if((w->status&STATUS_VISIBLE)>0)
+    return 1;
+  else 
+    return 0;
 }
