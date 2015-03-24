@@ -5,7 +5,7 @@
 #include "graphics_widget.h"
 
 WIDGET* create_textfield(int x,int y,int max_length);
-void destroy_textfield(WIDGET* w);
+void destroy_textfield(GUI* g,WIDGET* w);
 
 void set_textfield_text(WIDGET* w,char* text);
 void set_textfield_text_color(WIDGET* w,int ARGB);

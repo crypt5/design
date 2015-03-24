@@ -4,9 +4,17 @@
 #include <stdio.h>
 #include "graphics.h"
 
-char* printer(void* data)
+void button_press(GUI* g, WIDGET* self, void* data)
 {
-  return (char*)data;
+  WIDGET* label=(WIDGET*)data;
+  int enable=get_label_visible(label);
+  if(enable==0)
+    set_label_visible(label,1);
+  else
+    set_label_visible(label,0);
+  set_label_text(label,"Help");
+
+  update_widget(g,label);
 }
 
 int main()
@@ -20,7 +28,13 @@ int main()
   set_main_size(g,500,500);
 
   label=create_label("Hello World!",10,10);
-  button=create_button("Click me!",10,60);
+  set_label_background(label,0x00FF00FF);
+  set_label_text_color(label,0x0000FF00);
+  set_label_border(label,0x00000000,1);
+  set_label_enable(label,0);
+
+  button=create_button("Disable",10,70);
+  set_button_callback(button,button_press,label);
 
   add_to_main(g,label);
   add_to_main(g,button);

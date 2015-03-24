@@ -1,7 +1,7 @@
 #ifndef GRAPHICS_WIDGET_H_
 #define GRAPHICS_WIDGET_H_
 
-//Widget Types
+//Widget Types (decimal)
 #define LABEL 1
 #define BUTTON 2
 #define RADIO_BUTTON 3
@@ -12,12 +12,12 @@
 #define PICTURE 8
 #define COMBOBOX 9
 
-//Widget Action FLags
+//Widget Action FLags (binary)
 #define NONE 0x00 
 #define CLICKABLE 0x01
 #define SELECTABLE 0x02
 
-//Widget Status Flags
+//Widget Status Flags (binary)
 #define STATUS_NONE 0
 #define STATUS_VISIBLE 0x01
 #define STATUS_ENABLE 0x02
@@ -31,7 +31,8 @@ typedef void(*painter)(GUI* g, WIDGET* w);
 typedef void(*on_click)(GUI* g, WIDGET* w);
 typedef void(*on_select)(GUI* g, WIDGET* w);
 typedef void(*on_keypress)(GUI* g,WIDGET* w, char key);
-typedef void(*free_widget)(WIDGET* widget);
+typedef void(*free_widget)(GUI* g,WIDGET* widget);
+
 struct graphics_widget_t{
   char type;
   char flags;

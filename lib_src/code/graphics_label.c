@@ -6,54 +6,110 @@
 #include "graphics_widget.h"
 #include "graphics_label.h"
 
+#include <X11/xpm.h>
+
 struct label_data_t{
   int text_color;
   int border_color;
   int border_width;
   int background;
   Pixmap map;
+  //Need these by default 
+  // Invisible (blank)
+  // Default (with colors)
+  // Not enabled (with colors)
 };
 
 void paint_label(GUI* g, WIDGET* w)
 {
-  struct label_data_t* data=NULL;
+  struct label_data_t* data=w->widget_data;
+  // Psudo-code
+  // Check to see if we need to create the pixmap
+  // Check the repaint flag
+  // Calculate the height and width
+  // Draw the widget in all states
+  // Use xcopyarea to draw the widget to screen depending on the state
 
-  if((w->status&STATUS_VISIBLE)==0){
-    if(w->height!=0){
-      XSetForeground(g->dsp,g->draw,g->bgColor);
-      XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
-    }
+  if(w->width==0){
     w->width=XTextWidth(g->font,w->string,strlen(w->string))+6;
     w->height=g->font->ascent*2;
-    return;
+    data->map=XCreatePixmap(g->dsp,g->mainWindow,w->width,3*w->height,24);
+    XSetForeground(g->dsp,g->draw,g->bgColor);
+    XFillRectangle(g->dsp,data->map,g->draw,0,0,w->width,w->height*3);
+  }
+  else if((w->status&STATUS_REPAINT)>0){
+    XCopyArea(g->dsp,data->map,g->mainWindow,g->draw,0,0,w->width,w->height,w->x,w->y);
+    XFreePixmap(g->dsp,data->map);
+    w->width=XTextWidth(g->font,w->string,strlen(w->string))+6;
+    w->height=g->font->ascent*2;
+    data->map=XCreatePixmap(g->dsp,g->mainWindow,w->width,w->height*3,24);
+
+    //not visible and background of whole thing
+    XSetForeground(g->dsp,g->draw,g->bgColor);
+    XFillRectangle(g->dsp,data->map,g->draw,0,0,w->width,w->height*3);
+    
+    //Normal
+    if(data->background>=0)
+      XSetForeground(g->dsp,g->draw,data->background);
+    else
+      XSetForeground(g->dsp,g->draw,g->bgColor);
+    XFillRectangle(g->dsp,data->map,g->draw,0,w->height,w->width,w->height);
+    if(data->text_color>0){
+      XSetForeground(g->dsp,g->text,data->text_color);
+      XDrawString(g->dsp,data->map,g->text,3,w->height+w->height/2+(w->height/4),(char*)w->string,strlen((char*)w->string));
+      XSetForeground(g->dsp,g->text,g->blackColor);
+    }
+    else{
+      XDrawString(g->dsp,data->map,g->text,3,w->height+w->height/2+(w->height/4),(char*)w->string,strlen((char*)w->string));
+    }
+    if(data->border_color>=0){
+      XSetForeground(g->dsp,g->draw,data->border_color);
+      XSetLineAttributes(g->dsp,g->draw,data->border_width,LineSolid,CapButt,JoinMiter);
+      XDrawRectangle(g->dsp,data->map,g->draw,0,w->height,w->width-1,w->height-1);
+      XSetLineAttributes(g->dsp,g->draw,0,LineSolid,CapButt,JoinMiter);
+  }
+    //Not enabled
+    if(data->background>=0)
+      XSetForeground(g->dsp,g->draw,to_gray(data->background));
+    else
+      XSetForeground(g->dsp,g->draw,g->bgColor);
+    XFillRectangle(g->dsp,data->map,g->draw,0,w->height*2,w->width,w->height);
+    if(data->text_color>0){
+      XSetForeground(g->dsp,g->text, to_gray(data->text_color));
+      XDrawString(g->dsp,data->map,g->text,3,w->height*2+w->height/2+(w->height/4),(char*)w->string,strlen((char*)w->string));
+      XSetForeground(g->dsp,g->text,g->blackColor);
+    }
+    else{
+      XSetForeground(g->dsp,g->text, to_gray(g->blackColor));
+      XDrawString(g->dsp,data->map,g->text,3,w->height*2+w->height/2+(w->height/4),(char*)w->string,strlen((char*)w->string));
+      XSetForeground(g->dsp,g->text,g->blackColor);
+    }
+    if(data->border_color>=0){
+      XSetForeground(g->dsp,g->draw, to_gray(data->border_color));
+      XSetLineAttributes(g->dsp,g->draw,data->border_width,LineSolid,CapButt,JoinMiter);
+      XDrawRectangle(g->dsp,data->map,g->draw,0,w->height*2,w->width-1,w->height-1);
+      XSetLineAttributes(g->dsp,g->draw,0,LineSolid,CapButt,JoinMiter);
+    }
+
+    // Debug print to file
+    Pixmap p=XCreatePixmap(g->dsp,g->mainWindow,w->width,w->height*3,24);
+    XSetForeground(g->dsp,g->draw,0xFFFFFFFF);
+    XFillRectangle(g->dsp,p,g->draw,0,0,w->width,w->height*3);
+    XpmWriteFileFromPixmap(g->dsp,"test_label.xpm",data->map,p,NULL);
+    XFreePixmap(g->dsp,p);
+
+
+    w->status=w->status&(~STATUS_REPAINT);
   }
 
-  data=w->widget_data;
-  if(w->height!=0){
-    XSetForeground(g->dsp,g->draw,g->bgColor);
-    XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
-  }
-  w->width=XTextWidth(g->font,w->string,strlen(w->string))+6;
-  w->height=g->font->ascent*2;
-  if(data->background>=0)
-    XSetForeground(g->dsp,g->draw,(w->status&STATUS_ENABLE)>0 ? data->background : to_gray(data->background));
+  // Copy the correct area to screen 
+  if((w->status&STATUS_VISIBLE)==0)
+    XCopyArea(g->dsp,data->map,g->mainWindow,g->draw,0,0,w->width,w->height,w->x,w->y);
+  else if((w->status&STATUS_ENABLE)==0)
+    XCopyArea(g->dsp,data->map,g->mainWindow,g->draw,0,w->height*2,w->width,w->height,w->x,w->y);
   else
-    XSetForeground(g->dsp,g->draw,g->bgColor);
-  XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
-  if(data->text_color>0){
-    XSetForeground(g->dsp,g->text,(w->status&STATUS_ENABLE)>0 ? data->text_color : to_gray(data->text_color));
-    XDrawString(g->dsp,g->mainWindow,g->text,w->x+3,w->y+w->height/2+(w->height/4),(char*)w->string,strlen((char*)w->string));
-    XSetForeground(g->dsp,g->text,g->blackColor);
-  }
-  else{
-    XDrawString(g->dsp,g->mainWindow,g->text,w->x+3,w->y+w->height/2+(w->height/4),(char*)w->string,strlen((char*)w->string));
-  }
-  if(data->border_color>=0){
-    XSetForeground(g->dsp,g->draw,(w->status&STATUS_ENABLE)>0 ? data->border_color : to_gray(data->border_color));
-    XSetLineAttributes(g->dsp,g->draw,data->border_width,LineSolid,CapButt,JoinMiter);
-    XDrawRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
-    XSetLineAttributes(g->dsp,g->draw,0,LineSolid,CapButt,JoinMiter);
-  }
+    XCopyArea(g->dsp,data->map,g->mainWindow,g->draw,0,w->height,w->width,w->height,w->x,w->y);
+
 }
 
 WIDGET* create_label(char* message,int x, int y)
@@ -86,7 +142,7 @@ WIDGET* create_label(char* message,int x, int y)
 
   w->type=LABEL;
   w->flags=NONE;
-  w->status=STATUS_VISIBLE|STATUS_ENABLE;
+  w->status=STATUS_VISIBLE|STATUS_ENABLE|STATUS_REPAINT;
   w->x=x;
   w->y=y;
   w->width=0;
@@ -104,12 +160,14 @@ WIDGET* create_label(char* message,int x, int y)
   return w;
 }
 
-void destroy_label(WIDGET* w)
+void destroy_label(GUI* g,WIDGET* w)
 {
   if(w==NULL){
     printf("Label is NULL!\n");
     exit(-2);
   }
+  struct label_data_t* data=w->widget_data;
+  XFreePixmap(g->dsp,data->map);
   free(w->string);
   free(w->widget_data);
   free(w);
@@ -128,6 +186,7 @@ void set_label_background(WIDGET* l,int ARGB)
   }
   data=l->widget_data;
   data->background=ARGB;
+  l->status=l->status|STATUS_REPAINT;
 }
 
 void set_label_text_color(WIDGET* l,int ARGB)
@@ -143,6 +202,7 @@ void set_label_text_color(WIDGET* l,int ARGB)
   }
   data=l->widget_data;
   data->text_color=ARGB;
+  l->status=l->status|STATUS_REPAINT;
 }
 
 void set_label_text(WIDGET* l,char* message)
@@ -165,6 +225,7 @@ void set_label_text(WIDGET* l,char* message)
   }
   strcpy(s,message);
   l->string=s;
+  l->status=l->status|STATUS_REPAINT;
 }
 
 void set_label_border(WIDGET* l, int ARGB, int thickness)
@@ -181,6 +242,7 @@ void set_label_border(WIDGET* l, int ARGB, int thickness)
   data=l->widget_data;
   data->border_color=ARGB;
   data->border_width=thickness;
+  l->status=l->status|STATUS_REPAINT;
 }
 
 void set_label_enable(WIDGET* l, int enable)

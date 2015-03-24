@@ -74,7 +74,7 @@ WIDGET* create_simple_border(int x,int y,int height,int width)
   return w;
 }
 
-void destroy_simple_border(WIDGET* w)
+void destroy_simple_border(GUI* g,WIDGET* w)
 {
   if(w==NULL){
     printf("Border is NULL!\n");

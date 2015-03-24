@@ -4,7 +4,7 @@
 #include "graphics_widget.h"
 
 WIDGET* create_button(char* text, int x, int y);
-void destroy_button(WIDGET* w);
+void destroy_button(GUI* g,WIDGET* w);
 
 void set_button_text_color(WIDGET* w,int ARGB);
 void set_button_text(WIDGET* w, char* message);

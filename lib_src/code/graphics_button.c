@@ -96,7 +96,7 @@ WIDGET* create_button(char* text, int x, int y)
   return w;
 }
 
-void destroy_button(WIDGET* w)
+void destroy_button(GUI* g,WIDGET* w)
 {
   if(w==NULL){
     printf("Widget is NULL\n");

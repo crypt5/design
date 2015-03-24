@@ -4,7 +4,7 @@
 #include "graphics_widget.h"
 
 WIDGET* create_label(char* message,int x, int y);
-void destroy_label(WIDGET* l);
+void destroy_label(GUI* g, WIDGET* l);
 
 void set_label_background(WIDGET* l,int ARGB);
 void set_label_text_color(WIDGET* l,int ARGB);

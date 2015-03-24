@@ -183,7 +183,7 @@ WIDGET* create_textfield(int x,int y,int max_length)
   return w;
 }
 
-void destroy_textfield(WIDGET* w)
+void destroy_textfield(GUI* g,WIDGET* w)
 {
   if(w==NULL){
     printf("Widget is NULL!\n");

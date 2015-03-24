@@ -5,7 +5,7 @@
 #include "graphics.h"
 
 WIDGET* create_checkbox(char* text,int x,int y);
-void destroy_checkbox(WIDGET* w);
+void destroy_checkbox(GUI* g,WIDGET* w);
 
 void set_checkbox_text(WIDGET* w,char* text);
 void set_checkbox_text_color(WIDGET* w,int color);

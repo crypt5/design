@@ -5,7 +5,7 @@
 #include "graphics.h"
 
 WIDGET* create_radio_button(char* text,int x,int y);
-void destroy_radio_button(WIDGET* w);
+void destroy_radio_button(GUI* g,WIDGET* w);
 
 void set_radio_button_text(WIDGET* w,char* text);
 void set_radio_button_text_color(WIDGET* w,int color);

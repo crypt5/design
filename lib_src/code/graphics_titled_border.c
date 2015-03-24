@@ -89,7 +89,7 @@ WIDGET* create_titled_border(char* text,int x,int y,int height,int width)
   return w;
 }
 
-void destroy_titled_border(WIDGET* w)
+void destroy_titled_border(GUI* g,WIDGET* w)
 {
   if(w==NULL){
     printf("Titled Border is NULL\n");

@@ -106,7 +106,7 @@ WIDGET* create_combobox(int display_width,int x,int y,char*(*ustring)(void* uite
   return w;
 }
 
-void destroy_combobox(WIDGET* w)
+void destroy_combobox(GUI* g,WIDGET* w)
 {
   struct combobox_data_t* data=NULL;
   if(w==NULL){

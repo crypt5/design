@@ -105,7 +105,7 @@ WIDGET* create_radio_button(char* text,int x,int y)
   return w;
 }
 
-void destroy_radio_button(WIDGET* w)
+void destroy_radio_button(GUI* g,WIDGET* w)
 {
   if(w==NULL){
     printf("Radio Button is NULL!\n");

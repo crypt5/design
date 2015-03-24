@@ -79,9 +79,8 @@ WIDGET* create_picture(GUI* g,char* filename,int x,int y)
   return w;
 }
 
-void destroy_picture(WIDGET* w)
+void destroy_picture(GUI* g,WIDGET* w)
 {
-  GUI* g=NULL;
   struct picture_data_t* data=NULL;
 
   if(w==NULL){
@@ -92,7 +91,6 @@ void destroy_picture(WIDGET* w)
     printf("WIDGET is not a picture!\n");
     exit(-1);
   }
-  g=w->data;
   data=w->widget_data;
   XFreePixmap(g->dsp,data->img);
   free(data);

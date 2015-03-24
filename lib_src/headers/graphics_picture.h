@@ -5,7 +5,7 @@
 #include "graphics_widget.h"
 
 WIDGET* create_picture(GUI* g,char* filename,int x,int y);
-void destroy_picture(WIDGET* w);
+void destroy_picture(GUI* g,WIDGET* w);
 
 void set_picture_visible(WIDGET* w,int visible);
 

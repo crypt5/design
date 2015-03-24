@@ -5,7 +5,7 @@
 #include "graphics_widget.h"
 
 WIDGET* create_combobox(int display_width,int x,int y,char*(*ustring)(void* uitem));
-void destroy_combobox(WIDGET* w);
+void destroy_combobox(GUI* g,WIDGET* w);
 
 
 void add_item_to_combobox(WIDGET* w,void* item);

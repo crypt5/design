@@ -226,7 +226,6 @@ void create_main_window(GUI* g,char* title)
     exit(-1);
   }
   w = XCreateSimpleWindow(g->dsp,DefaultRootWindow(g->dsp),0,0,100,100,0,0,g->bgColor);
-  
   XSelectInput(g->dsp, w, StructureNotifyMask|KeyReleaseMask|ButtonPressMask|ButtonReleaseMask|ExposureMask);
 
   g->mainWindow=w;
@@ -238,7 +237,7 @@ void create_main_window(GUI* g,char* title)
   g->text=XCreateGC(g->dsp,g->mainWindow,0,NULL);
   g->draw=XCreateGC(g->dsp,g->mainWindow,0,NULL);
   XSetGraphicsExposures(g->dsp, g->draw, 0);
-  XSetGraphicsExposures(g->dsp,g->text,0);
+  XSetGraphicsExposures(g->dsp, g->text,0);
   XSetFont(g->dsp,g->text,g->font->fid);
   XSetForeground(g->dsp, g->text, g->blackColor);
 }
@@ -263,7 +262,7 @@ void destroy_gui(GUI* g)
     printf("Mutex Destroy Failed\n");
   for(re=0;re<list_length(g->widgets);re++){
     w=list_get_pos(g->widgets,re);
-    w->ufree(w);
+    w->ufree(g,w);
   }
   list_destroy(g->widgets);
   destroy_queue(g->updates);

@@ -116,7 +116,7 @@ WIDGET* create_checkbox(char* text,int x,int y)
   return w;
 }
 
-void destroy_checkbox(WIDGET* w)
+void destroy_checkbox(GUI* g,WIDGET* w)
 {
   if(w==NULL){
     printf("Checkbox is NULL!\n");
