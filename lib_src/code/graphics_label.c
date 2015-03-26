@@ -1,12 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <X11/Xlib.h>
+#include <X11/xpm.h>
 #include <string.h>
 #include "graphics.h"
 #include "graphics_widget.h"
 #include "graphics_label.h"
-
-#include <X11/xpm.h>
 
 struct label_data_t{
   int text_color;
@@ -14,35 +13,26 @@ struct label_data_t{
   int border_width;
   int background;
   Pixmap map;
-  //Need these by default 
-  // Invisible (blank)
-  // Default (with colors)
-  // Not enabled (with colors)
 };
 
 void paint_label(GUI* g, WIDGET* w)
 {
   struct label_data_t* data=w->widget_data;
-  // Psudo-code
-  // Check to see if we need to create the pixmap
-  // Check the repaint flag
-  // Calculate the height and width
-  // Draw the widget in all states
-  // Use xcopyarea to draw the widget to screen depending on the state
+ 
+  if((w->status&STATUS_REPAINT)>0){
 
-  if(w->width==0){
-    w->width=XTextWidth(g->font,w->string,strlen(w->string))+6;
-    w->height=g->font->ascent*2;
-    data->map=XCreatePixmap(g->dsp,g->mainWindow,w->width,3*w->height,24);
-    XSetForeground(g->dsp,g->draw,g->bgColor);
-    XFillRectangle(g->dsp,data->map,g->draw,0,0,w->width,w->height*3);
-  }
-  else if((w->status&STATUS_REPAINT)>0){
-    XCopyArea(g->dsp,data->map,g->mainWindow,g->draw,0,0,w->width,w->height,w->x,w->y);
-    XFreePixmap(g->dsp,data->map);
-    w->width=XTextWidth(g->font,w->string,strlen(w->string))+6;
-    w->height=g->font->ascent*2;
-    data->map=XCreatePixmap(g->dsp,g->mainWindow,w->width,w->height*3,24);
+    if(w->width==0){
+      w->width=XTextWidth(g->font,w->string,strlen(w->string))+6;
+      w->height=g->font->ascent*2;
+      data->map=XCreatePixmap(g->dsp,g->mainWindow,w->width,3*w->height,24);
+    }
+    else{
+      XCopyArea(g->dsp,data->map,g->mainWindow,g->draw,0,0,w->width,w->height,w->x,w->y);
+      XFreePixmap(g->dsp,data->map);
+      w->width=XTextWidth(g->font,w->string,strlen(w->string))+6;
+      w->height=g->font->ascent*2;
+      data->map=XCreatePixmap(g->dsp,g->mainWindow,w->width,w->height*3,24);
+    }
 
     //not visible and background of whole thing
     XSetForeground(g->dsp,g->draw,g->bgColor);
@@ -90,16 +80,18 @@ void paint_label(GUI* g, WIDGET* w)
       XDrawRectangle(g->dsp,data->map,g->draw,0,w->height*2,w->width-1,w->height-1);
       XSetLineAttributes(g->dsp,g->draw,0,LineSolid,CapButt,JoinMiter);
     }
+    w->status=w->status&(~STATUS_REPAINT);
 
     // Debug print to file
+    #ifdef DEBUG_PRINT_IMAGES
+    char filename[1024];
+    sprintf(filename,"pic_output/label_%p.xpm",(void *)w);
     Pixmap p=XCreatePixmap(g->dsp,g->mainWindow,w->width,w->height*3,24);
     XSetForeground(g->dsp,g->draw,0xFFFFFFFF);
     XFillRectangle(g->dsp,p,g->draw,0,0,w->width,w->height*3);
-    XpmWriteFileFromPixmap(g->dsp,"test_label.xpm",data->map,p,NULL);
+    XpmWriteFileFromPixmap(g->dsp,filename,data->map,p,NULL);
     XFreePixmap(g->dsp,p);
-
-
-    w->status=w->status&(~STATUS_REPAINT);
+    #endif
   }
 
   // Copy the correct area to screen 

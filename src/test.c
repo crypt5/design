@@ -12,7 +12,6 @@ void button_press(GUI* g, WIDGET* self, void* data)
     set_label_visible(label,1);
   else
     set_label_visible(label,0);
-  set_label_text(label,"Help");
 
   update_widget(g,label);
 }
@@ -31,9 +30,10 @@ int main()
   set_label_background(label,0x00FF00FF);
   set_label_text_color(label,0x0000FF00);
   set_label_border(label,0x00000000,1);
-  set_label_enable(label,0);
+  set_label_enable(label,1);
 
   button=create_button("Disable",10,70);
+  set_button_text_color(button,0x00FF00FF);
   set_button_callback(button,button_press,label);
 
   add_to_main(g,label);

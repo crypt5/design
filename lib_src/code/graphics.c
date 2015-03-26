@@ -283,20 +283,13 @@ void shutdown_gui(GUI* g)
 
 void show_main(GUI* g)
 {
-  XEvent e;
-  int re,i;
-  WIDGET* w=NULL;
-
+  int re;
   if(g==NULL){
     printf("GUI Object is NULL, no wondow to show\n");
     exit(-1);
   }
 
   XMapWindow(g->dsp, g->mainWindow);
-  XNextEvent(g->dsp,&e);
-  while(e.type!=MapNotify){
-    XNextEvent(g->dsp,&e);
-  }
   re=pthread_create(&g->tid,NULL,event_loop,g);
   if(re!=0){
     printf("Thread Create for Event loop Failed\n");
@@ -304,12 +297,6 @@ void show_main(GUI* g)
   }
   XSetWMProtocols(g->dsp, g->mainWindow, &g->wm_delete_window, 1);
 
-  
-  for(i=0;i<list_length(g->widgets);i++){
-    w=(WIDGET*)list_get_pos(g->widgets,i);
-    w->paint(g,w);
-  }
-  
 }
 
 void set_main_size(GUI* g,int height, int width)

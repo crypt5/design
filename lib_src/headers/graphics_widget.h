@@ -1,6 +1,12 @@
 #ifndef GRAPHICS_WIDGET_H_
 #define GRAPHICS_WIDGET_H_
 
+/* Uncomment to print out the debug images
+ * Create a folder in the main profram dir
+ * called pic_output to hold the pictures
+ */
+#define DEBUG_PRINT_IMAGES
+
 //Widget Types (decimal)
 #define LABEL 1
 #define BUTTON 2
