@@ -15,6 +15,7 @@ struct button_data_t{
 void paint_button(GUI* g, WIDGET* w)
 {
   struct button_data_t* data=w->widget_data;
+
   if((w->status&STATUS_REPAINT)>0){
     if(w->width==0){
       w->width=XTextWidth(g->font,w->string,strlen(w->string))+20;
@@ -42,6 +43,7 @@ void paint_button(GUI* g, WIDGET* w)
       XSetForeground(g->dsp,g->text,g->blackColor);
     }
     else{
+      XSetForeground(g->dsp,g->text,g->blackColor);
       XDrawString(g->dsp,data->map,g->text,10,w->height+(w->height/2+w->height/4),w->string,strlen(w->string));
     }
 
@@ -154,6 +156,8 @@ void destroy_button(GUI* g,WIDGET* w)
     printf("Widget not a button!\n");
     exit(-2);
   }
+  struct button_data_t* data=w->widget_data;
+  XFreePixmap(g->dsp,data->map);
   free(w->widget_data);
   free(w->string);
   free(w);

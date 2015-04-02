@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <X11/Xlib.h>
+#include <X11/xpm.h>
 #include "graphics.h"
 #include "graphics_widget.h"
 #include "graphics_radio_button.h"
@@ -10,43 +11,107 @@ struct radiobutton_data_t{
   int checked;
   int text_color;
   int check_color;
+  Pixmap map;
 };
 
 void paint_radio(GUI* g, WIDGET* w)
 {
   struct radiobutton_data_t* data=w->widget_data;
-  if(w->width!=0){
-    XSetForeground(g->dsp,g->draw,g->bgColor);
-    XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
-  }
-  w->height=g->font->ascent*2;
-  w->width=XTextWidth(g->font,w->string,strlen(w->string))+25;
-  if((w->status&STATUS_VISIBLE)==0){
-    XSetForeground(g->dsp,g->draw,g->bgColor);
-    XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
-    return;
-  }
-  XSetForeground(g->dsp,g->draw,(w->status&STATUS_ENABLE)>0 ? g->whiteColor : to_gray(g->whiteColor));
-  XFillArc(g->dsp,g->mainWindow,g->draw,w->x,w->y+(w->height/12),w->height-5,w->height-5,0,360*64);
-  XSetForeground(g->dsp,g->draw,g->blackColor);
-  XDrawArc(g->dsp,g->mainWindow,g->draw,w->x,w->y+(w->height/12),w->height-5,w->height-5,0,360*64);
-  if(data->text_color>0){
-    XSetForeground(g->dsp,g->text,(w->status&STATUS_ENABLE)>0 ? data->text_color : to_gray(data->text_color));
-    XDrawString(g->dsp,g->mainWindow,g->text,w->x+25,w->y+w->height-(w->height/4),w->string,strlen(w->string));
-    XSetForeground(g->dsp,g->text,g->blackColor);
-  }
-  else{
-    XDrawString(g->dsp,g->mainWindow,g->text,w->x+25,w->y+w->height-(w->height/4),w->string,strlen(w->string));
-  }
 
-  if(data->checked==1){
-    if(data->check_color>0){
-      XSetForeground(g->dsp,g->draw,(w->status&STATUS_ENABLE)>0 ? data->check_color : to_gray(data->check_color));
+  if((w->status&STATUS_REPAINT)>0){
+    if(w->width==0){
+      w->height=g->font->ascent*2;
+      w->width=XTextWidth(g->font,w->string,strlen(w->string))+20;
+      data->map=XCreatePixmap(g->dsp,g->mainWindow,w->width,3*w->height,24);
     }
     else{
-      XSetForeground(g->dsp,g->draw,(w->status&STATUS_ENABLE)>0 ? 0x000000AA : to_gray(0x000000AA));
+      XCopyArea(g->dsp,data->map,g->mainWindow,g->draw,0,0,w->width,w->height,w->x,w->y);
+      XFreePixmap(g->dsp,data->map);
+      w->width=XTextWidth(g->font,w->string,strlen(w->string))+20;
+      w->height=g->font->ascent*2;
+      data->map=XCreatePixmap(g->dsp,g->mainWindow,w->width,w->height*3,24);
     }
+    // Paint not visible
+    XSetForeground(g->dsp,g->draw,g->bgColor);
+    XFillRectangle(g->dsp,data->map,g->draw,0,0,w->width,w->height*3);
+
+    // Paint Normal
+    XSetForeground(g->dsp,g->draw, g->whiteColor);
+    XFillArc(g->dsp,data->map,g->draw,0,w->height+(w->height/12),w->height-5,w->height-5,0,360*64);
+    XSetForeground(g->dsp,g->draw,g->blackColor);
+    XDrawArc(g->dsp,data->map,g->draw,0,w->height+(w->height/12),w->height-5,w->height-5,0,360*64);
+    if(data->text_color>0){
+      XSetForeground(g->dsp,g->text,data->text_color);
+      XDrawString(g->dsp,data->map,g->text,25,w->height+w->height-(w->height/4),w->string,strlen(w->string));
+      XSetForeground(g->dsp,g->text,g->blackColor);
+    }
+    else{
+      XDrawString(g->dsp,data->map,g->text,25,w->height+w->height-(w->height/4),w->string,strlen(w->string));
+    }
+
+    // Paint not Enabled
+    XSetForeground(g->dsp,g->draw, to_gray(g->whiteColor));
+    XFillArc(g->dsp,data->map,g->draw,0,w->height*2+(w->height/12),w->height-5,w->height-5,0,360*64);
+    XSetForeground(g->dsp,g->draw,to_gray(g->blackColor));
+    XDrawArc(g->dsp,data->map,g->draw,0,w->height*2+(w->height/12),w->height-5,w->height-5,0,360*64);
+    if(data->text_color>0){
+      XSetForeground(g->dsp,g->text,to_gray(data->text_color));
+      XDrawString(g->dsp,data->map,g->text,25,w->height*2+w->height-(w->height/4),w->string,strlen(w->string));
+      XSetForeground(g->dsp,g->text,g->blackColor);
+    }
+    else{
+      XSetForeground(g->dsp,g->text,to_gray(g->blackColor));
+      XDrawString(g->dsp,data->map,g->text,25,w->height*2+w->height-(w->height/4),w->string,strlen(w->string));
+      XSetForeground(g->dsp,g->text,g->blackColor);
+    }
+
+    // Debug print to file
+    #ifdef DEBUG_PRINT_IMAGES
+    char filename[1024];
+    sprintf(filename,"pic_output/radiobutton_%p.xpm",(void *)w);
+    Pixmap p=XCreatePixmap(g->dsp,g->mainWindow,w->width,w->height*3,24);
+    XSetForeground(g->dsp,g->draw,0xFFFFFFFF);
+    XFillRectangle(g->dsp,p,g->draw,0,0,w->width,w->height*3);
+    XpmWriteFileFromPixmap(g->dsp,filename,data->map,p,NULL);
+    XFreePixmap(g->dsp,p);
+    #endif
+
+   w->status=w->status&(~STATUS_REPAINT);
+  }
+
+
+  // Copy the correct area to screen 
+  if((w->status&STATUS_VISIBLE)==0){
+    // Not Visible
+    XCopyArea(g->dsp,data->map,g->mainWindow,g->draw,0,0,w->width,w->height,w->x,w->y);
+  }
+  else if((w->status&STATUS_ENABLE)==0){
+    // Not enabled
+    XCopyArea(g->dsp,data->map,g->mainWindow,g->draw,0,w->height*2,w->width,w->height,w->x,w->y);
+
+    if(data->checked==1){
+      if(data->check_color>0){
+	XSetForeground(g->dsp,g->draw,to_gray(data->check_color));
+      }
+      else{
+	XSetForeground(g->dsp,g->draw, to_gray(0x000000AA));
+      }
       XFillArc(g->dsp,g->mainWindow,g->draw,w->x+w->height/4-1,w->y+w->height/4,10,10,0,360*64);
+    }
+  }
+  else{
+    // Normal Painting
+    XCopyArea(g->dsp,data->map,g->mainWindow,g->draw,0,w->height,w->width,w->height,w->x,w->y);
+    if(data->checked==1){
+      if(data->check_color>0){
+	XSetForeground(g->dsp,g->draw, data->check_color);
+      }
+      else{
+	XSetForeground(g->dsp,g->draw,0x000000AA);
+      }
+      XFillArc(g->dsp,g->mainWindow,g->draw,w->x+w->height/4-1,w->y+w->height/4,10,10,0,360*64);
+    }
+    
   }
 }
 
@@ -87,7 +152,7 @@ WIDGET* create_radio_button(char* text,int x,int y)
 
   w->type=RADIO_BUTTON;
   w->flags=CLICKABLE;
-  w->status=STATUS_ENABLE|STATUS_VISIBLE;
+  w->status=STATUS_ENABLE|STATUS_VISIBLE|STATUS_REPAINT;
   w->x=x;
   w->y=y;
   w->height=0;
@@ -115,6 +180,8 @@ void destroy_radio_button(GUI* g,WIDGET* w)
     printf("Not a Radio Button!\n");
     exit(-2);
   }
+  struct radiobutton_data_t* data=w->widget_data;
+  XFreePixmap(g->dsp,data->map);
   free(w->string);
   free(w->widget_data);
   free(w);
@@ -200,6 +267,7 @@ void set_radio_button_text(WIDGET* w,char* text)
   free(w->string);
   strcpy(s,text);
   w->string=s;
+  w->status|=STATUS_REPAINT;
 }
 
 void set_radio_button_text_color(WIDGET* w,int color)
@@ -215,6 +283,7 @@ void set_radio_button_text_color(WIDGET* w,int color)
   }
   data=w->widget_data;
   data->text_color=color;
+  w->status|=STATUS_REPAINT;
 }
 
 void set_radio_button_check_color(WIDGET* w,int color)
@@ -230,6 +299,7 @@ void set_radio_button_check_color(WIDGET* w,int color)
   }
   data=w->widget_data;
   data->check_color=color;
+  w->status|=STATUS_REPAINT;
 }
 
 void set_radio_button_enable(WIDGET* w, int enable)

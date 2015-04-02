@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <X11/Xlib.h>
+#include <X11/xpm.h>
 #include "graphics.h"
 #include "graphics_widget.h"
 #include "graphics_textfield.h"
@@ -12,27 +13,77 @@ struct textfield_data_t{
   int text_color;
   int background_color;
   int editable;
+  Pixmap map;
 };
 void paint_textfield(GUI* g,WIDGET* w)
 {
   int width;
-  struct textfield_data_t* data=w->widget_data;;
-  if(w->width==0){
-    for(width=0;width<data->max_length;width++){
-      w->string[width]=' ';
+  struct textfield_data_t* data=w->widget_data;
+
+  if((w->status&STATUS_REPAINT)>0){
+
+    if(w->width==0){
+      w->width=XTextWidth(g->font,w->string,strlen(w->string))+6;
+      w->height=g->font->ascent*2;
+      data->map=XCreatePixmap(g->dsp,g->mainWindow,w->width,3*w->height,24);
     }
-    w->width=XTextWidth(g->font,w->string,strlen(w->string))+8;
-    w->height=g->font->ascent*2;
-    for(width=0;width<data->max_length;width++){
-      w->string[width]='\0';
+    else{
+      XCopyArea(g->dsp,data->map,g->mainWindow,g->draw,0,0,w->width,w->height,w->x,w->y);
+      XFreePixmap(g->dsp,data->map);
+      w->width=XTextWidth(g->font,w->string,strlen(w->string))+6;
+      w->height=g->font->ascent*2;
+      data->map=XCreatePixmap(g->dsp,g->mainWindow,w->width,w->height*3,24);
     }
-  }
-  else {
+    //not visible and background of whole thing
     XSetForeground(g->dsp,g->draw,g->bgColor);
-    XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
+    XFillRectangle(g->dsp,data->map,g->draw,0,0,w->width,w->height*3);
+
+    // Normal
+    if(data->background_color>-1)
+      XSetForeground(g->dsp,g->draw,data->background_color);
+    else
+      XSetForeground(g->dsp,g->draw, g->whiteColor);
+
+    XFillRectangle(g->dsp,data->map,g->draw,0,w->height,w->width,w->height);
+    XSetForeground(g->dsp,g->draw,g->blackColor);
+    XDrawRectangle(g->dsp,data->map,g->draw,0,w->height,w->width,w->height);
+    if(data->text_color>0){
+      XSetForeground(g->dsp,g->text,data->text_color);
+      XDrawString(g->dsp,data->map,g->text,4,w->height+w->height/2+w->height/4,w->string,strlen(w->string));
+      XSetForeground(g->dsp,g->text,g->blackColor);
+    }
+    else{
+      XSetForeground(g->dsp,g->text,g->blackColor);
+      XDrawString(g->dsp,data->map,g->text,4,w->height+w->height/2+w->height/4,w->string,strlen(w->string));
+      XSetForeground(g->dsp,g->text,g->blackColor);
+    }
+
+    // Not enabled
+
+
+    // Debug print to file
+    #ifdef DEBUG_PRINT_IMAGES
+    char filename[1024];
+    sprintf(filename,"pic_output/textfield_%p.xpm",(void *)w);
+    Pixmap p=XCreatePixmap(g->dsp,g->mainWindow,w->width,w->height*3,24);
+    XSetForeground(g->dsp,g->draw,0xFFFFFFFF);
+    XFillRectangle(g->dsp,p,g->draw,0,0,w->width,w->height*3);
+    XpmWriteFileFromPixmap(g->dsp,filename,data->map,p,NULL);
+    XFreePixmap(g->dsp,p);
+    #endif
+
+    w->status=w->status&(~STATUS_REPAINT);
   }
+
   if((w->status&STATUS_VISIBLE)==0)
-    return ;
+    XCopyArea(g->dsp,data->map,g->mainWindow,g->draw,0,0,w->width,w->height,w->x,w->y);
+  else if((w->status&STATUS_ENABLE)==0)
+    XCopyArea(g->dsp,data->map,g->mainWindow,g->draw,0,w->height*2,w->width,w->height,w->x,w->y);
+  else
+    XCopyArea(g->dsp,data->map,g->mainWindow,g->draw,0,w->height,w->width,w->height,w->x,w->y);
+
+
+    /*
   if(data->background_color>-1)
     XSetForeground(g->dsp,g->draw,(w->status&STATUS_ENABLE)>0 ? data->background_color : to_gray(data->background_color));
   else
@@ -51,6 +102,7 @@ void paint_textfield(GUI* g,WIDGET* w)
     XDrawString(g->dsp,g->mainWindow,g->text,w->x+4,w->y+w->height/2+w->height/4,w->string,strlen(w->string));
     XSetForeground(g->dsp,g->text,g->blackColor);
   }
+    */
 }
 
 void paint_textfield_click(GUI* g, WIDGET* w)
@@ -165,7 +217,7 @@ WIDGET* create_textfield(int x,int y,int max_length)
 
   w->type=TEXTFIELD;
   w->flags=CLICKABLE|SELECTABLE;
-  w->status=STATUS_ENABLE|STATUS_VISIBLE;
+  w->status=STATUS_ENABLE|STATUS_VISIBLE|STATUS_REPAINT;
   w->x=x;
   w->y=y;
   w->height=0;
@@ -193,6 +245,8 @@ void destroy_textfield(GUI* g,WIDGET* w)
     printf("Widget not a Textfield\n");
     exit(-2);
   }
+  struct textfield_data_t* data=w->widget_data;
+  XFreePixmap(g->dsp,data->map);
   free(w->string);
   free(w->widget_data);
   free(w);
@@ -255,6 +309,7 @@ void set_textfield_background_color(WIDGET* w,int ARGB)
   }
   data=w->widget_data;
   data->background_color=ARGB;
+  w->status|=STATUS_REPAINT;
 }
 
 void set_textfield_enable(WIDGET* w, int enable)

@@ -1,43 +1,43 @@
 #include <unistd.h>
 #include <stdio.h>
-#include "iolib.h"
+#include "graphics.h"
+
+void click(GUI* g, WIDGET* welf, void* data)
+{
+  int enable;
+  WIDGET* box=(WIDGET*)data;
+  enable=get_textfield_enable(box);
+
+  if(enable==1)
+    set_textfield_enable(box,0);
+  else
+    set_textfield_enable(box,1);
+
+  update_widget(g,box);
+}
 
 int main()
 {
-  iolib_init();
-  //Loop enable
-  iolib_setdir(8,11,DIR_IN);
+  GUI* g=NULL;
+  WIDGET* check=NULL;
+  WIDGET* button=NULL;
 
-  // Drection Pin
-  iolib_setdir(8,12,DIR_OUT);
+  g=init_gui();
+  create_main_window(g,"Testing Window");
+  set_main_size(g,400,400);
 
-  // Toggle Pin
-  iolib_setdir(8,13,DIR_OUT);
+  check=create_textfield(10,10,40);
 
-  while(is_high(8,11)){
-    int i;
+  button=create_button("enable",10,50);
+  set_button_callback(button,click,check);
 
-    pin_high(8,12);
-    sleep(1);
+  add_to_main(g,check);
+  add_to_main(g,button);
 
-    for(i=0;i<1000;i++){
-      pin_low(8,13);
-      pin_high(8,13);
-      usleep(400);
-    }
-
-    pin_low(8,12);
-    sleep(1);
-
-    for(i=0;i<1000;i++){
-      pin_low(8,13);
-      pin_high(8,13);
-      usleep(400);
-    }
+  show_main(g);
+  while(gui_running(g)){
+    usleep(500000);
   }
-pin_low(8,12);
-pin_low(8,13);
 
-
-  iolib_free();
+  destroy_gui(g);
 }

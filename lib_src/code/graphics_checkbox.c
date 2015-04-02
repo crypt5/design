@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <X11/Xlib.h>
+#include <X11/xpm.h>
+#include <pthread.h>
 #include "graphics.h"
 #include "graphics_widget.h"
 #include "graphics_checkbox.h"
@@ -10,60 +12,123 @@ struct checkbox_data_t{
   int checked;
   int text_color;
   int check_color;
+  Pixmap map;
 };
 
 void paint_checkbox(GUI* g, WIDGET* w)
 {
-  struct checkbox_data_t* data=NULL;
-  data=w->widget_data;
+  struct checkbox_data_t* data=w->widget_data;
 
-  if(w->width!=0){
-     XSetForeground(g->dsp,g->draw,g->bgColor);
-     XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
+  if((w->status&STATUS_REPAINT)>0){
+    if(w->width==0){
+      w->height=g->font->ascent*2;
+      w->width=XTextWidth(g->font,w->string,strlen(w->string))+20;
+      data->map=XCreatePixmap(g->dsp,g->mainWindow,w->width,3*w->height,24);
+    }
+    else{
+      XCopyArea(g->dsp,data->map,g->mainWindow,g->draw,0,0,w->width,w->height,w->x,w->y);
+      XFreePixmap(g->dsp,data->map);
+      w->width=XTextWidth(g->font,w->string,strlen(w->string))+20;
+      w->height=g->font->ascent*2;
+      data->map=XCreatePixmap(g->dsp,g->mainWindow,w->width,w->height*3,24);
+    }
+    // Paint not visible
+    XSetForeground(g->dsp,g->draw,g->bgColor);
+    XFillRectangle(g->dsp,data->map,g->draw,0,0,w->width,w->height*3);
+
+    // Paint normal
+    XSetForeground(g->dsp,g->draw,g->whiteColor);
+    XFillRectangle(g->dsp,data->map,g->draw,0,w->height+(w->height/5),15,15);
+    XSetForeground(g->dsp,g->draw,g->blackColor);
+    XDrawRectangle(g->dsp,data->map,g->draw,0,w->height+(w->height/5),15,15);
+    if(data->text_color>0){
+      XSetForeground(g->dsp,g->text, data->text_color);
+      XDrawString(g->dsp,data->map,g->text,18,w->height+w->height-(g->font->ascent/2),(char*)w->string,strlen((char*)w->string));
+      XSetForeground(g->dsp,g->text,g->blackColor);
+    }
+    else {
+      XDrawString(g->dsp,data->map,g->text,18,w->height+w->height-(g->font->ascent/2),(char*)w->string,strlen((char*)w->string));
+    }
+
+    // Paint not enabled
+    XSetForeground(g->dsp,g->draw,to_gray(g->whiteColor));
+    XFillRectangle(g->dsp,data->map,g->draw,0,w->height*2+(w->height/5),15,15);
+    XSetForeground(g->dsp,g->draw,to_gray(g->blackColor));
+    XDrawRectangle(g->dsp,data->map,g->draw,0,w->height*2+(w->height/5),15,15);
+    if(data->text_color>0){
+      XSetForeground(g->dsp,g->text, to_gray(data->text_color));
+      XDrawString(g->dsp,data->map,g->text,18,w->height*2+w->height-(g->font->ascent/2),(char*)w->string,strlen((char*)w->string));
+    }
+    else {
+      XSetForeground(g->dsp,g->text,to_gray(g->blackColor));
+      XDrawString(g->dsp,data->map,g->text,18,w->height*2+w->height-(g->font->ascent/2),(char*)w->string,strlen((char*)w->string));
+    }
+
+    // Debug print to file
+    #ifdef DEBUG_PRINT_IMAGES
+    char filename[1024];
+    sprintf(filename,"pic_output/checkbox_%p.xpm",(void *)w);
+    Pixmap p=XCreatePixmap(g->dsp,g->mainWindow,w->width,w->height*3,24);
+    XSetForeground(g->dsp,g->draw,0xFFFFFFFF);
+    XFillRectangle(g->dsp,p,g->draw,0,0,w->width,w->height*3);
+    XpmWriteFileFromPixmap(g->dsp,filename,data->map,p,NULL);
+    XFreePixmap(g->dsp,p);
+    #endif
+
+   w->status=w->status&(~STATUS_REPAINT);
   }
-  w->height=g->font->ascent*2;
-  w->width=XTextWidth(g->font,w->string,strlen(w->string))+20;
+
+  // Copy the correct area to screen 
   if((w->status&STATUS_VISIBLE)==0){
-     XSetForeground(g->dsp,g->draw,g->bgColor);
-     XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y,w->width,w->height);
-    return;
+    // Not Visible
+    XCopyArea(g->dsp,data->map,g->mainWindow,g->draw,0,0,w->width,w->height,w->x,w->y);
   }
-  XSetForeground(g->dsp,g->draw,(w->status&STATUS_ENABLE)>0 ? g->whiteColor : to_gray(g->whiteColor));
-  XFillRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y+(w->height/5),15,15);
-  XSetForeground(g->dsp,g->draw,g->blackColor);
-  XDrawRectangle(g->dsp,g->mainWindow,g->draw,w->x,w->y+(w->height/5),15,15);
+  else if((w->status&STATUS_ENABLE)==0){
+    // Not enabled
+    XCopyArea(g->dsp,data->map,g->mainWindow,g->draw,0,w->height*2,w->width,w->height,w->x,w->y);
+    if(data->checked==1){
+      if(data->check_color>0)
+	XSetForeground(g->dsp,g->draw,to_gray(data->check_color));
+      else
+	XSetForeground(g->dsp,g->draw, to_gray(0x0000AA00));
+      //Short Leg
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+2,w->y+9,w->x+7,w->y+14);
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+2,w->y+10,w->x+7,w->y+15);
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+2,w->y+11,w->x+7,w->y+16);
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+2,w->y+12,w->x+7,w->y+17);
+      //Long Leg
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+7,w->y+14,w->x+12,w->y+5);
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+7,w->y+15,w->x+12,w->y+6);
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+7,w->y+16,w->x+12,w->y+7);
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+7,w->y+17,w->x+12,w->y+8);
+    }
+  }
+  else{
+    // Normal Painting
+    XCopyArea(g->dsp,data->map,g->mainWindow,g->draw,0,w->height,w->width,w->height,w->x,w->y);
+    if(data->checked==1){
+      if(data->check_color>0)
+	XSetForeground(g->dsp,g->draw,data->check_color);
+      else
+	XSetForeground(g->dsp,g->draw,0x0000AA00);
+      //Short Leg
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+2,w->y+9,w->x+7,w->y+14);
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+2,w->y+10,w->x+7,w->y+15);
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+2,w->y+11,w->x+7,w->y+16);
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+2,w->y+12,w->x+7,w->y+17);
+      //Long Leg
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+7,w->y+14,w->x+12,w->y+5);
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+7,w->y+15,w->x+12,w->y+6);
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+7,w->y+16,w->x+12,w->y+7);
+      XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+7,w->y+17,w->x+12,w->y+8);
+    }
+  }
 
-  if(data->text_color>0){
-    XSetForeground(g->dsp,g->text,(w->status&STATUS_ENABLE)>0 ? data->text_color : to_gray(data->text_color));
-    XDrawString(g->dsp,g->mainWindow,g->text,w->x+18,w->y+w->height-(g->font->ascent/2),(char*)w->string,strlen((char*)w->string));
-    XSetForeground(g->dsp,g->text,g->blackColor);
-  }
-  else {
-    XDrawString(g->dsp,g->mainWindow,g->text,w->x+18,w->y+w->height-(g->font->ascent/2),(char*)w->string,strlen((char*)w->string));
-  }
-
-  if(data->checked==1){
-    if(data->check_color>0)
-      XSetForeground(g->dsp,g->draw,(w->status&STATUS_ENABLE)>0 ? data->check_color : to_gray(data->check_color));
-    else
-      XSetForeground(g->dsp,g->draw,(w->status&STATUS_ENABLE)>0 ? 0x0000AA00 : to_gray(0x0000AA00));
-    //Short Leg
-    XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+2,w->y+9,w->x+7,w->y+14);
-    XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+2,w->y+10,w->x+7,w->y+15);
-    XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+2,w->y+11,w->x+7,w->y+16);
-    XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+2,w->y+12,w->x+7,w->y+17);
-    //Long Leg
-    XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+7,w->y+14,w->x+12,w->y+5);
-    XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+7,w->y+15,w->x+12,w->y+6);
-    XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+7,w->y+16,w->x+12,w->y+7);
-    XDrawLine(g->dsp,g->mainWindow,g->draw,w->x+7,w->y+17,w->x+12,w->y+8);
-  }
 }
 
 void paint_checkbox_click(GUI* g, WIDGET* w)
 {
-  struct checkbox_data_t* data=NULL;
-  data=w->widget_data;
+  struct checkbox_data_t* data=w->widget_data;
   if(data->checked==0)
     data->checked=1;
   else
@@ -98,7 +163,7 @@ WIDGET* create_checkbox(char* text,int x,int y)
 
   w->type=CHECKBOX;
   w->flags=CLICKABLE;
-  w->status=STATUS_VISIBLE|STATUS_ENABLE;;
+  w->status=STATUS_VISIBLE|STATUS_ENABLE|STATUS_REPAINT;
   w->x=x;
   w->y=y;
   w->height=0;
@@ -126,6 +191,8 @@ void destroy_checkbox(GUI* g,WIDGET* w)
     printf("Not a Checkbox!\n");
     exit(-2);
   }
+  struct checkbox_data_t* data=w->widget_data;
+  XFreePixmap(g->dsp,data->map);
   free(w->string);
   free(w->widget_data);
   free(w);
@@ -146,6 +213,7 @@ void set_checkbox_text(WIDGET* w,char* text)
   s=malloc(strlen(text)+1);
   strcpy(s,text);
   w->string=s;
+  w->status|=STATUS_REPAINT;
 }
 
 void set_checkbox_text_color(WIDGET* w,int color)
@@ -161,6 +229,7 @@ void set_checkbox_text_color(WIDGET* w,int color)
   }
   data=w->widget_data;
   data->text_color=color;
+  w->status|=STATUS_REPAINT;
 }
 
 void set_checkbox_check_color(WIDGET* w, int color)
@@ -176,6 +245,7 @@ void set_checkbox_check_color(WIDGET* w, int color)
   }
   data=w->widget_data;
   data->check_color=color;
+  w->status|=STATUS_REPAINT;
 }
 
 void set_checkbox_checked(WIDGET* w,int check)
@@ -206,7 +276,7 @@ void set_checkbox_enable(WIDGET* w, int enable)
     printf("Not a Checkbox!\n");
     exit(-2);
   }
-  if(enable==0)
+  if(enable==1)
     w->status=w->status|STATUS_ENABLE;
   else if(enable==0)
     w->status=w->status&~STATUS_ENABLE;

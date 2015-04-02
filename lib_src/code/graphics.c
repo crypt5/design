@@ -77,7 +77,6 @@ void* event_loop(void* data)
       case ClientMessage:
         if (e.xclient.message_type == g->wm_protocols &&
             e.xclient.data.l[0] == g->wm_delete_window)  {
-	  //TODO exit code if needed
 	  pthread_mutex_lock(&g->lock);
 	  g->run=0;
 	  pthread_mutex_unlock(&g->lock);
@@ -284,12 +283,17 @@ void shutdown_gui(GUI* g)
 void show_main(GUI* g)
 {
   int re;
+  XEvent e;
   if(g==NULL){
     printf("GUI Object is NULL, no wondow to show\n");
     exit(-1);
   }
 
   XMapWindow(g->dsp, g->mainWindow);
+  while(XNextEvent(g->dsp,&e)){
+    if(e.type==MapNotify)
+      break;
+  }
   re=pthread_create(&g->tid,NULL,event_loop,g);
   if(re!=0){
     printf("Thread Create for Event loop Failed\n");

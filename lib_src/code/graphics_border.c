@@ -13,8 +13,7 @@ struct border_data_t{
 
 void paint_border(GUI* g, WIDGET* w)
 {
-  struct border_data_t* data=NULL;
-  data=w->widget_data;
+  struct border_data_t* data=w->widget_data;
   if((w->status&STATUS_VISIBLE)==0){
     XSetForeground(g->dsp,g->draw,g->bgColor);
     XSetLineAttributes(g->dsp,g->draw,data->thickness,LineSolid,CapButt,JoinMiter);
