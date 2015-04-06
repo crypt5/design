@@ -7,19 +7,8 @@ XFLAGS=`pkg-config --cflags --libs x11`
 
 all: test
 
-test: libs src/test.c
+test: src/test.c
 	$(CC) $(CFLAGS) $(LINKCOM) $(RPATH) $(XFLAGS) src/test.c -o main $(LIBS)
-
-main: libs helpers src/main.c
-	$(CC) $(CFLAGS) $(LINKCOM) $(RPATH) $(XFLAGS) src/main.c gui.o -o main $(LIBS)
-
-helpers:
-	$(CC) $(CFLAGS) $(LINKCOM) -c src/gui.c
-
-libs:
-	cd lib_src && make
-	cp lib_src/output/*.so libs
-	cp lib_src/output/*.h includes
 
 clean:
 	rm main
