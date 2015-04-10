@@ -2,13 +2,13 @@ CC=clang
 CFLAGS=-g -Wall
 LINKCOM=-Iincludes -Llibs
 RPATH=-Wl,-rpath,libs
-LIBS=-lpthread -lgraphics -llogger -lconfig -lXpm -lBBBio -lm
+LIBS=-lgraphics -llogger -lconfig -lBBBio -lm
 XFLAGS=`pkg-config --cflags --libs x11`
 
 all: test
 
 test: src/test.c
-	$(CC) $(CFLAGS) $(LINKCOM) $(RPATH) $(XFLAGS) src/test.c -o main $(LIBS)
+	$(CC) $(CFLAGS) $(LINKCOM) $(RPATH) src/test.c -o main $(LIBS)
 
 clean:
 	rm main
