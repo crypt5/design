@@ -57,15 +57,15 @@ GUI* build_gui()
   force_border=create_titled_border("Force",5,120,100,490);
   desired_force_label=create_label("Desired Force:",87,130);
   measured_force_label=create_label("Measured Force:",80,170);
-  desired_force=create_textbox(230,130,15);
-  measured_force=create_textbox(230,170,15);
+  desired_force=create_textfield(230,130,15);
+  measured_force=create_textfield(230,170,15);
 
   //Displacement
   displacement_border=create_titled_border("Displacement",5,240,100,490);
   desired_displacement_label=create_label("Desired Displacement:",65,250);
   measured_displacement_label=create_label("Measured Displacement:",60,290);
-  desired_displacement=create_textbox(270,250,15);
-  measured_displacement=create_textbox(270,290,15);
+  desired_displacement=create_textfield(270,250,15);
+  measured_displacement=create_textfield(270,290,15);
 
   //Buttons
   start=create_button("Start",30,400);
