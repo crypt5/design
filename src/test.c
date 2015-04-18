@@ -58,8 +58,8 @@ BBBIO_ADCTSC_work(SAMPLE_SIZE); 					       // gets initial force reading
 for(j = 0 ; j < SAMPLE_SIZE ; j++) {
         sample = buffer_AIN_0[j];
         ini=ini+((float)sample / (float)4095.0) * (float)1.8;                  // Converts initial force reading to volts
-} /** Shouldn't you be dividing ini BY SAMPLE_SIZE to get the averaged ini value?? Like: "ini = ini/SAMPLE_SIZE;" **/
-
+} 
+ini=ini/SAMPLE_SIZE;//Thanks Chris
 while(is_low(8,STOP)){ 								// when calibration photointerrupter reached
 	old_val=vout; 								// set past ADC Vout as current one before...
 	vout=0.0; 		 						// initializing ADC Vout reading to 0 V for next reading

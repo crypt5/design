@@ -31,11 +31,16 @@ struct graphics_t{
   GC text;
   GC draw;
   XFontStruct* font;
+  LIST* windows;
 };
 
 #include "graphics_widget.h"
+#include "graphics_window.h"
 
-//These functions need to be called in this order
+/*
+  These functions need to be called in this order 
+  for the main window
+*/
 GUI* init_gui();
 void set_main_background(GUI* g,int RGB); // Optional 
 void set_main_icon(GUI* g,char* filename);//Optional
@@ -48,12 +53,15 @@ void show_main(GUI* g);
 
 int gui_running(GUI* g);
 
-void update_widget(GUI* g,WIDGET* w);
-
 void shutdown_gui(GUI* g);
 void destroy_gui(GUI* g);
+
 
 // Helper Functions
 int to_gray(int color);
 void refresh_main_window(GUI* g);
+void update_widget(GUI* g,WIDGET* w);
+
+//Window Fuinctions
+void register_window(GUI* g, WINDOW* w);
 #endif
