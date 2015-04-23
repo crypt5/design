@@ -2,19 +2,21 @@ CC=clang
 CFLAGS=-g -Wall
 LINKCOM=-Iincludes -Llibs
 RPATH=-Wl,-rpath,libs
-LIBS=-lgraphics -llogger -lconfig -lBBBio -lm
-XFLAGS=`pkg-config --cflags --libs x11`
+LIBS=-lgraphics -llogger -lconfig -lBBBio -ldata_logger
+OBJS=gui.o callbacks.o control.o
 
-all: test
+all: main
 
-main: gui src/main.c
-	$(CC) $(CFLAGS) $(LINKCOM) $(RPATH) src/main.c gui.o -o main $(LIBS)
+main: gui control src/main.c
+	$(CC) $(CFLAGS) $(LINKCOM) $(RPATH) src/main.c $(OBJS) -o main $(LIBS)
 
-test: src/test.c
-	$(CC) $(CFLAGS) $(LINKCOM) $(RPATH) src/test.c -o main $(LIBS)
+gui: callbacks src/gui.c
+	$(CC) $(CFALGS) $(LINKCOM) -c src/gui.c
 
-gui: src/gui.c
-	$(CC) $(CFALGS) $(LINKCOM) -c src/gui.c 
+callbacks: src/callbacks.c
+	$(CC) $(CFALGS) $(LINKCOM) -c src/callbacks.c
 
+control: src/control.c
+	$(CC) $(CFALGS) $(LINKCOM) -c src/control.c
 clean:
-	rm main
+	rm main *.o

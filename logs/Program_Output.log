@@ -1,0 +1,13 @@
+[Wed Apr 22 20:51:19 2015] [Logger] Logging started
+[Wed Apr 22 20:51:19 2015] [Config] Object Created
+[Wed Apr 22 20:51:19 2015] [Config] Loading file: config/main.cfg
+[Wed Apr 22 20:51:19 2015] [Config] File Read, parsed, and loaded
+[Wed Apr 22 20:51:19 2015] [GUI] Creating GUI Object
+[Wed Apr 22 20:51:19 2015] [GUI] Building GUI
+[Wed Apr 22 20:51:19 2015] [GUI] Window built
+[Wed Apr 22 20:51:19 2015] [Data Logger] Starting
+[Wed Apr 22 20:51:19 2015] [GUI] Displaying window
+[Wed Apr 22 20:51:23 2015] [Data Logger] Shutting Down
+[Wed Apr 22 20:51:23 2015] [GUI] Shutting down GUI
+[Wed Apr 22 20:51:23 2015] [Config] Closing and Freeing object
+[Wed Apr 22 20:51:23 2015] [Logger] Shutting down

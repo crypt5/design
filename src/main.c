@@ -1,34 +1,48 @@
-#include <unistd.h>
+#include "gui.h"
 #include "logger.h"
 #include "config.h"
-#include "gui.h"
+#include "graphics.h"
+#include "data_logger.h"
+
+#include <unistd.h>
 
 int main()
 {
-  GUI* gui=NULL;
   LOGGER* log=NULL;
-  CONFIG* con=NULL;
+  DATA_LOGGER* data_out=NULL;
+  GUI* ui=NULL;
+  CONFIG* config=NULL;
 
-  log=logger_init("logs/test.log");
-  logger_log(log,"Creating Config Reader");
-  con=config_init();
-  logger_log(log,"Config reader ready");
-  logger_log(log,"No config files to load");
-  logger_log(log,"Building GUI");
-  gui=build_gui();
-  logger_log(log,"GUI built");
-  logger_log(log,"Entering Main loop");
+  log=logger_init("logs/Program_Output.log");
+  logger_log(log,"[Logger] Logging started");
+  config=config_init();
+  logger_log(log,"[Config] Object Created");
+  logger_log(log,"[Config] Loading file: config/main.cfg");
+  config_load_file(config,"config/main.cfg");
+  logger_log(log,"[Config] File Read, parsed, and loaded");
 
-  while(is_open(gui)){
-    usleep(100);
-    //This is where data collection can take place
+  logger_log(log,"[GUI] Creating GUI Object");
+  ui=init_gui();
+  logger_log(log,"[GUI] Building GUI");
+  build_ui(ui,log);
+
+
+  logger_log(log,"[Data Logger] Starting");
+  data_out=data_logger_init("output.csv");
+
+  logger_log(log,"[GUI] Displaying window");
+  show_main(ui);
+  while(gui_running(ui)){
+    usleep(10000);
   }
 
-  logger_log(log,"Exiting main Loop");
-  logger_log(log,"Shutting down GUI");
-  clean_up_gui(gui);
-  logger_log(log,"Cleaning up the config reader");
-  config_destroy(con);
-  logger_log(log,"Shutting down Logger");
+
+  logger_log(log,"[Data Logger] Shutting Down");
+  data_logger_shutdown(data_out);
+  logger_log(log,"[GUI] Shutting down GUI");
+  destroy_gui(ui);
+  logger_log(log,"[Config] Closing and Freeing object");
+  config_destroy(config);
+  logger_log(log,"[Logger] Shutting down");
   logger_shutdown(log);
 }

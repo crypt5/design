@@ -43,8 +43,8 @@ struct graphics_t{
 */
 GUI* init_gui();
 void set_main_background(GUI* g,int RGB); // Optional 
-void set_main_icon(GUI* g,char* filename);//Optional
 void create_main_window(GUI* g,char* title);
+void set_main_icon(GUI* g,char* filename);//Optional
 void set_main_size(GUI* g,int height, int width);
 
 void add_to_main(GUI* g,WIDGET* w);
@@ -64,4 +64,5 @@ void update_widget(GUI* g,WIDGET* w);
 
 //Window Fuinctions
 void register_window(GUI* g, WINDOW* w);
+void unregister_window(GUI* g,WINDOW* w);
 #endif
