@@ -1,13 +1,25 @@
-[Wed Apr 22 20:51:19 2015] [Logger] Logging started
-[Wed Apr 22 20:51:19 2015] [Config] Object Created
-[Wed Apr 22 20:51:19 2015] [Config] Loading file: config/main.cfg
-[Wed Apr 22 20:51:19 2015] [Config] File Read, parsed, and loaded
-[Wed Apr 22 20:51:19 2015] [GUI] Creating GUI Object
-[Wed Apr 22 20:51:19 2015] [GUI] Building GUI
-[Wed Apr 22 20:51:19 2015] [GUI] Window built
-[Wed Apr 22 20:51:19 2015] [Data Logger] Starting
-[Wed Apr 22 20:51:19 2015] [GUI] Displaying window
-[Wed Apr 22 20:51:23 2015] [Data Logger] Shutting Down
-[Wed Apr 22 20:51:23 2015] [GUI] Shutting down GUI
-[Wed Apr 22 20:51:23 2015] [Config] Closing and Freeing object
-[Wed Apr 22 20:51:23 2015] [Logger] Shutting down
+[Thu Apr 23 23:55:41 2015] [Logger] Logging started
+[Thu Apr 23 23:55:41 2015] [Config] Object Created
+[Thu Apr 23 23:55:41 2015] [Config] Loading file: config/main.cfg
+[Thu Apr 23 23:55:41 2015] [Config] File Read, parsed, and loaded
+[Thu Apr 23 23:55:41 2015] [GUI] Creating GUI Object
+[Thu Apr 23 23:55:41 2015] [GUI] Building GUI
+[Thu Apr 23 23:55:41 2015] [GUI] Window built
+[Thu Apr 23 23:55:41 2015] [GUI] Adding pictures
+[Thu Apr 23 23:55:42 2015] [GUI] Pictures Added
+[Thu Apr 23 23:55:42 2015] [GUI] Creating Module 1 Layout
+[Thu Apr 23 23:55:42 2015] [GUI] Module 1 Created
+[Thu Apr 23 23:55:42 2015] [GUI] Creating Module 2 Layout
+[Thu Apr 23 23:55:42 2015] [GUI] Module 2 Created
+[Thu Apr 23 23:55:42 2015] [GUI] Creating External Force Measurment Device
+[Thu Apr 23 23:55:42 2015] [GUI] External Force Measurment Device Created
+[Thu Apr 23 23:55:42 2015] [GUI] Creating External Grip Measurment Device
+[Thu Apr 23 23:55:42 2015] [GUI] External Grip Measurment Device Created
+[Thu Apr 23 23:55:42 2015] [GUI] Creating File Output and Start-Stop Buttons
+[Thu Apr 23 23:55:42 2015] [GUI] File Output and Start-Stop Buttons created
+[Thu Apr 23 23:55:42 2015] [Data Logger] Starting
+[Thu Apr 23 23:55:42 2015] [GUI] Displaying window
+[Thu Apr 23 23:57:42 2015] [Data Logger] Shutting Down
+[Thu Apr 23 23:57:42 2015] [GUI] Shutting down GUI
+[Thu Apr 23 23:57:42 2015] [Config] Closing and Freeing object
+[Thu Apr 23 23:57:42 2015] [Logger] Shutting down

@@ -11,12 +11,12 @@ main: gui control src/main.c
 	$(CC) $(CFLAGS) $(LINKCOM) $(RPATH) src/main.c $(OBJS) -o main $(LIBS)
 
 gui: callbacks src/gui.c
-	$(CC) $(CFALGS) $(LINKCOM) -c src/gui.c
+	$(CC) $(CFLAGS) $(LINKCOM) -c src/gui.c
 
 callbacks: src/callbacks.c
-	$(CC) $(CFALGS) $(LINKCOM) -c src/callbacks.c
+	$(CC) $(CFLAGS) $(LINKCOM) -c src/callbacks.c
 
 control: src/control.c
-	$(CC) $(CFALGS) $(LINKCOM) -c src/control.c
+	$(CC) $(CFLAGS) $(LINKCOM) -c src/control.c
 clean:
 	rm main *.o
