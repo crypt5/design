@@ -7,6 +7,7 @@
 #include "data_logger.h"
 #include "data_structures.h"
 #include "control.h"
+#include "BBBiolib.h"
 
 #include <unistd.h>
 
@@ -23,6 +24,8 @@ int main()
   struct module_t* mod1=NULL;
   struct module_t* mod2=NULL;
 
+  iolib_init();
+
   log=logger_init("logs/Program_Output.log");
   logger_log(log,"[Logger] Logging started");
   config=config_init();
@@ -31,7 +34,7 @@ int main()
   config_load_file(config,"config/main.cfg");
   logger_log(log,"[Config] File Read, parsed, and loaded");
 
-  mod1=setup_actuator_module("8.11","8.12","8.13","8.14","8.15",0);
+  mod1=setup_actuator_module("8.12","8.13","8.14","8.15","8.16",0);
   mod2=setup_actuator_module("9.11","9.12","9.13","9.14","9.15",1);
 
   logger_log(log,"[GUI] Creating GUI Object");
