@@ -8,6 +8,7 @@
 #include "data_structures.h"
 #include "control.h"
 #include "BBBiolib.h"
+#include "defs.h"
 
 #include <unistd.h>
 
@@ -24,7 +25,9 @@ int main()
   struct module_t* mod1=NULL;
   struct module_t* mod2=NULL;
 
+#ifdef MICRO
   iolib_init();
+#endif
 
   log=logger_init("logs/Program_Output.log");
   logger_log(log,"[Logger] Logging started");
@@ -74,6 +77,10 @@ int main()
   free(start_stop);
   destroy_actuator_module(mod1);
   destroy_actuator_module(mod2);
+
+#ifdef MICRO
+  iolib_free();
+#endif
 
   logger_log(log,"[Data Logger] Shutting Down");
   data_logger_shutdown(data_out);

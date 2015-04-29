@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include "control.h"
 #include "BBBiolib.h"
+#include "defs.h"
 
 #define BUFFER_SIZE 100
 #define SAMPLE_SIZE 10
@@ -16,6 +17,8 @@ void* run_motor(void* data)
   int runner=mod->run;
   pthread_mutex_unlock(&mod->lock);
 
+
+#ifdef MICRO
   pin_low(mod->enable_header,mod->enable_pin); 			// Turns on motor (active low)
   pin_high(mod->dir_header,mod->dir_pin); 			// Sets direction outward from motor
   while(is_high(mod->far_sensor_header,mod->far_sensor_pin)){ 			// Until we've reached calibration photointerrupter...
@@ -26,8 +29,8 @@ void* run_motor(void* data)
       usleep(100); 		// ""
     }
   }
-
   while(runner&&is_low(mod->near_sensor_header,mod->near_sensor_pin)){
+      usleep(5000);
       pin_low(mod->dir_header,mod->dir_pin); 
 for(i=0;i<10;i++){          // In ten 1/8 step increments...
       pin_high(mod->step_header,mod->step_pin);         // Generate actuation signal
@@ -35,12 +38,18 @@ for(i=0;i<10;i++){          // In ten 1/8 step increments...
       pin_low(mod->step_header,mod->step_pin);  // ""
       usleep(100);              // ""
     }
-	usleep(5000);
+
+#else
+  while(runner){
+    usleep(500000);
+    printf("Controlling Motor\n");
+#endif
     pthread_mutex_lock(&mod->lock);
     runner=mod->run;
     pthread_mutex_unlock(&mod->lock);
   }
 
+#ifdef MICRO
   pin_low(mod->enable_header,mod->enable_pin);                  // Turns on motor (active lo$
   pin_high(mod->dir_header,mod->dir_pin);                       // Sets direction outward fr$
   while(is_high(mod->far_sensor_header,mod->far_sensor_pin)){                   // Until we'$
@@ -52,7 +61,8 @@ for(i=0;i<10;i++){          // In ten 1/8 step increments...
     }
   }
 
-  pin_high(mod->enable_header,mod->enable_pin);  
+  pin_high(mod->enable_header,mod->enable_pin); 
+#endif 
   return NULL;
 }
 
@@ -97,24 +107,21 @@ struct module_t* setup_actuator_module(char* enable, char* dir, char* step,char*
   re->near_sensor_header=get_header(near_sensor);
   re->near_sensor_pin=get_pin(near_sensor);
   re->AIN_pin=AIN;
-
+#ifdef MICRO
   iolib_setdir(re->step_header, re->step_pin, BBBIO_DIR_OUT);//Step
   iolib_setdir(re->dir_header, re->dir_pin, BBBIO_DIR_OUT);//Direction
   iolib_setdir(re->enable_header, re->enable_pin, BBBIO_DIR_OUT);//Enable
-  iolib_setdir(re->far_sensor_header, re->far_sensor_pin, BBBIO_DIR_IN);//Far photo
-  iolib_setdir(re->near_sensor_header, re->near_sensor_pin, BBBIO_DIR_IN);//Near Photo
-
+  iolib_setdir(re->far_sensor_header, re->far_sensor_pin, BBBIO_DIR_IN);
+  iolib_setdir(re->near_sensor_header, re->near_sensor_pin, BBBIO_DIR_IN);
   const int clk_div = 50;
   const int open_dly = 0;
   const int sample_dly = 0;
   unsigned int buffer_AIN_0[BUFFER_SIZE] ={0};
-
   BBBIO_ADCTSC_module_ctrl(BBBIO_ADC_WORK_MODE_TIMER_INT, clk_div);
   BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN0, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, buffer_AIN_0, BUFFER_SIZE);
-
   BBBIO_ADCTSC_channel_enable(BBBIO_ADC_AIN0);
-
   pin_high(re->enable_header,re->enable_pin);
+#endif
 
   return re;
 }
