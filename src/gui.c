@@ -105,7 +105,7 @@ void module(GUI* g, LOGGER* log,int num,struct module_t* mod)
 }
 
 
-struct gui_extern_force_widgets_t* extern_force(GUI* g,LOGGER* log)
+void extern_force(GUI* g,LOGGER* log,struct extern_force_t* dev)
 {
   logger_log(log,"[GUI] Creating External Force Measurment Device");
   struct gui_extern_force_widgets_t* data=NULL;
@@ -119,7 +119,7 @@ struct gui_extern_force_widgets_t* extern_force(GUI* g,LOGGER* log)
   set_titled_border_thickness(data->border,2);
 
   data->enable_device=create_checkbox("Enable Device",720,140);
-  set_checkbox_callback(data->enable_device,external_force_device_enable_callback,data);
+  set_checkbox_callback(data->enable_device,external_force_device_enable_callback,dev);
 
   data->seperator=create_seperator(710,170,180);
 
@@ -140,7 +140,8 @@ struct gui_extern_force_widgets_t* extern_force(GUI* g,LOGGER* log)
   add_to_main(g,data->output_display);
   add_to_main(g,data->output_unit);
   logger_log(log,"[GUI] External Force Measurment Device Created");
-  return data;
+  dev->interface=data;
+  dev->g=g;
 }
 
 

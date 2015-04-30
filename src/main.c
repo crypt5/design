@@ -17,9 +17,8 @@ int main()
   LOGGER* log=NULL;
   DATA_LOGGER* data_out=NULL;
   GUI* ui=NULL;
-  char buf[1024];
   CONFIG* config=NULL;
-  struct gui_extern_force_widgets_t* ex_force=NULL;
+  struct extern_force_t* ex_force=NULL;
   struct gui_extern_grip_widgets_t* ex_grip=NULL;
   struct gui_start_stop_status_t* start_stop=NULL;
   struct module_t* mod1=NULL;
@@ -39,6 +38,7 @@ int main()
 
   mod1=setup_actuator_module("8.12","8.13","8.14","8.15","8.16",0);
   mod2=setup_actuator_module("9.11","9.12","9.13","9.14","9.15",1);
+  ex_force=setup_extern_force_device(0);
 
   logger_log(log,"[GUI] Creating GUI Object");
   ui=init_gui();
@@ -50,7 +50,7 @@ int main()
   add_pics(ui,log);
   module(ui,log,0,mod1);
   module(ui,log,1,mod2);
-  ex_force=extern_force(ui,log);
+  extern_force(ui,log,ex_force);
   ex_grip=extern_grip(ui,log);
   start_stop=start_all(ui,log);
 
@@ -63,18 +63,11 @@ int main()
   show_main(ui);
   while(gui_running(ui)){
     usleep(10000);
-    sprintf(buf,"%0.0f",get_current_actuator_vaule(mod1));
-    set_textfield_text(mod1->interface->current_output,buf);
-    update_widget(ui,mod1->interface->current_output);
-
-    sprintf(buf,"%0.0f",get_current_actuator_vaule(mod2));
-    set_textfield_text(mod2->interface->current_output,buf);
-    update_widget(ui,mod2->interface->current_output);
   }
 
-  free(ex_force);
   free(ex_grip);
   free(start_stop);
+  destroy_extern_force_device(ex_force);
   destroy_actuator_module(mod1);
   destroy_actuator_module(mod2);
 

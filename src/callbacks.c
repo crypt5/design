@@ -9,7 +9,8 @@
 void external_force_device_enable_callback(GUI* g, WIDGET* w,void* data)
 {
   int enable=get_checkbox_checked(w);
-  struct gui_extern_force_widgets_t* gui=data;
+  struct extern_force_t* device=data;
+  struct gui_extern_force_widgets_t* gui=device->interface;
   set_label_enable(gui->output_label,enable);
   set_textfield_enable(gui->output_display,enable);
   set_label_enable(gui->output_unit,enable);
@@ -17,6 +18,15 @@ void external_force_device_enable_callback(GUI* g, WIDGET* w,void* data)
   update_widget(g,gui->output_label);
   update_widget(g,gui->output_display);
   update_widget(g,gui->output_unit);
+
+  if(enable){
+    start_extern_force_device(device);
+  }
+  else{
+    stop_extern_force_device(device);
+    set_textfield_text(gui->output_display,"");
+    update_widget(device->g,gui->output_display);
+  }
 }
 
 void external_grip_device_enable_callback(GUI* g,WIDGET* w,void* data)

@@ -25,7 +25,6 @@ int setpoint=atoi(argv[1]);
 unsigned long steps=0;
 
 iolib_init();
-BBBIO_ADCTSC_Init();
 iolib_setdir(8, ENABLE, BBBIO_DIR_OUT); // General pin IO settings
 iolib_setdir(8, STEP, BBBIO_DIR_OUT); 	// ""
 iolib_setdir(8, DIR, BBBIO_DIR_OUT); 	// ""
