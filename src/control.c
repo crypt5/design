@@ -21,24 +21,24 @@ void* run_motor(void* data)
 #ifdef MICRO
   int i;
   pin_low(mod->enable_header,mod->enable_pin);
-  pin_high(mod->dir_header,mod->dir_pin)
-  while(is_high(mod->far_sensor_header,mod->far_sensor_pin)){ 
-    for(i=0;i<10;i++){ 	
-      pin_high(mod->step_header,mod->step_pin); 
-      usleep(5); 	       
-      pin_low(mod->step_header,mod->step_pin); 
-      usleep(100); 	    
+  pin_high(mod->dir_header,mod->dir_pin);
+  while(is_high(mod->far_sensor_header,mod->far_sensor_pin)){
+    for(i=0;i<10;i++){
+      pin_high(mod->step_header,mod->step_pin);
+      usleep(5);
+      pin_low(mod->step_header,mod->step_pin);
+      usleep(100);
     }
   }
   //Main Control Loop
   while(runner&&is_low(mod->near_sensor_header,mod->near_sensor_pin)){
       usleep(5000);
-      pin_low(mod->dir_header,mod->dir_pin); 
+      pin_low(mod->dir_header,mod->dir_pin);
       for(i=0;i<10;i++){
 	pin_high(mod->step_header,mod->step_pin);
-	usleep(5);                
-	pin_low(mod->step_header,mod->step_pin);  
-	usleep(100);              
+	usleep(5);
+	pin_low(mod->step_header,mod->step_pin);
+	usleep(100);
       }
 
 #else
@@ -157,6 +157,7 @@ struct module_t* setup_actuator_module(char* enable, char* dir, char* step,char*
     BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN6, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, buffer_AIN, BUFFER_SIZE);
     BBBIO_ADCTSC_channel_enable(BBBIO_ADC_AIN6);
   break;
+}
 #endif
 
   return re;
@@ -251,17 +252,54 @@ void* run_ex_force(void *data)
   pthread_mutex_unlock(&device->lock);
 
 #ifdef MICRO
-  unsigned int buffer[BUFFER_SIZE]={0};
-  int j;
+  int j,sample;
   double ini=0;
+  const int clk_div = 50;
+  const int open_dly = 0;
+  const int sample_dly = 0;
+  unsigned int buffer_AIN[BUFFER_SIZE] ={0};
+  BBBIO_ADCTSC_module_ctrl(BBBIO_ADC_WORK_MODE_TIMER_INT, clk_div);
+  switch(device->AIN){
+  case 0:
+    BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN0, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, buffer_AIN, BUFFER_SIZE);
+    BBBIO_ADCTSC_channel_enable(BBBIO_ADC_AIN0);
+  break;
+  case 1:
+    BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN1, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, buffer_AIN, BUFFER_SIZE);
+    BBBIO_ADCTSC_channel_enable(BBBIO_ADC_AIN1);
+  break;
+  case 2:
+    BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN2, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, buffer_AIN, BUFFER_SIZE);
+    BBBIO_ADCTSC_channel_enable(BBBIO_ADC_AIN2);
+  break;
+  case 3:
+    BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN3, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, buffer_AIN, BUFFER_SIZE);
+    BBBIO_ADCTSC_channel_enable(BBBIO_ADC_AIN3);
+  break;
+  case 4:
+    BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN4, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, buffer_AIN, BUFFER_SIZE);
+    BBBIO_ADCTSC_channel_enable(BBBIO_ADC_AIN4);
+  break;
+  case 5:
+    BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN5, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, buffer_AIN, BUFFER_SIZE);
+    BBBIO_ADCTSC_channel_enable(BBBIO_ADC_AIN5);
+  break;
+  case 6:
+    BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN6, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, buffer_AIN, BUFFER_SIZE);
+    BBBIO_ADCTSC_channel_enable(BBBIO_ADC_AIN6);
+  break;
+  default:
+    printf("No Matching AIN pin for %d\n",device->AIN);
+    exit(-1);
+  }
   while(runner){
     BBBIO_ADCTSC_work(SAMPLE_SIZE);
     for(j = 0 ; j < SAMPLE_SIZE ; j++) {
-        sample = buffer_AIN_0[j];
-        ini=ini+((float)sample / (float)4095.0) * (float)1.8;
-    } 
+        sample = buffer_AIN[j];
+        ini=ini+(((float)sample / (float)4095.0) * (float)1.8);
+    }
     ini=ini/SAMPLE_SIZE;
-
+    ini=((ini/97.1)+0.00000019)/0.0004754;
     pthread_mutex_lock(&device->lock);
     runner=device->run;
     device->return_val=ini;
@@ -271,9 +309,10 @@ void* run_ex_force(void *data)
       char buf[50];
       sprintf(buf,"%0.4lf",ini);
       set_textfield_text(output,buf);
-      update_widget(g,output_display);
+      update_widget(g,output);
       count=0;
     }
+    usleep(100000);
     count++;
     ini=0;
   }
@@ -318,46 +357,6 @@ struct extern_force_t* setup_extern_force_device(int AIN)
   re->return_val=0;
   re->AIN=AIN;
 
-#ifdef MICRO
-  const int clk_div = 50;
-  const int open_dly = 0;
-  const int sample_dly = 0;
-  unsigned int buffer_AIN[BUFFER_SIZE] ={0};
-  BBBIO_ADCTSC_module_ctrl(BBBIO_ADC_WORK_MODE_TIMER_INT, clk_div);
-  switch(AIN){
-  case 0:
-    BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN0, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, buffer_AIN, BUFFER_SIZE);
-    BBBIO_ADCTSC_channel_enable(BBBIO_ADC_AIN0);
-  break;
-  case 1:
-    BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN1, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, buffer_AIN, BUFFER_SIZE);
-    BBBIO_ADCTSC_channel_enable(BBBIO_ADC_AIN1);
-  break;
-  case 2:
-    BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN2, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, buffer_AIN, BUFFER_SIZE);
-    BBBIO_ADCTSC_channel_enable(BBBIO_ADC_AIN2);
-  break;
-  case 3:
-    BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN3, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, buffer_AIN, BUFFER_SIZE);
-    BBBIO_ADCTSC_channel_enable(BBBIO_ADC_AIN3);
-  break;
-  case 4:
-    BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN4, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, buffer_AIN, BUFFER_SIZE);
-    BBBIO_ADCTSC_channel_enable(BBBIO_ADC_AIN4);
-  break;
-  case 5:
-    BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN5, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, buffer_AIN, BUFFER_SIZE);
-    BBBIO_ADCTSC_channel_enable(BBBIO_ADC_AIN5);
-  break;
-  case 6:
-    BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN6, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, buffer_AIN, BUFFER_SIZE);
-    BBBIO_ADCTSC_channel_enable(BBBIO_ADC_AIN6);
-  break;
-  default:
-    printf("No Matching AIN pin for %d\n",AIN);
-  }
-#endif
-
   return re;
 }
 
@@ -395,7 +394,7 @@ void destroy_extern_force_device(struct extern_force_t* device)
   pthread_mutex_lock(&device->lock);
   running=device->run;
   pthread_mutex_unlock(&device->lock);
-  
+
   if(running==1)
     stop_extern_force_device(device);
 
