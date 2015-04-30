@@ -117,18 +117,17 @@ struct module_t* setup_actuator_module(char* enable, char* dir, char* step,char*
   re->AIN_pin=AIN;
 
 #ifdef MICRO
+  
   iolib_setdir(re->step_header, re->step_pin, BBBIO_DIR_OUT);//Step
   iolib_setdir(re->dir_header, re->dir_pin, BBBIO_DIR_OUT);//Direction
   iolib_setdir(re->enable_header, re->enable_pin, BBBIO_DIR_OUT);//Enable
   iolib_setdir(re->far_sensor_header, re->far_sensor_pin, BBBIO_DIR_IN);
   iolib_setdir(re->near_sensor_header, re->near_sensor_pin, BBBIO_DIR_IN);
   pin_high(re->enable_header,re->enable_pin);
-  /*
-  const int clk_div = 50;
+  
   const int open_dly = 0;
-  const int sample_dly = 0;
+  const int sample_dly = 1;
   unsigned int buffer_AIN[BUFFER_SIZE] ={0};
-  BBBIO_ADCTSC_module_ctrl(BBBIO_ADC_WORK_MODE_TIMER_INT, clk_div);
   switch(AIN){
   case 0:
     BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN0, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, buffer_AIN, BUFFER_SIZE);
@@ -159,7 +158,7 @@ struct module_t* setup_actuator_module(char* enable, char* dir, char* step,char*
     BBBIO_ADCTSC_channel_enable(BBBIO_ADC_AIN6);
   break;
 }
-*/
+
 #endif
 
   return re;
@@ -256,11 +255,9 @@ void* run_ex_force(void *data)
 #ifdef MICRO
   int j,sample;
   double ini=0;
-  const int clk_div = 1;
   const int open_dly = 0;
   const int sample_dly = 1;
   unsigned int buffer_AIN[BUFFER_SIZE] ={0};
-  BBBIO_ADCTSC_module_ctrl(BBBIO_ADC_WORK_MODE_BUSY_POLLING, clk_div);
   switch(device->AIN){
   case 0:
     BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN0, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_16, buffer_AIN, BUFFER_SIZE);

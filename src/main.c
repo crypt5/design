@@ -24,10 +24,6 @@ int main()
   struct module_t* mod1=NULL;
   struct module_t* mod2=NULL;
 
-#ifdef MICRO
-  iolib_init();
-#endif
-
   log=logger_init("logs/Program_Output.log");
   logger_log(log,"[Logger] Logging started");
   config=config_init();
@@ -35,6 +31,14 @@ int main()
   logger_log(log,"[Config] Loading file: config/main.cfg");
   config_load_file(config,"config/main.cfg");
   logger_log(log,"[Config] File Read, parsed, and loaded");
+
+#ifdef MICRO
+  logger_log(log,"[IOLIB] Initilizing and Setting up ADC");
+  iolib_init();
+  const int clk_div = 1;
+  BBBIO_ADCTSC_module_ctrl(BBBIO_ADC_WORK_MODE_BUSY_POLLING, clk_div);
+  logger_log(log,"[IOLIB] Ready");
+#endif
 
   mod1=setup_actuator_module("8.12","8.13","8.14","8.15","8.16",2);
   mod2=setup_actuator_module("9.11","9.12","9.13","9.14","9.15",1);
