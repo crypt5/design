@@ -39,10 +39,10 @@ int main()
   BBBIO_ADCTSC_module_ctrl(BBBIO_ADC_WORK_MODE_BUSY_POLLING, clk_div);
   logger_log(log,"[IOLIB] Ready");
 #endif
-
-  mod1=setup_actuator_module("8.12","8.13","8.14","8.15","8.16",2);
-  mod2=setup_actuator_module("9.11","9.12","9.13","9.14","9.15",1);
-  ex_force=setup_extern_force_device(0);
+  /* AIN 4,5,6 are Avalible */
+  mod1=setup_actuator_module("8.12","8.13","8.14","8.15","8.16",4);
+  mod2=setup_actuator_module("9.11","9.12","9.13","9.14","9.15",5);
+  ex_force=setup_extern_force_device(6);
 
   logger_log(log,"[GUI] Creating GUI Object");
   ui=init_gui();
