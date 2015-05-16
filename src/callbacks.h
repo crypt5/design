@@ -9,5 +9,7 @@ void force_displacement_button_group_callback(GUI* g,WIDGET* w,void* data);
 void start_module_callback(GUI* g, WIDGET* w,void* data);
 void stop_module_callback(GUI* g,WIDGET* w,void* data);
 
+void master_start_callback(GUI* g,WIDGET* w,void *data);
+void master_stop_callback(GUI* g,WIDGET* w,void *data);
 #endif
 

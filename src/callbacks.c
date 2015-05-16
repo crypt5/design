@@ -32,7 +32,8 @@ void external_force_device_enable_callback(GUI* g, WIDGET* w,void* data)
 void external_grip_device_enable_callback(GUI* g,WIDGET* w,void* data)
 {
   int enable=get_checkbox_checked(w);
-  struct gui_extern_grip_widgets_t* gui=data;
+  struct extern_grip_t* dev=data;
+  struct gui_extern_grip_widgets_t* gui=dev->interface;
 
   set_label_enable(gui->displacement_label,enable);
   set_textfield_enable(gui->displacement_output,enable);
@@ -47,6 +48,11 @@ void external_grip_device_enable_callback(GUI* g,WIDGET* w,void* data)
   update_widget(g,gui->force_label);
   update_widget(g,gui->force_output);
   update_widget(g,gui->force_unit);
+
+  if(enable==1)
+    start_extern_grip_device(dev);
+  else
+    stop_extern_grip_device(dev);
 }
 
 void module_enable_callback(GUI* g,WIDGET* w,void* data)
@@ -206,4 +212,97 @@ void stop_module_callback(GUI* g,WIDGET* w,void* data)
   update_widget(g,gui->enable_device);
 
   stop_actuator(data);
+}
+
+void master_start_callback(GUI* g,WIDGET* w,void *data)
+{
+  struct master_start_stop_t* test=data;
+  test->mod1=get_module_enabled(test->one);
+  test->mod2=get_module_enabled(test->two);
+  test->force=get_extern_force_enable(test->f);
+  test->grip=get_extern_grip_enable(test->g);
+
+  //Start / disable module 1
+  if(test->mod1==1){
+    start_module_callback(g,test->one->interface->start_device,test->one);
+    set_button_enable(test->one->interface->stop_device,0);
+  }
+  else{
+    set_checkbox_enable(test->one->interface->enable_device,0);
+    update_widget(g,test->one->interface->enable_device);
+  }
+
+  //Start / Disable module 2
+  if(test->mod2==1){
+    start_module_callback(g,test->two->interface->start_device,test->two);
+    set_button_enable(test->two->interface->stop_device,0);
+  }
+  else{
+    set_checkbox_enable(test->two->interface->enable_device,0);
+    update_widget(g,test->two->interface->enable_device);
+  }
+
+  //Disable extern force toggling
+  set_checkbox_enable(test->f->interface->enable_device,0);
+  update_widget(g,test->f->interface->enable_device);
+
+  //Disable grip toggling
+  set_checkbox_enable(test->g->interface->enable_device,0);
+  update_widget(g,test->g->interface->enable_device);
+
+  set_button_enable(w,0);
+  set_button_enable(test->interface->stop_test,1);
+  set_label_text(test->interface->status,"Running");
+  set_label_text_color(test->interface->status,0x0000FF00);
+
+  update_widget(g,test->interface->status);
+  update_widget(g,test->interface->stop_test);
+  update_widget(g,w);
+
+  test->log_data=1;
+}
+
+void master_stop_callback(GUI* g,WIDGET* w,void *data)
+{
+  struct master_start_stop_t* test=data;
+
+  //Stop / enable module 1
+  if(test->mod1==1){
+    stop_module_callback(g,test->one->interface->start_device,test->one);
+    set_button_enable(test->one->interface->stop_device,1);
+  }
+  else{
+    set_checkbox_enable(test->one->interface->enable_device,1);
+    update_widget(g,test->one->interface->enable_device);
+  }
+
+  //Stop / enable module 2
+  if(test->mod2==1){
+    stop_module_callback(g,test->two->interface->start_device,test->two);
+    set_button_enable(test->two->interface->stop_device,1);
+  }
+  else{
+    set_checkbox_enable(test->two->interface->enable_device,1);
+    update_widget(g,test->two->interface->enable_device);
+  }
+
+  //enable extern force toggling
+  set_checkbox_enable(test->f->interface->enable_device,1);
+  update_widget(g,test->f->interface->enable_device);
+
+  //enable grip toggling
+  set_checkbox_enable(test->g->interface->enable_device,1);
+  update_widget(g,test->g->interface->enable_device);
+
+
+  set_button_enable(test->interface->start_test,1);
+  set_button_enable(w,0);
+  set_label_text(test->interface->status,"Stopped");
+  set_label_text_color(test->interface->status,0x00FF0000);
+
+  update_widget(g,test->interface->status);
+  update_widget(g,w);
+  update_widget(g,test->interface->start_test);
+
+  test->log_data=0;
 }

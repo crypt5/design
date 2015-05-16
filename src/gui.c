@@ -145,7 +145,7 @@ void extern_force(GUI* g,LOGGER* log,struct extern_force_t* dev)
 }
 
 
-struct gui_extern_grip_widgets_t* extern_grip(GUI* g, LOGGER* log)
+void extern_grip(GUI* g, LOGGER* log,struct extern_grip_t* dev)
 {
   logger_log(log,"[GUI] Creating External Grip Measurment Device");
   struct gui_extern_grip_widgets_t* data=NULL;
@@ -158,7 +158,7 @@ struct gui_extern_grip_widgets_t* extern_grip(GUI* g, LOGGER* log)
   set_titled_border_thickness(data->border,2);
 
   data->enable_device=create_checkbox("Enable Device",720,270);
-  set_checkbox_callback(data->enable_device,external_grip_device_enable_callback,data);
+  set_checkbox_callback(data->enable_device,external_grip_device_enable_callback,dev);
 
   data->seperator=create_seperator(710,300,210);
 
@@ -191,13 +191,16 @@ struct gui_extern_grip_widgets_t* extern_grip(GUI* g, LOGGER* log)
   add_to_main(g,data->force_label);
   add_to_main(g,data->force_output);
   add_to_main(g,data->force_unit);
+
+  dev->interface=data;
+  dev->g=g;
+
   logger_log(log,"[GUI] External Grip Measurment Device Created");
-  return data;
 }
 
 
 
-struct gui_start_stop_status_t* start_all(GUI* g, LOGGER* log)
+void start_all(GUI* g, LOGGER* log,struct master_start_stop_t* d)
 {
   logger_log(log,"[GUI] Creating File Output and Start-Stop Buttons");
   struct gui_start_stop_status_t* data=NULL;
@@ -207,7 +210,10 @@ struct gui_start_stop_status_t* start_all(GUI* g, LOGGER* log)
     exit(-1);
   }
   data->start_test=create_button("Start All Modules and Record Data",20,420);
+  set_button_callback(data->start_test,master_start_callback,d);
   data->stop_test=create_button("Stop Modules and Write Data",720,420);
+  set_button_enable(data->stop_test,0);
+  set_button_callback(data->stop_test,master_stop_callback,d);
 
   data->status_label=create_label("Status:",420,420);
   data->status=create_label("Not Running",490,420);
@@ -223,5 +229,5 @@ struct gui_start_stop_status_t* start_all(GUI* g, LOGGER* log)
   add_to_main(g,data->file_display_label);
   add_to_main(g,data->file_display);
   logger_log(log,"[GUI] File Output and Start-Stop Buttons created");
-  return data;
+  d->interface=data;
 }

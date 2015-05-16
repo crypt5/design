@@ -10,6 +10,8 @@
 #define BUFFER_SIZE 50
 #define SAMPLE_SIZE 50
 
+/**************** MOTOR Section **************************/
+
 void* run_motor(void* data)
 {
   struct module_t* mod=data;
@@ -199,6 +201,11 @@ void set_actuator_desired_force(struct module_t* mod,double value)
   pthread_mutex_unlock(&mod->lock);
 }
 
+int get_module_enabled(struct module_t* mod)
+{
+  return get_checkbox_checked(mod->interface->enable_device);
+}
+
 double get_current_actuator_force(struct module_t* mod)
 {
   double re;
@@ -365,6 +372,7 @@ void start_extern_force_device(struct extern_force_t* device)
 {
   int create;
   device->run=1;
+  device->enable=1;
   create=pthread_create(&device->id,NULL,run_ex_force,device);
   if(create!=0){
     printf("Ex Force reading Thread creation failed!\n");
@@ -381,10 +389,20 @@ double get_force_value(struct extern_force_t* device)
   return re;
 }
 
+int get_extern_force_enable(struct extern_force_t* device)
+{
+  int re;
+  pthread_mutex_lock(&device->lock);
+  re=device->enable;
+  pthread_mutex_unlock(&device->lock);
+  return re;
+}
+
 void stop_extern_force_device(struct extern_force_t* device)
 {
   pthread_mutex_lock(&device->lock);
   device->run=0;
+  device->enable=0;
   pthread_mutex_unlock(&device->lock);
   pthread_join(device->id,NULL);
 }
@@ -402,4 +420,149 @@ void destroy_extern_force_device(struct extern_force_t* device)
   pthread_mutex_destroy(&device->lock);
   free(device->interface);
   free(device);
+}
+
+
+/************ External Grip Device Section ****************/
+void* run_ex_grip(void *data)
+{
+  int runner;
+  struct extern_grip_t* device=data;
+  GUI* g=device->g;
+
+  pthread_mutex_lock(&device->lock);
+  runner=device->run;
+  pthread_mutex_unlock(&device->lock);
+
+#ifdef MICRO
+  //TODO Micro controller code
+#else
+  while(runner){
+    printf("Reading Grip Device\n");
+    usleep(500000);
+    pthread_mutex_lock(&device->lock);
+    runner=device->run;
+    pthread_mutex_unlock(&device->lock);
+  }
+#endif
+
+  return NULL;
+}
+
+struct extern_grip_t* setup_extern_grip_device(char* chan_A, char* chan_B,double K)
+{
+  int mutex_create;
+  struct extern_grip_t* re=NULL;
+  re=malloc(sizeof(struct extern_grip_t));
+  if(re==NULL){
+    printf("Extern Grip setup data malloc failed\n");
+    exit(-1);
+  }
+  re->interface=NULL;
+  mutex_create=pthread_mutex_init(&re->lock,NULL);
+  if(mutex_create!=0){
+    printf("Mutex Creation for extern grip failed\n");
+    exit(-1);
+  }
+  re->run=0;
+  re->steps=0;
+  re->distance=0;
+  re->force=0;
+  re->spring_k=K;
+  re->chan_a_header=get_header(chan_A);
+  re->chan_a_pin=get_pin(chan_A);
+  re->chan_b_header=get_header(chan_B);
+  re->chan_b_pin=get_pin(chan_B);
+  return re;
+}
+
+void start_extern_grip_device(struct extern_grip_t* device)
+{
+  int create;
+  device->run=1;
+  device->enable=1;
+  create=pthread_create(&device->id,NULL,run_ex_grip,device);
+  if(create!=0){
+    printf("Ex grip reading Thread creation failed!\n");
+    exit(-1);
+  }
+}
+
+double get_extern_grip_force(struct extern_grip_t* device)
+{
+  double re;
+  pthread_mutex_lock(&device->lock);
+  re=device->force;
+  pthread_mutex_unlock(&device->lock);
+  return re;
+}
+
+double get_extern_grip_displacement(struct extern_grip_t* device)
+{
+  double re;
+  pthread_mutex_lock(&device->lock);
+  re=device->distance;
+  pthread_mutex_unlock(&device->lock);
+  return re;
+}
+
+int get_extern_grip_enable(struct extern_grip_t* device)
+{
+  int re;
+  pthread_mutex_lock(&device->lock);
+  re=device->enable;
+  pthread_mutex_unlock(&device->lock);
+  return re;
+}
+
+void stop_extern_grip_device(struct extern_grip_t* device)
+{
+  pthread_mutex_lock(&device->lock);
+  device->run=0;
+  device->enable=0;
+  pthread_mutex_unlock(&device->lock);
+  pthread_join(device->id,NULL);
+}
+
+void destroy_extern_grip_device(struct extern_grip_t* device)
+{
+  int running;
+  pthread_mutex_lock(&device->lock);
+  running=device->run;
+  pthread_mutex_unlock(&device->lock);
+
+  if(running==1)
+    stop_extern_grip_device(device);
+
+  pthread_mutex_destroy(&device->lock);
+  free(device->interface);
+  free(device);
+}
+
+/*************** Master Start Stop Functions **************/
+struct master_start_stop_t* create_start_stop_data()
+{
+  struct master_start_stop_t* re=NULL;
+  re=malloc(sizeof(struct master_start_stop_t));
+  if(re==NULL){
+    printf("Start Stop data holder malloc failed\n");
+    exit(-1);
+  }
+  re->log_data=0;
+  re->mod1=0;
+  re->mod2=0;
+  re->force=0;
+  re->grip=0;
+  re->one=NULL;
+  re->two=NULL;
+  re->f=NULL;
+  re->g=NULL;
+
+  return re;
+}
+
+void destroy_start_stop_data(struct master_start_stop_t* dev)
+{
+  free(dev->interface);
+  free(dev);
 }

@@ -19,10 +19,10 @@ int main()
   GUI* ui=NULL;
   CONFIG* config=NULL;
   struct extern_force_t* ex_force=NULL;
-  struct gui_extern_grip_widgets_t* ex_grip=NULL;
-  struct gui_start_stop_status_t* start_stop=NULL;
+  struct extern_grip_t* ex_grip=NULL;
   struct module_t* mod1=NULL;
   struct module_t* mod2=NULL;
+  struct master_start_stop_t* test_data=NULL;
 
   log=logger_init("logs/Program_Output.log");
   logger_log(log,"[Logger] Logging started");
@@ -39,10 +39,18 @@ int main()
   BBBIO_ADCTSC_module_ctrl(BBBIO_ADC_WORK_MODE_BUSY_POLLING, clk_div);
   logger_log(log,"[IOLIB] Ready");
 #endif
+
   /* AIN 4,5,6 are Avalible */
   mod1=setup_actuator_module("8.07","8.08","8.09","8.10","8.11",4);
   mod2=setup_actuator_module("8.12","8.13","8.14","8.15","8.16",5);
   ex_force=setup_extern_force_device(6);
+  ex_grip=setup_extern_grip_device("8.17","8.19",5);
+
+  test_data=create_start_stop_data();
+  test_data->one=mod1;
+  test_data->two=mod2;
+  test_data->f=ex_force;
+  test_data->g=ex_grip;
 
   logger_log(log,"[GUI] Creating GUI Object");
   ui=init_gui();
@@ -55,8 +63,8 @@ int main()
   module(ui,log,0,mod1);
   module(ui,log,1,mod2);
   extern_force(ui,log,ex_force);
-  ex_grip=extern_grip(ui,log);
-  start_stop=start_all(ui,log);
+  extern_grip(ui,log,ex_grip);
+  start_all(ui,log,test_data);
 
 
 
@@ -66,14 +74,21 @@ int main()
   logger_log(log,"[GUI] Displaying window");
   show_main(ui);
   while(gui_running(ui)){ 
-    usleep(250000);
+    if(test_data->log_data==1){
+      printf("logging data\n");
+      //TODO gather data and send to logger
+      usleep(10000);
+    }
+    else{
+      usleep(250000);
+    }
   }
 
-  free(ex_grip);
-  free(start_stop);
   destroy_extern_force_device(ex_force);
+  destroy_extern_grip_device(ex_grip);
   destroy_actuator_module(mod1);
   destroy_actuator_module(mod2);
+  destroy_start_stop_data(test_data);
 
 #ifdef MICRO
   iolib_free();
