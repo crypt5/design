@@ -9,6 +9,8 @@
 
 #define BUFFER_SIZE 50
 #define SAMPLE_SIZE 50
+#define PEAK_LEN 80
+#define WAVE_LEN 800
 
 /**************** MOTOR Section **************************/
 
@@ -27,18 +29,18 @@ void* run_motor(void* data)
   while(is_high(mod->far_sensor_header,mod->far_sensor_pin)){
     for(i=0;i<10;i++){
       pin_high(mod->step_header,mod->step_pin);
-      usleep(5);
+      usleep(PEAK_LEN);
       pin_low(mod->step_header,mod->step_pin);
-      usleep(200);
+      usleep(WAVE_LEN);
       }
   }
   //Main Control Loop
   pin_low(mod->dir_header,mod->dir_pin);
   while(runner&&is_high(mod->near_sensor_header,mod->near_sensor_pin)){
       pin_high(mod->step_header,mod->step_pin);
-	    usleep(5);
+	    usleep(PEAK_LEN);
 	    pin_low(mod->step_header,mod->step_pin);
-	    usleep(200);
+	    usleep(WAVE_LEN);
     pthread_mutex_lock(&mod->lock);
     runner=mod->run;
     pthread_mutex_unlock(&mod->lock);
@@ -64,9 +66,9 @@ void* run_motor(void* data)
   while(is_high(mod->far_sensor_header,mod->far_sensor_pin)){
     for(i=0;i<10;i++){
       pin_high(mod->step_header,mod->step_pin);
-      usleep(5);
+      usleep(PEAK_LEN);
       pin_low(mod->step_header,mod->step_pin); 
-      usleep(200);
+      usleep(WAVE_LEN);
     }
   }
   pin_high(mod->enable_header,mod->enable_pin); 

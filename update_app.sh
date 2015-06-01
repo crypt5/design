@@ -1,5 +1,7 @@
 #!/bin/bash
 
+ntpdate -b -s -u pool.ntp.org
+
 git pull
 rm includes/*.h
 rm libs/*.so
