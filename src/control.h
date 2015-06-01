@@ -15,6 +15,7 @@ struct module_t{
   double return_force;
   double set_displacement;
   double return_displacement;
+  unsigned int ain_buffer[50];
   int dir_header;
   int dir_pin;
   int enable_header;

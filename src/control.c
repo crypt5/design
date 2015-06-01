@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <math.h>
 #include "graphics.h"
 #include "control.h"
 #include "BBBiolib.h"
@@ -9,8 +10,9 @@
 
 #define BUFFER_SIZE 50
 #define SAMPLE_SIZE 50
-#define PEAK_LEN 80
-#define WAVE_LEN 800
+
+#define PEAK_LEN 5
+#define WAVE_LEN 100
 
 /**************** MOTOR Section **************************/
 
@@ -35,16 +37,73 @@ void* run_motor(void* data)
       }
   }
   //Main Control Loop
-  pin_low(mod->dir_header,mod->dir_pin);
-  while(runner&&is_high(mod->near_sensor_header,mod->near_sensor_pin)){
-      pin_high(mod->step_header,mod->step_pin);
-	    usleep(PEAK_LEN);
-	    pin_low(mod->step_header,mod->step_pin);
-	    usleep(WAVE_LEN);
+  int j;
+  double voltage=0,old_voltage,differance,read_force,setpoint;
+  while(runner){
+    old_voltage=voltage;
+    voltage=0;
+    BBBIO_ADCTSC_work(SAMPLE_SIZE); 
+   	for(j = 0 ; j < SAMPLE_SIZE ; j++) {
+		  voltage=voltage+((double)mod->ain_buffer[j] / (double)4095.0) * (double)1.8;
+	  }
+    voltage=voltage/(double)SAMPLE_SIZE;
+	  read_force=((voltage/97.1)+0.00000019)/0.0004754;
+    differance=(double)setpoint-((double)read_force); 
+     
+   	if(sqrt(differance*differance)<0.001){
+		  pin_high(mod->enable_header,mod->enable_pin);
+		  usleep(100);
+	  }
+    else {
+      pin_low(mod->enable_header,mod->enable_pin); //moving in
+		  if(differance>0){
+        if(is_high(mod->near_sensor_header,mod->near_sensor_pin)){
+			    pin_low(mod->dir_header,mod->dir_pin);
+          for(i=0;i<10;i++){
+            pin_high(mod->step_header,mod->step_pin);
+            usleep(PEAK_LEN);
+            pin_low(mod->step_header,mod->step_pin);
+            usleep(WAVE_LEN);
+          }
+        }
+        else {
+          pin_high(mod->enable_header,mod->enable_pin);
+        }
+      }
+	    else{
+         if(is_high(mod->far_sensor_header,mod->far_sensor_pin)){
+           pin_high(mod->dir_header,mod->dir_pin); //moving out
+	         for(i=0;i<10;i++){
+             pin_high(mod->step_header,mod->step_pin);
+             usleep(PEAK_LEN);
+             pin_low(mod->step_header,mod->step_pin);
+             usleep(WAVE_LEN);
+ 	         }
+         }
+        else {
+          pin_high(mod->enable_header,mod->enable_pin);
+        }
+      }
+    }
+     
     pthread_mutex_lock(&mod->lock);
     runner=mod->run;
+    setpoint=mod->set_force;
+    mod->return_force=read_force;
     pthread_mutex_unlock(&mod->lock);
   }
+  
+  pin_low(mod->enable_header,mod->enable_pin);
+  pin_high(mod->dir_header,mod->dir_pin);
+  while(is_high(mod->far_sensor_header,mod->far_sensor_pin)){
+    for(i=0;i<10;i++){
+      pin_high(mod->step_header,mod->step_pin);
+      usleep(PEAK_LEN);
+      pin_low(mod->step_header,mod->step_pin); 
+      usleep(WAVE_LEN);
+    }
+  }
+  pin_high(mod->enable_header,mod->enable_pin); 
   
 #else //Regular computer
   while(runner){
@@ -57,21 +116,6 @@ void* run_motor(void* data)
     runner=mod->run;
     pthread_mutex_unlock(&mod->lock);
   }
-#endif
-
-//End of test, return code
-#ifdef MICRO
-  pin_low(mod->enable_header,mod->enable_pin);
-  pin_high(mod->dir_header,mod->dir_pin);
-  while(is_high(mod->far_sensor_header,mod->far_sensor_pin)){
-    for(i=0;i<10;i++){
-      pin_high(mod->step_header,mod->step_pin);
-      usleep(PEAK_LEN);
-      pin_low(mod->step_header,mod->step_pin); 
-      usleep(WAVE_LEN);
-    }
-  }
-  pin_high(mod->enable_header,mod->enable_pin); 
 #endif
  
   return NULL;
@@ -132,34 +176,33 @@ struct module_t* setup_actuator_module(char* enable, char* dir, char* step,char*
   
   const int open_dly = 0;
   const int sample_dly = 1;
-  unsigned int buffer_AIN[BUFFER_SIZE] ={0};
   switch(AIN){
   case 0:
-    BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN0, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, buffer_AIN, BUFFER_SIZE);
+    BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN0, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, re->ain_buffer, BUFFER_SIZE);
     BBBIO_ADCTSC_channel_enable(BBBIO_ADC_AIN0);
   break;
   case 1:
-    BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN1, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, buffer_AIN, BUFFER_SIZE);
+    BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN1, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, re->ain_buffer, BUFFER_SIZE);
     BBBIO_ADCTSC_channel_enable(BBBIO_ADC_AIN1);
   break;
   case 2:
-    BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN2, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, buffer_AIN, BUFFER_SIZE);
+    BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN2, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, re->ain_buffer, BUFFER_SIZE);
     BBBIO_ADCTSC_channel_enable(BBBIO_ADC_AIN2);
   break;
   case 3:
-    BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN3, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, buffer_AIN, BUFFER_SIZE);
+    BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN3, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, re->ain_buffer, BUFFER_SIZE);
     BBBIO_ADCTSC_channel_enable(BBBIO_ADC_AIN3);
   break;
   case 4:
-    BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN4, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, buffer_AIN, BUFFER_SIZE);
+    BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN4, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, re->ain_buffer, BUFFER_SIZE);
     BBBIO_ADCTSC_channel_enable(BBBIO_ADC_AIN4);
   break;
   case 5:
-    BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN5, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, buffer_AIN, BUFFER_SIZE);
+    BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN5, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, re->ain_buffer, BUFFER_SIZE);
     BBBIO_ADCTSC_channel_enable(BBBIO_ADC_AIN5);
   break;
   case 6:
-    BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN6, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, buffer_AIN, BUFFER_SIZE);
+    BBBIO_ADCTSC_channel_ctrl(BBBIO_ADC_AIN6, BBBIO_ADC_STEP_MODE_SW_CONTINUOUS, open_dly, sample_dly,BBBIO_ADC_STEP_AVG_1, re->ain_buffer, BUFFER_SIZE);
     BBBIO_ADCTSC_channel_enable(BBBIO_ADC_AIN6);
   break;
 }
