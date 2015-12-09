@@ -16,6 +16,9 @@
 
 #define STEPS_PER_MM 26000
 
+#define CW 1
+#define CCW 0
+
 /**************** MOTOR Section **************************/
 
 void* run_motor(void* data)
@@ -539,7 +542,38 @@ void* run_ex_grip(void *data)
   pthread_mutex_unlock(&device->lock);
 
 #ifdef MICRO
-  //TODO Micro controller code
+  iolib_setdir(device->chan_a_header, device->chan_a_pin, BBBIO_DIR_IN);
+  iolib_setdir(device->chan_b_header, device->chan_b_pin, BBBIO_DIR_IN);
+  char a,b,old_a=0,old_b=0,dir;
+  int count=0; 
+  
+  while(runner){   
+    a=is_high(device->chan_a_header,device->chan_a_pin);
+    b=is_high(device->chan_b_header,device->chan_b_pin);
+    
+    if(a!=old_a||b!=old_b){
+      if(a==1&&b==0&&a!=old_a){
+        // Being Released
+        dir=CCW;
+        count--;
+      } else if(a==0&&b==1&&b!=old_b) {
+        // Being Compressed
+        dir=CW;
+        count++;
+      } else {
+        // Do nothing if both high
+      }
+    } 
+    
+    printf("Ticks: %d\n",count);
+    old_a=a;
+    old_b=b;
+    
+    pthread_mutex_lock(&device->lock);
+    runner=device->run;
+    pthread_mutex_unlock(&device->lock);
+    usleep(1); 
+  }
 #else
   while(runner){
     printf("Reading Grip Device\n");

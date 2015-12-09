@@ -1,6 +1,6 @@
 #ifndef DEF_H_
 #define DEF_H_
 
-//#define MICRO
+#define MICRO
 
 #endif
