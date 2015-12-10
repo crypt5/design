@@ -27,6 +27,8 @@ int main()
   char first_loop=1;
   char buf[1024];
   struct timeval start_time,current_time;
+  int current_run=0;
+  double k;
 
   log=logger_init("logs/Program_Output.log");
   logger_log(log,"[Logger] Logging started");
@@ -48,7 +50,8 @@ int main()
   mod1=setup_actuator_module("8.07","8.08","8.09","8.10","8.11",4);
   mod2=setup_actuator_module("8.12","8.13","8.14","8.15","8.16",5);
   ex_force=setup_extern_force_device(6);
-  ex_grip=setup_extern_grip_device("8.17","8.19",10);
+  k=config_get_double(config,"gripKValue")/1000.0;
+  ex_grip=setup_extern_grip_device("8.17","8.19",k);
 
   test_data=create_start_stop_data();
   test_data->one=mod1;
@@ -71,16 +74,19 @@ int main()
   start_all(ui,log,test_data);
 
 
-
-  logger_log(log,"[Data Logger] Starting");
-  data_out=data_logger_init("output.csv");
-
   logger_log(log,"[GUI] Displaying window");
   show_main(ui);
+  char* base_name=config_get_string(config, "outputBaseName");
 
   while(gui_running(ui)){ 
     if(test_data->log_data==1){
       if(first_loop){
+        logger_log(log,"[Data Logger] Starting");
+        sprintf(buf,"%s-%d.csv",base_name,current_run);
+        data_out=data_logger_init(buf);
+        set_textfield_text(test_data->interface->file_display,buf);
+        update_widget(ui,test_data->interface->file_display);
+      
         data_logger_log(data_out, "time (s),\
 motor 1 force (N),motor 1 displacement (mm),\
 motor 2 force (N),motor 2 displacement (mm),\
@@ -88,6 +94,7 @@ external force sensor(N),\
 external grip force (N),external grip displacement (mm)");
         first_loop=0;
         gettimeofday(&start_time,NULL);
+        current_run++;
       }
 
       double mot1f,mot1d,mot2f,mot2d,ef,egf,egd,time;
@@ -130,6 +137,11 @@ external grip force (N),external grip displacement (mm)");
       usleep(1000);
     }
     else{
+      if(first_loop==0){
+        logger_log(log,"[Data Logger] Shutting Down");
+        data_logger_shutdown(data_out);
+        first_loop=1;
+      }
       usleep(250000);
     }
   }
@@ -144,8 +156,6 @@ external grip force (N),external grip displacement (mm)");
   iolib_free();
 #endif
 
-  logger_log(log,"[Data Logger] Shutting Down");
-  data_logger_shutdown(data_out);
   logger_log(log,"[GUI] Shutting down GUI");
   destroy_gui(ui);
   logger_log(log,"[Config] Closing and Freeing object");

@@ -592,8 +592,10 @@ void* run_ex_grip(void *data)
       }
     } 
     
-    //Displacement in inches
-    disp=((double)count/1024.0)*2*3.14159265359*2;
+    //Displacement in inches = steps * 2pi*r
+    //to mm = *25.4  
+    disp=((double)count/1024.0)*2.0*3.14159265359*2.0;
+    disp=disp*25.4;
     force=disp*k;
     
     if(update_display>=1000){
