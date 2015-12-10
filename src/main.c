@@ -80,13 +80,17 @@ int main()
   while(gui_running(ui)){ 
     if(test_data->log_data==1){
       if(first_loop){
-        
         data_logger_log(data_out,"time,and,other,stuff");
         first_loop=0;
         start_time=clock();
       }
+      current_time=clock();
+      long ticks=current_time-start_time;
+      double time=(double)ticks/CLOCKS_PER_SEC;
+      sprintf(buf,"%lf,and,other,stuff",time);
+      data_logger_log(data_out,buf);
       //TODO gather data and send to logger
-      usleep(10000);
+      usleep(1);
     }
     else{
       usleep(250000);
