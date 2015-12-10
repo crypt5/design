@@ -37,7 +37,7 @@ void module(GUI* g, LOGGER* log,int num,struct module_t* mod)
     exit(-1);
   }
   sprintf(buf,"Module %d",num+1);
-  data->border=create_titled_border(buf,20+(330*num),130,280,300);
+  data->border=create_titled_border(buf,20+(330*num),130,280,320);
   set_titled_border_thickness(data->border,2);
   data->enable_device=create_checkbox("Enable Module",30+(330*num),140);
   set_checkbox_callback(data->enable_device,module_enable_callback,data);
@@ -60,7 +60,7 @@ void module(GUI* g, LOGGER* log,int num,struct module_t* mod)
   set_label_enable(data->desired_label,0);
   data->desired_enter=create_textfield(155+(330*num),280,8);
   set_textfield_enable(data->desired_enter,0);
-  data->desired_unit=create_label("lbs",235+(330*num),280);
+  data->desired_unit=create_label("Newtons",235+(330*num),280);
   set_label_enable(data->desired_unit,0);
   data->start_device=create_button("Start Module",30+(330*num),315);
   set_button_enable(data->start_device,0);
@@ -76,7 +76,7 @@ void module(GUI* g, LOGGER* log,int num,struct module_t* mod)
   data->current_output=create_textfield(155+(330*num),375,8);
   set_textfield_enable(data->current_output,0);
   set_textfield_editable(data->current_output,0);
-  data->current_output_unit=create_label("lbs",235+(330*num),375);
+  data->current_output_unit=create_label("Newtons",235+(330*num),375);
   set_label_enable(data->current_output_unit,0);
 
   add_to_main(g,data->border);
@@ -102,6 +102,7 @@ void module(GUI* g, LOGGER* log,int num,struct module_t* mod)
   sprintf(buf,"[GUI] Module %d Created",num+1);
   logger_log(log,buf);
   mod->interface=data;
+  mod->g=g;
 }
 
 
@@ -115,7 +116,7 @@ void extern_force(GUI* g,LOGGER* log,struct extern_force_t* dev)
     exit(-1);
   }
 
-  data->border=create_titled_border("External Force Device",700,130,110,200);
+  data->border=create_titled_border("External Force Device",700,130,110,220);
   set_titled_border_thickness(data->border,2);
 
   data->enable_device=create_checkbox("Enable Device",720,140);
@@ -130,7 +131,7 @@ void extern_force(GUI* g,LOGGER* log,struct extern_force_t* dev)
   set_textfield_editable(data->output_display,0);
   set_textfield_enable(data->output_display,0);
 
-  data->output_unit=create_label("lbs",840,200);
+  data->output_unit=create_label("Newtons",840,200);
   set_label_enable(data->output_unit,0);
 
   add_to_main(g,data->border);
@@ -154,7 +155,7 @@ void extern_grip(GUI* g, LOGGER* log,struct extern_grip_t* dev)
     printf("Extern Grip widget data holding malloc failed!\n");
     exit(-1);
   }
-  data->border=create_titled_border("External Grip Device",700,260,150,230);
+  data->border=create_titled_border("External Grip Device",700,260,150,250);
   set_titled_border_thickness(data->border,2);
 
   data->enable_device=create_checkbox("Enable Device",720,270);
@@ -169,7 +170,7 @@ void extern_grip(GUI* g, LOGGER* log,struct extern_grip_t* dev)
   set_textfield_editable(data->displacement_output,0);
   set_textfield_enable(data->displacement_output,0);
 
-  data->displacement_unit=create_label("inches",840,330);
+  data->displacement_unit=create_label("millimeter",840,330);
   set_label_enable(data->displacement_unit,0);
 
   data->force_label=create_label("Measured Force:",720,355);
@@ -179,7 +180,7 @@ void extern_grip(GUI* g, LOGGER* log,struct extern_grip_t* dev)
   set_textfield_editable(data->force_output,0);
   set_textfield_enable(data->force_output,0);
 
-  data->force_unit=create_label("lbs",840,380);
+  data->force_unit=create_label("Newtons",840,380);
   set_label_enable(data->force_unit,0);
 
   add_to_main(g,data->border);

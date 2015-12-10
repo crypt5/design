@@ -10,6 +10,7 @@
 
 struct module_t{
   struct gui_module_widgets_t* interface;
+  GUI* g;
   pthread_mutex_t lock;
   pthread_t id;
   int run;

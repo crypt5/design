@@ -112,41 +112,46 @@ void force_displacement_button_group_callback(GUI* g,WIDGET* w,void* data)
   if(force_button){//Force mode
     if(checked){//in force mode
       set_radio_button_check(gui->displacement_mode,0);
-      set_label_text(gui->desired_unit,"lbs");
+      set_label_text(gui->desired_unit,"Newtons");
       set_label_text(gui->desired_label,"Force");
       set_label_text(gui->current_output_label,"Force");
-      set_label_text(gui->current_output_unit,"lbs");
+      set_label_text(gui->current_output_unit,"Newtons");
     }
     else{//in displacement mode
       set_radio_button_check(gui->displacement_mode,1);
-      set_label_text(gui->desired_unit,"inches");
+      set_label_text(gui->desired_unit,"millimeter");
       set_label_text(gui->desired_label,"Displacement");
       set_label_text(gui->current_output_label,"Displacement");
-      set_label_text(gui->current_output_unit,"inches");
+      set_label_text(gui->current_output_unit,"millimeter");
     }
   }
   else{//Displacement mode
     if(checked){//in displacement mode
       set_radio_button_check(gui->force_mode,0);
-      set_label_text(gui->desired_unit,"inches");
+      set_label_text(gui->desired_unit,"millimeter");
       set_label_text(gui->desired_label,"Displacement");
       set_label_text(gui->current_output_label,"Displacement");
-      set_label_text(gui->current_output_unit,"inches");
+      set_label_text(gui->current_output_unit,"millimeter");
     }
     else{//in force mode
       set_radio_button_check(gui->force_mode,1);
-      set_label_text(gui->desired_unit,"lbs");
+      set_label_text(gui->desired_unit,"Newtons");
       set_label_text(gui->desired_label,"Force");
       set_label_text(gui->current_output_label,"Force");
-      set_label_text(gui->current_output_unit,"lbs");
+      set_label_text(gui->current_output_unit,"Newtons");
     }
   }
+  set_textfield_text(gui->current_output,"");
+  set_textfield_text(gui->desired_enter,"");
+  
   update_widget(g,gui->force_mode);
   update_widget(g,gui->displacement_mode);
   update_widget(g,gui->desired_unit);
   update_widget(g,gui->desired_label);
   update_widget(g,gui->current_output_label);
   update_widget(g,gui->current_output_unit);
+  update_widget(g,gui->current_output);
+  update_widget(g,gui->desired_enter);
 }
 
 void start_module_callback(GUI* g, WIDGET* w,void* data)
@@ -166,15 +171,16 @@ void start_module_callback(GUI* g, WIDGET* w,void* data)
 	return;
     }
   }
+
   val=strtod(entry,&end);
   mode=get_radio_button_check(gui->force_mode);
   if(mode==MODE_FORCE){//Force mode
-    if(val<0||val>15)
+    if(val<0||val>67)
       return;
   }
   else{//Displacement mode
     mode=MODE_DISPLACEMENT;
-    if(val<0||val>3.93701)
+    if(val<0||val>102)
       return;
   }
 

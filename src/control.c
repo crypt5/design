@@ -14,7 +14,7 @@
 #define PEAK_LEN 5
 #define WAVE_LEN 100
 
-#define STEPS_PER_MM 26000
+#define STEPS_PER_MM 1024
 
 #define CW 1
 #define CCW 0
@@ -28,6 +28,8 @@ void* run_motor(void* data)
   int runner=mod->run;
   int mode=mod->mode;
   double disp=mod->set_displacement;
+  WIDGET* output=mod->interface->current_output;
+  GUI* g=mod->g;
   pthread_mutex_unlock(&mod->lock);
 
 
@@ -46,6 +48,7 @@ void* run_motor(void* data)
   }
   //Main Control Loop for force
   int j;
+  int count=0;
   double voltage=0,old_voltage,differance,read_force,setpoint;
   while(runner && mode==MODE_FORCE){
     old_voltage=voltage;
@@ -56,6 +59,7 @@ void* run_motor(void* data)
 	  }
     voltage=voltage/(double)SAMPLE_SIZE;
 	  read_force=((voltage/97.1)+0.00000019)/0.0004754;
+    read_force=read_force*4.44822; //Convert to N
     differance=(double)setpoint-((double)read_force); 
      
    	if(sqrt(differance*differance)<0.001){
@@ -95,7 +99,14 @@ void* run_motor(void* data)
         }
       }
     }
-     
+    
+    if(count>=100){
+      char buf[50];
+      sprintf(buf,"%0.4lf",read_force);
+      set_textfield_text(output,buf);
+      update_widget(g,output);
+      count=0;
+    }
     pthread_mutex_lock(&mod->lock);
     runner=mod->run;
     setpoint=mod->set_force;
@@ -103,10 +114,12 @@ void* run_motor(void* data)
     mod->return_displacement=steps;
     pthread_mutex_unlock(&mod->lock);
     usleep(1);
+    count++;
   }
   
   //Main control loop for Displacement
   steps=0;
+  count=0;
   while(runner && mode==MODE_DISPLACEMENT){
     old_voltage=voltage;
     voltage=0;
@@ -116,6 +129,7 @@ void* run_motor(void* data)
 	  }
     voltage=voltage/(double)SAMPLE_SIZE;
 	  read_force=((voltage/97.1)+0.00000019)/0.0004754;
+    read_force=read_force*4.44822; //Convert to N
     
     if(abs(steps-(disp*(double)STEPS_PER_MM))<0.01){
       pin_high(mod->enable_header,mod->enable_pin);
@@ -139,12 +153,19 @@ void* run_motor(void* data)
           }
       }
       else {
-        printf("Steps: %lf\nDISP: %lf\n",steps,disp*STEPS_PER_MM);
+        //printf("Steps: %lf\nDISP: %lf\n",steps,disp*STEPS_PER_MM);
       }
     
     }
      
-   	
+    if(count>=100){
+      char buf[50];
+      sprintf(buf,"%0.4lf",(double)steps/(double)STEPS_PER_MM);
+      set_textfield_text(output,buf);
+      update_widget(g,output);
+      count=0;
+    }
+    
     pthread_mutex_lock(&mod->lock);
     runner=mod->run;
     setpoint=mod->set_force;
@@ -152,6 +173,7 @@ void* run_motor(void* data)
     mod->return_displacement=steps;
     pthread_mutex_unlock(&mod->lock);
     usleep(1);
+    count++;
   }
   
   pin_low(mod->enable_header,mod->enable_pin);

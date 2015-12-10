@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/time.h>
 #include "gui.h"
 #include "logger.h"
 #include "config.h"
@@ -25,7 +26,7 @@ int main()
   struct master_start_stop_t* test_data=NULL;
   char first_loop=1;
   char buf[1024];
-  clock_t start_time,current_time;
+  struct timeval start_time,current_time;
 
   log=logger_init("logs/Program_Output.log");
   logger_log(log,"[Logger] Logging started");
@@ -80,17 +81,53 @@ int main()
   while(gui_running(ui)){ 
     if(test_data->log_data==1){
       if(first_loop){
-        data_logger_log(data_out,"time,and,other,stuff");
+        data_logger_log(data_out, "time (s),\
+motor 1 force (N),motor 1 displacement (mm),\
+motor 2 force (N),motor 2 displacement (mm),\
+external force sensor(N),\
+external grip force (N),external grip displacement (mm)");
         first_loop=0;
-        start_time=clock();
+        gettimeofday(&start_time,NULL);
       }
-      current_time=clock();
-      long ticks=current_time-start_time;
-      double time=(double)ticks/CLOCKS_PER_SEC;
-      sprintf(buf,"%lf,and,other,stuff",time);
+
+      double mot1f,mot1d,mot2f,mot2d,ef,egf,egd,time;
+      
+      if(test_data->mod1==1){
+        mot1f=get_current_actuator_force(test_data->one);
+        mot1d=get_current_actuator_displacement(test_data->one);
+      } else {
+        mot1f=0;
+        mot1d=0;
+      }
+      
+      if(test_data->mod2==1){
+        mot2f=get_current_actuator_force(test_data->two);
+        mot2d=get_current_actuator_displacement(test_data->two);
+      } else {
+        mot2f=0;
+        mot2d=0;
+      }
+      
+      if(test_data->force==1)
+        ef=get_force_value(test_data->f);
+      else
+        ef=0;
+        
+      if(test_data->grip==1){
+        egf=get_extern_grip_force(test_data->g);
+        egd=get_extern_grip_displacement(test_data->g);
+      } else {
+        egf=0;
+        egd=0;
+      }
+      
+      gettimeofday(&current_time,NULL);
+      time=(current_time.tv_sec-start_time.tv_sec);
+      time+=(current_time.tv_usec-start_time.tv_usec)/1000000.0;
+      
+      sprintf(buf,"%0.4lf,%0.4lf,%0.4lf,%0.4lf,%0.4lf,%0.4lf,%0.4lf,%0.4lf,",time,mot1f,mot1d,mot2f,mot2d,ef,egf,egd);
       data_logger_log(data_out,buf);
-      //TODO gather data and send to logger
-      usleep(1);
+      usleep(1000);
     }
     else{
       usleep(250000);
