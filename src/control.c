@@ -453,7 +453,7 @@ void* run_ex_force(void *data)
   return NULL;
 }
 
-struct extern_force_t* setup_extern_force_device(int AIN)
+struct extern_force_t* setup_extern_force_device(int input)
 {
   int mutex_create;
   struct extern_force_t* re=NULL;
@@ -470,7 +470,7 @@ struct extern_force_t* setup_extern_force_device(int AIN)
   }
   re->run=0;
   re->return_val=0;
-  re->AIN=AIN;
+  re->AIN=input;
 
   return re;
 }
@@ -545,7 +545,12 @@ void* run_ex_grip(void *data)
   iolib_setdir(device->chan_a_header, device->chan_a_pin, BBBIO_DIR_IN);
   iolib_setdir(device->chan_b_header, device->chan_b_pin, BBBIO_DIR_IN);
   char a,b,old_a=0,old_b=0,dir;
-  int count=0; 
+  char temp[20];
+  double disp=0,force=0,k;
+  int count=0,update_display=0; 
+  WIDGET* displacement_box=device->interface->displacement_output;
+  WIDGET* force_box=device->interface->force_output;
+  k=device->spring_k;
   
   while(runner){   
     a=is_high(device->chan_a_header,device->chan_a_pin);
@@ -565,14 +570,29 @@ void* run_ex_grip(void *data)
       }
     } 
     
-    printf("Ticks: %d\n",count);
-    old_a=a;
-    old_b=b;
+    //Displacement in inches
+    disp=((double)count/1024.0)*2*3.14159265359*2;
+    force=disp*k;
+    
+    if(update_display>=1000){
+      sprintf(temp,"%0.4lf",disp);
+      set_textfield_text(displacement_box,temp);
+      sprintf(temp,"%0.4lf",force);
+      set_textfield_text(force_box,temp);
+      update_widget(g,force_box);
+      update_widget(g,displacement_box);
+      update_display=0;
+    }
     
     pthread_mutex_lock(&device->lock);
     runner=device->run;
+    device->distance=disp;
+    device->force=force;
     pthread_mutex_unlock(&device->lock);
     usleep(1); 
+    update_display++;
+    old_a=a;
+    old_b=b;
   }
 #else
   while(runner){

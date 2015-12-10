@@ -23,6 +23,9 @@ int main()
   struct module_t* mod1=NULL;
   struct module_t* mod2=NULL;
   struct master_start_stop_t* test_data=NULL;
+  char first_loop=1;
+  char buf[1024];
+  clock_t start_time,current_time;
 
   log=logger_init("logs/Program_Output.log");
   logger_log(log,"[Logger] Logging started");
@@ -44,7 +47,7 @@ int main()
   mod1=setup_actuator_module("8.07","8.08","8.09","8.10","8.11",4);
   mod2=setup_actuator_module("8.12","8.13","8.14","8.15","8.16",5);
   ex_force=setup_extern_force_device(6);
-  ex_grip=setup_extern_grip_device("8.17","8.19",5);
+  ex_grip=setup_extern_grip_device("8.17","8.19",10);
 
   test_data=create_start_stop_data();
   test_data->one=mod1;
@@ -73,9 +76,15 @@ int main()
 
   logger_log(log,"[GUI] Displaying window");
   show_main(ui);
+
   while(gui_running(ui)){ 
     if(test_data->log_data==1){
-      printf("logging data\n");
+      if(first_loop){
+        
+        data_logger_log(data_out,"time,and,other,stuff");
+        first_loop=0;
+        start_time=clock();
+      }
       //TODO gather data and send to logger
       usleep(10000);
     }

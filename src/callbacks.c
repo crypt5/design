@@ -42,17 +42,21 @@ void external_grip_device_enable_callback(GUI* g,WIDGET* w,void* data)
   set_textfield_enable(gui->force_output,enable);
   set_label_enable(gui->force_unit,enable);
 
+  if(enable==1){
+    start_extern_grip_device(dev);
+  }
+  else{
+    stop_extern_grip_device(dev);
+    set_textfield_text(gui->displacement_output,"");
+    set_textfield_text(gui->force_output,"");
+  }
+  
   update_widget(g,gui->displacement_label);
   update_widget(g,gui->displacement_output);
   update_widget(g,gui->displacement_unit);
   update_widget(g,gui->force_label);
   update_widget(g,gui->force_output);
   update_widget(g,gui->force_unit);
-
-  if(enable==1)
-    start_extern_grip_device(dev);
-  else
-    stop_extern_grip_device(dev);
 }
 
 void module_enable_callback(GUI* g,WIDGET* w,void* data)
@@ -73,10 +77,14 @@ void module_enable_callback(GUI* g,WIDGET* w,void* data)
   set_textfield_enable(gui->current_output,enable);
   set_textfield_enable(gui->desired_enter,enable);
 
-  if(enable==1)
+  if(enable==1){
     set_label_text(gui->device_status,"Ready");
-  else
+    set_label_text_color(gui->device_status,0);
+  }
+  else{
     set_label_text(gui->device_status,"Not Active");
+    set_label_text_color(gui->device_status,0);
+  }
 
   update_widget(g,gui->device_status);
   update_widget(g,gui->mode_label);
