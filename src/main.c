@@ -47,8 +47,8 @@ int main()
 #endif
 
   /* AIN 4,5,6 are Avalible */
-  mod1=setup_actuator_module("8.07","8.08","8.09","8.10","8.11",4);
-  mod2=setup_actuator_module("8.12","8.13","8.14","8.15","8.16",5);
+  mod1=setup_actuator_module("8.07","8.08","8.09","8.10","8.11",4,1);
+  mod2=setup_actuator_module("8.12","8.13","8.14","8.15","8.16",5,2);
   ex_force=setup_extern_force_device(6);
   k=config_get_double(config,"gripKValue")/1000.0;
   ex_grip=setup_extern_grip_device("8.17","8.19",k);

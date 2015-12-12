@@ -15,6 +15,7 @@ struct module_t{
   pthread_t id;
   int run;
   int mode;
+  int channel;
   double set_force;
   double return_force;
   double set_displacement;
@@ -75,7 +76,7 @@ struct master_start_stop_t{
 };
 
 //Actuator functions
-struct module_t* setup_actuator_module(char* enable, char* dir, char* step,char* far_sensor,char* near_sensor,int AIN);
+struct module_t* setup_actuator_module(char* enable, char* dir, char* step,char* far_sensor,char* near_sensor,int AIN, int channel);
 void start_actuator(struct module_t* mod,int mode,double desired_value);
 void stop_actuator(struct module_t* mod);
 void set_actuator_desired_force(struct module_t* mod,double value);

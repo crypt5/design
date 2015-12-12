@@ -14,7 +14,7 @@
 #define PEAK_LEN 5
 #define WAVE_LEN 100
 
-#define STEPS_PER_MM 1024
+#define STEPS_PER_MM 8.0*126.582278
 
 #define CW 1
 #define CCW 0
@@ -49,6 +49,7 @@ void* run_motor(void* data)
   //Main Control Loop for force
   int j;
   int count=0;
+  int channel=mod->channel;
   double voltage=0,old_voltage,differance,read_force,setpoint;
   while(runner && mode==MODE_FORCE){
     old_voltage=voltage;
@@ -58,11 +59,14 @@ void* run_motor(void* data)
 		  voltage=voltage+((double)mod->ain_buffer[j] / (double)4095.0) * (double)1.8;
 	  }
     voltage=voltage/(double)SAMPLE_SIZE;
-	  read_force=((voltage/97.1)+0.00000019)/0.0004754;
-    read_force=read_force*4.44822; //Convert to N
+    if(channel==1)
+	    read_force=(voltage*60.97)+1.56;
+    else 
+      read_force=(voltage*59.57)+1.01;
+      
     differance=(double)setpoint-((double)read_force); 
      
-   	if(sqrt(differance*differance)<0.001){
+   	if(sqrt(differance*differance)<0.45){
 		  pin_high(mod->enable_header,mod->enable_pin);
 		  usleep(100);
 	  }
@@ -71,13 +75,13 @@ void* run_motor(void* data)
 		  if(differance>0){
         if(is_high(mod->near_sensor_header,mod->near_sensor_pin)){
 			    pin_low(mod->dir_header,mod->dir_pin);
-          for(i=0;i<10;i++){
-            pin_high(mod->step_header,mod->step_pin);
-            usleep(PEAK_LEN);
-            pin_low(mod->step_header,mod->step_pin);
-            usleep(WAVE_LEN);
-            steps++;
-          }
+                                                    
+          pin_high(mod->step_header,mod->step_pin);
+          usleep(PEAK_LEN);
+          pin_low(mod->step_header,mod->step_pin);
+          usleep(WAVE_LEN);
+          
+          steps++;
         }
         else {
           pin_high(mod->enable_header,mod->enable_pin);
@@ -86,20 +90,18 @@ void* run_motor(void* data)
 	    else{
          if(is_high(mod->far_sensor_header,mod->far_sensor_pin)){
            pin_high(mod->dir_header,mod->dir_pin); //moving out
-	         for(i=0;i<10;i++){
-             pin_high(mod->step_header,mod->step_pin);
-             usleep(PEAK_LEN);
-             pin_low(mod->step_header,mod->step_pin);
-             usleep(WAVE_LEN);
-             steps--;
- 	         }
+           
+           pin_high(mod->step_header,mod->step_pin);
+           usleep(PEAK_LEN);
+           pin_low(mod->step_header,mod->step_pin);
+           usleep(WAVE_LEN);
+           steps--;
          }
         else {
           pin_high(mod->enable_header,mod->enable_pin);
         }
       }
     }
-    
     if(count>=100){
       char buf[50];
       sprintf(buf,"%0.4lf",read_force);
@@ -128,8 +130,7 @@ void* run_motor(void* data)
 		  voltage=voltage+((double)mod->ain_buffer[j] / (double)4095.0) * (double)1.8;
 	  }
     voltage=voltage/(double)SAMPLE_SIZE;
-	  read_force=((voltage/97.1)+0.00000019)/0.0004754;
-    read_force=read_force*4.44822; //Convert to N
+	  read_force=(voltage*60.97)+1.56;
     
     if(abs(steps-(disp*(double)STEPS_PER_MM))<0.01){
       pin_high(mod->enable_header,mod->enable_pin);
@@ -140,13 +141,12 @@ void* run_motor(void* data)
       if(steps<(disp*STEPS_PER_MM)){
           if(is_high(mod->near_sensor_header,mod->near_sensor_pin)){
             pin_low(mod->dir_header,mod->dir_pin);
-            for(i=0;i<10;i++){ //Moving in
-              pin_high(mod->step_header,mod->step_pin);
-              usleep(PEAK_LEN);
-              pin_low(mod->step_header,mod->step_pin);
-              usleep(WAVE_LEN);
-              steps++;
-            }
+            //Moving in
+            pin_high(mod->step_header,mod->step_pin);
+            usleep(PEAK_LEN);
+            pin_low(mod->step_header,mod->step_pin);
+            usleep(WAVE_LEN);
+            steps++;
           }
           else{
             pin_high(mod->enable_header,mod->enable_pin);
@@ -160,7 +160,7 @@ void* run_motor(void* data)
      
     if(count>=100){
       char buf[50];
-      sprintf(buf,"%0.4lf",(double)steps/(double)STEPS_PER_MM);
+      sprintf(buf,"%0.4lf",(double)steps/((double)STEPS_PER_MM));
       set_textfield_text(output,buf);
       update_widget(g,output);
       count=0;
@@ -215,7 +215,7 @@ int get_pin(char* str)
   return atoi(str+2);
 }
 
-struct module_t* setup_actuator_module(char* enable, char* dir, char* step,char* far_sensor,char* near_sensor,int AIN)
+struct module_t* setup_actuator_module(char* enable, char* dir, char* step,char* far_sensor,char* near_sensor,int AIN, int channel)
 {
   int mutex_create;
   struct module_t* re=NULL;
@@ -247,6 +247,7 @@ struct module_t* setup_actuator_module(char* enable, char* dir, char* step,char*
   re->near_sensor_header=get_header(near_sensor);
   re->near_sensor_pin=get_pin(near_sensor);
   re->AIN_pin=AIN;
+  re->channel=channel;
 
 #ifdef MICRO
   
@@ -355,7 +356,7 @@ double get_current_actuator_displacement(struct module_t* mod)
   double re;
   pthread_mutex_lock(&mod->lock);
   re=mod->return_displacement;
-  re=re/STEPS_PER_MM;
+  re=re/(STEPS_PER_MM);
   pthread_mutex_unlock(&mod->lock);
   return re;
 }
@@ -592,10 +593,8 @@ void* run_ex_grip(void *data)
       }
     } 
     
-    //Displacement in inches = steps * 2pi*r
-    //to mm = *25.4  
-    disp=((double)count/1024.0)*2.0*3.14159265359*2.0;
-    disp=disp*25.4;
+    //Displacement  = steps * 2pi*r
+    disp=((double)count/1024.0)*2.0*3.14159265359*50.9;
     force=disp*k;
     
     if(update_display>=1000){
