@@ -26,16 +26,17 @@ void* run_motor(void* data)
   struct module_t* mod=data;
   pthread_mutex_lock(&mod->lock);
   int runner=mod->run;
-  int mode=mod->mode;
-  double disp=mod->set_displacement;
   WIDGET* output=mod->interface->current_output;
   GUI* g=mod->g;
   pthread_mutex_unlock(&mod->lock);
-
+  char buf[50];
+  double steps=0,read_force;
+  int count=0;
 
 #ifdef MICRO
   int i;
-  double steps=0;
+  int mode=mod->mode;
+  double disp=mod->set_displacement;
   pin_low(mod->enable_header,mod->enable_pin);
   pin_high(mod->dir_header,mod->dir_pin);
   while(is_high(mod->far_sensor_header,mod->far_sensor_pin)){
@@ -48,9 +49,8 @@ void* run_motor(void* data)
   }
   //Main Control Loop for force
   int j;
-  int count=0;
   int channel=mod->channel;
-  double voltage=0,old_voltage,differance,read_force,setpoint;
+  double voltage=0,old_voltage,differance,setpoint;
   while(runner && mode==MODE_FORCE){
     old_voltage=voltage;
     voltage=0;
@@ -103,7 +103,6 @@ void* run_motor(void* data)
       }
     }
     if(count>=100){
-      char buf[50];
       sprintf(buf,"%0.4lf",read_force);
       set_textfield_text(output,buf);
       update_widget(g,output);
@@ -159,7 +158,6 @@ void* run_motor(void* data)
     }
      
     if(count>=100){
-      char buf[50];
       sprintf(buf,"%0.4lf",(double)steps/((double)STEPS_PER_MM));
       set_textfield_text(output,buf);
       update_widget(g,output);
@@ -189,15 +187,23 @@ void* run_motor(void* data)
   pin_high(mod->enable_header,mod->enable_pin); 
   
 #else //Regular computer
+  srand(time(NULL));
   while(runner){
-    usleep(500000);
-    if(mod->mode==1)
-      printf("Controlling Motor Force.\tSet Value=%lf\n",mod->set_force);
-    else
-      printf("Controlling Motor Displacement.\tSet Value=%lf\n",mod->set_displacement);
-          pthread_mutex_lock(&mod->lock);
+    steps=rand()%101264;
+    read_force=(((rand()%160)/100.0)*60.97)+1.56;
+    if(count>=100){
+      sprintf(buf,"%0.4lf",(double)steps/((double)STEPS_PER_MM));
+      set_textfield_text(output,buf);
+      update_widget(g,output);
+      count=0;
+    }
+    pthread_mutex_lock(&mod->lock);
     runner=mod->run;
+    mod->return_force=read_force;
+    mod->return_displacement=steps;
     pthread_mutex_unlock(&mod->lock);
+    usleep(1000);
+    count++;
   }
 #endif
  
@@ -384,7 +390,9 @@ void* run_ex_force(void *data)
   int count=0;
   struct extern_force_t* device=data;
   GUI* g=device->g;
-  WIDGET* output=device->interface->output_display;  
+  WIDGET* output=device->interface->output_display;
+  char buf[50];  
+  double ini=0;
 
   pthread_mutex_lock(&device->lock);
   runner=device->run;
@@ -392,7 +400,6 @@ void* run_ex_force(void *data)
 
 #ifdef MICRO
   int j,sample;
-  double ini=0;
   const int open_dly = 0;
   const int sample_dly = 1;
   unsigned int buffer_AIN[BUFFER_SIZE] ={0};
@@ -445,7 +452,6 @@ void* run_ex_force(void *data)
     pthread_mutex_unlock(&device->lock);
 
     if(count>99){
-      char buf[50];
       sprintf(buf,"%0.4lf",ini);
       set_textfield_text(output,buf);
       update_widget(g,output);
@@ -455,21 +461,22 @@ void* run_ex_force(void *data)
     ini=0;
   }
 #else
+  srand(time(NULL));
   while(runner){
-    printf("Reading Force Value\n");
-    usleep(500000);
-    pthread_mutex_lock(&device->lock);
-    runner=device->run;
-    pthread_mutex_unlock(&device->lock);
-    count++;
-    device->return_val++;
-    if(count>9){
-      char buf[50];
-      sprintf(buf,"%0.4lf",device->return_val);
+    ini=(rand()%180)/100.0;
+    ini=((ini/97.1)+0.00000019)/0.0004754;
+    if(count>=500){
+      sprintf(buf,"%0.4lf",ini);
       set_textfield_text(output,buf);
       update_widget(g,output);
-      count=-1;
+      count=0;
     }
+    count++;
+    usleep(100);
+    pthread_mutex_lock(&device->lock);
+    runner=device->run;
+    device->return_val=ini;
+    pthread_mutex_unlock(&device->lock);
   }
 #endif
 
@@ -559,6 +566,11 @@ void* run_ex_grip(void *data)
   int runner;
   struct extern_grip_t* device=data;
   GUI* g=device->g;
+  WIDGET* displacement_box=device->interface->displacement_output;
+  WIDGET* force_box=device->interface->force_output;
+  int update_display=0,count=0;
+  double disp=0,force=0,k=device->spring_k;
+  char temp[20];
 
   pthread_mutex_lock(&device->lock);
   runner=device->run;
@@ -568,12 +580,6 @@ void* run_ex_grip(void *data)
   iolib_setdir(device->chan_a_header, device->chan_a_pin, BBBIO_DIR_IN);
   iolib_setdir(device->chan_b_header, device->chan_b_pin, BBBIO_DIR_IN);
   char a,b,old_a=0,old_b=0,dir;
-  char temp[20];
-  double disp=0,force=0,k;
-  int count=0,update_display=0; 
-  WIDGET* displacement_box=device->interface->displacement_output;
-  WIDGET* force_box=device->interface->force_output;
-  k=device->spring_k;
   
   while(runner){   
     a=is_high(device->chan_a_header,device->chan_a_pin);
@@ -617,13 +623,32 @@ void* run_ex_grip(void *data)
     old_a=a;
     old_b=b;
   }
+
 #else
+  srand(time(NULL));
   while(runner){
-    printf("Reading Grip Device\n");
-    usleep(500000);
+    count=rand()%70;
+
+    disp=((double)count/1024.0)*2.0*3.14159265359*50.9;
+    force=disp*k;
+
+    if(update_display>=500){
+      sprintf(temp,"%0.4lf",disp);
+      set_textfield_text(displacement_box,temp);
+      sprintf(temp,"%0.4lf",force);
+      set_textfield_text(force_box,temp);
+      update_widget(g,force_box);
+      update_widget(g,displacement_box);
+      update_display=0;
+    }
+
     pthread_mutex_lock(&device->lock);
     runner=device->run;
+    device->distance=disp;
+    device->force=force;
     pthread_mutex_unlock(&device->lock);
+    update_display++;
+    usleep(100);
   }
 #endif
 
