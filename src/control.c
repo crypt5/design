@@ -47,6 +47,7 @@ void* run_motor(void* data)
       usleep(WAVE_LEN);
       }
   }
+
   //Main Control Loop for force
   int j;
   int channel=mod->channel;
@@ -104,6 +105,7 @@ void* run_motor(void* data)
     }
     if(count>=100){
       sprintf(buf,"%0.4lf",read_force);
+      //printf("%0.4lf\n",read_force);
       set_textfield_text(output,buf);
       update_widget(g,output);
       count=0;

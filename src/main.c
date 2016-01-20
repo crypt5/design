@@ -47,11 +47,11 @@ int main()
 #endif
 
   /* AIN 4,5,6 are Avalible */
-  mod1=setup_actuator_module("8.07","8.08","8.09","8.10","8.11",4,1);
-  mod2=setup_actuator_module("8.12","8.13","8.14","8.15","8.16",5,2);
+  mod1=setup_actuator_module("8.10","8.12","8.11","8.17","8.19",4,1);
+  mod2=setup_actuator_module("8.07","8.09","8.08","8.15","8.16",5,2);
   ex_force=setup_extern_force_device(6);
   k=config_get_double(config,"gripKValue")/1000.0;
-  ex_grip=setup_extern_grip_device("8.17","8.19",k);
+  ex_grip=setup_extern_grip_device("8.14","8.13",k);
 
   test_data=create_start_stop_data();
   test_data->one=mod1;
@@ -60,7 +60,7 @@ int main()
   test_data->g=ex_grip;
 
   logger_log(log,"[GUI] Creating GUI Object");
-  ui=init_gui();
+  ui=init_gui(NULL);
   create_main_window(ui,"Hand Study Device");
   set_main_icon(ui,"res/icons/main.xpm");
   set_main_size(ui,500,1010);
