@@ -134,7 +134,7 @@ external grip force (N),external grip displacement (mm)");
       
       sprintf(buf,"%0.4lf,%0.4lf,%0.4lf,%0.4lf,%0.4lf,%0.4lf,%0.4lf,%0.4lf,",time,mot1f,mot1d,mot2f,mot2d,ef,egf,egd);
       data_logger_log(data_out,buf);
-      usleep(1000);
+      usleep(10000);
     }
     else{
       if(first_loop==0){
