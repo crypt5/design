@@ -133,7 +133,7 @@ void* run_motor(void* data)
     voltage=voltage/(double)SAMPLE_SIZE;
 	  read_force=(voltage*60.97)+1.56;
     
-    if(abs(steps-(disp*(double)STEPS_PER_MM))<0.01){
+    if(fabs(steps-(disp*(double)STEPS_PER_MM))<0.01){
       pin_high(mod->enable_header,mod->enable_pin);
 		  usleep(100);
     }

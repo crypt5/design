@@ -2,7 +2,7 @@ CC=clang
 CFLAGS=-g -Wall
 LINKCOM=-Iincludes -Llibs
 RPATH=-Wl,-rpath,libs
-LIBS=-lgraphics -llogger -lconfig -lBBBio -ldata_logger -lm
+LIBS=-lgraphics -lpthread -llogger -lconfig -lBBBio -ldata_logger -lm
 OBJS=gui.o callbacks.o control.o
 
 all: main
