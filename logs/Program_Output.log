@@ -1,25 +1,23 @@
-[Mon Jan 25 15:17:55 2016] [Logger] Logging started
-[Mon Jan 25 15:17:55 2016] [Config] Object Created
-[Mon Jan 25 15:17:55 2016] [Config] Loading file: config/main.cfg
-[Mon Jan 25 15:17:55 2016] [Config] File Read, parsed, and loaded
-[Mon Jan 25 15:17:55 2016] [GUI] Creating GUI Object
-[Mon Jan 25 15:17:55 2016] [GUI] Window built
-[Mon Jan 25 15:17:55 2016] [GUI] Building GUI
-[Mon Jan 25 15:17:55 2016] [GUI] Adding pictures
-[Mon Jan 25 15:17:56 2016] [GUI] Pictures Added
-[Mon Jan 25 15:17:56 2016] [GUI] Creating Module 1 Layout
-[Mon Jan 25 15:17:56 2016] [GUI] Module 1 Created
-[Mon Jan 25 15:17:56 2016] [GUI] Creating Module 2 Layout
-[Mon Jan 25 15:17:56 2016] [GUI] Module 2 Created
-[Mon Jan 25 15:17:56 2016] [GUI] Creating External Force Measurment Device
-[Mon Jan 25 15:17:56 2016] [GUI] External Force Measurment Device Created
-[Mon Jan 25 15:17:56 2016] [GUI] Creating External Grip Measurment Device
-[Mon Jan 25 15:17:56 2016] [GUI] External Grip Measurment Device Created
-[Mon Jan 25 15:17:56 2016] [GUI] Creating File Output and Start-Stop Buttons
-[Mon Jan 25 15:17:56 2016] [GUI] File Output and Start-Stop Buttons created
-[Mon Jan 25 15:17:56 2016] [GUI] Displaying window
-[Mon Jan 25 15:18:10 2016] [Data Logger] Starting
-[Mon Jan 25 15:18:20 2016] [Data Logger] Shutting Down
-[Mon Jan 25 15:18:29 2016] [GUI] Shutting down GUI
-[Mon Jan 25 15:18:29 2016] [Config] Closing and Freeing object
-[Mon Jan 25 15:18:29 2016] [Logger] Shutting down
+[Mon Jan 25 16:27:40 2016] [Logger] Logging started
+[Mon Jan 25 16:27:40 2016] [Config] Object Created
+[Mon Jan 25 16:27:40 2016] [Config] Loading file: config/main.cfg
+[Mon Jan 25 16:27:40 2016] [Config] File Read, parsed, and loaded
+[Mon Jan 25 16:27:40 2016] [GUI] Creating GUI Object
+[Mon Jan 25 16:27:40 2016] [GUI] Window built
+[Mon Jan 25 16:27:40 2016] [GUI] Building GUI
+[Mon Jan 25 16:27:40 2016] [GUI] Adding pictures
+[Mon Jan 25 16:27:40 2016] [GUI] Pictures Added
+[Mon Jan 25 16:27:40 2016] [GUI] Creating Module 1 Layout
+[Mon Jan 25 16:27:40 2016] [GUI] Module 1 Created
+[Mon Jan 25 16:27:40 2016] [GUI] Creating Module 2 Layout
+[Mon Jan 25 16:27:40 2016] [GUI] Module 2 Created
+[Mon Jan 25 16:27:40 2016] [GUI] Creating External Force Measurment Device
+[Mon Jan 25 16:27:40 2016] [GUI] External Force Measurment Device Created
+[Mon Jan 25 16:27:40 2016] [GUI] Creating External Grip Measurment Device
+[Mon Jan 25 16:27:40 2016] [GUI] External Grip Measurment Device Created
+[Mon Jan 25 16:27:40 2016] [GUI] Creating File Output and Start-Stop Buttons
+[Mon Jan 25 16:27:40 2016] [GUI] File Output and Start-Stop Buttons created
+[Mon Jan 25 16:27:40 2016] [GUI] Displaying window
+[Mon Jan 25 16:27:43 2016] [GUI] Shutting down GUI
+[Mon Jan 25 16:27:43 2016] [Config] Closing and Freeing object
+[Mon Jan 25 16:27:43 2016] [Logger] Shutting down
