@@ -1,8 +1,8 @@
 CC=clang
 CFLAGS=-g -Wall -std=gnu11
-LINKCOM=-Iincludes -Llibs
+LINKCOM=-Iincludes 
 RPATH=-Wl,-rpath,libs
-LIBS=-lgraphics -lpthread -llogger -lconfig -lBBBio -ldata_logger -lm
+LIBS=-Llibs -lgraphics -lpthread -llogger -lconfig -lBBBio -ldata_logger -lm
 OBJS=gui.o callbacks.o control.o
 
 all: main calibrate
