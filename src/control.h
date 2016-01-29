@@ -15,7 +15,6 @@ struct module_t{
   pthread_t id;
   int run;
   int mode;
-  int channel;
   double set_force;
   double return_force;
   double set_displacement;
@@ -32,6 +31,8 @@ struct module_t{
   int near_sensor_header;
   int near_sensor_pin;
   int AIN_pin;
+  double offset;
+  double slope;
 };
 
 struct extern_force_t{
@@ -76,7 +77,9 @@ struct master_start_stop_t{
 };
 
 //Actuator functions
-struct module_t* setup_actuator_module(char* enable, char* dir, char* step,char* far_sensor,char* near_sensor,int AIN, int channel);
+//TODO Set the offset and Slope from Config per module
+struct module_t* setup_actuator_module(char* enable, char* dir, char* step,char* far_sensor,
+		char* near_sensor,int AIN, double offset, double slope);
 void start_actuator(struct module_t* mod,int mode,double desired_value);
 void stop_actuator(struct module_t* mod);
 void set_actuator_desired_force(struct module_t* mod,double value);

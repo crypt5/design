@@ -37,6 +37,8 @@ void* run_motor(void* data)
   int i;
   int mode=mod->mode;
   double disp=mod->set_displacement;
+  double offset=mod->offset;
+  double slope=mod->slope;
   pin_low(mod->enable_header,mod->enable_pin);
   pin_high(mod->dir_header,mod->dir_pin);
   while(is_high(mod->far_sensor_header,mod->far_sensor_pin)){
@@ -60,10 +62,8 @@ void* run_motor(void* data)
 		  voltage=voltage+((double)mod->ain_buffer[j] / (double)4095.0) * (double)1.8;
 	  }
     voltage=voltage/(double)SAMPLE_SIZE;
-    if(channel==1)
-	    read_force=(voltage*60.97)+1.56;
-    else 
-      read_force=(voltage*59.57)+1.01;
+
+    read_force=(voltage*slope)+offset;
       
     differance=(double)setpoint-((double)read_force); 
      
@@ -223,7 +223,8 @@ int get_pin(char* str)
   return atoi(str+2);
 }
 
-struct module_t* setup_actuator_module(char* enable, char* dir, char* step,char* far_sensor,char* near_sensor,int AIN, int channel)
+struct module_t* setup_actuator_module(char* enable, char* dir, char* step,
+		char* far_sensor,char* near_sensor,int AIN, double offset, double slope)
 {
   int mutex_create;
   struct module_t* re=NULL;
@@ -255,7 +256,8 @@ struct module_t* setup_actuator_module(char* enable, char* dir, char* step,char*
   re->near_sensor_header=get_header(near_sensor);
   re->near_sensor_pin=get_pin(near_sensor);
   re->AIN_pin=AIN;
-  re->channel=channel;
+  re->offset=offset;
+  re->slope=slope;
 
 #ifdef MICRO
   

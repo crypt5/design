@@ -26,6 +26,11 @@ int main()
   struct master_start_stop_t* test_data=NULL;
   char first_loop=1;
   char buf[1024];
+  char *enable1,*dir1,*step1,*far1,*near1;
+  char *enable2,*dir2,*step2,*far2,*near2;
+  char *gripA,*gripB;
+  double offset1,slope1,offset2,slope2;
+  int AIN1,AIN2;
   struct timeval start_time,current_time;
   int current_run=0;
   double k;
@@ -38,6 +43,29 @@ int main()
   config_load_file(config,"config/main.cfg");
   logger_log(log,"[Config] File Read, parsed, and loaded");
 
+  logger_log(log,"[Module Control] Pulling Module Config Values");
+
+  enable1=config_get_string(config,"module1EnablePin");
+  dir1=config_get_string(config,"module1DirectionPin");
+  step1=config_get_string(config,"module1StepPin");
+  far1=config_get_string(config,"module1FarSensorPin");
+  near1=config_get_string(config,"module1NearSensorPin");
+  AIN1=config_get_int(config,"module1AIN");
+  offset1=config_get_double(config,"module1Offset");
+  slope1=config_get_double(config,"module1Slope");
+  logger_log(log,"[Module Control] Module 1 Set Up");
+
+  enable2=config_get_string(config,"module2EnablePin");
+  dir2=config_get_string(config,"module2DirectionPin");
+  step2=config_get_string(config,"module2StepPin");
+  far2=config_get_string(config,"module2FarSensorPin");
+  near2=config_get_string(config,"module2NearSensorPin");
+  AIN2=config_get_int(config,"module2AIN");
+  offset2=config_get_double(config,"module2Offset");
+  slope2=config_get_double(config,"module2Slope");
+  logger_log(log,"[Module Control] Module 2 Set Up");
+
+
 #ifdef MICRO
   logger_log(log,"[IOLIB] Initilizing and Setting up ADC");
   iolib_init();
@@ -46,18 +74,24 @@ int main()
   logger_log(log,"[IOLIB] Ready");
 #endif
 
-  /* AIN 4,5,6 are Avalible */
-  mod1=setup_actuator_module("8.10","8.12","8.11","8.17","8.19",4,1);
-  mod2=setup_actuator_module("8.07","8.09","8.08","8.15","8.16",5,2);
-  ex_force=setup_extern_force_device(6);
+  mod1=setup_actuator_module(enable1,dir1,step1,far1,near1,AIN1,offset1,slope1);
+  mod2=setup_actuator_module(enable2,dir2,step2,far2,near2,AIN2,offset2,slope2);
+
+  ex_force=setup_extern_force_device(config_get_int(config,"externalforceSensorAIN"));
+  logger_log(log,"[Module Control] External Force Set Up");
+
   k=config_get_double(config,"gripKValue")/1000.0;
-  ex_grip=setup_extern_grip_device("8.14","8.13",k);
+  gripA=config_get_string(config,"gripChannelA");
+  gripB=config_get_string(config,"gripChannelB");
+  ex_grip=setup_extern_grip_device(gripA,gripB,k);
+  logger_log(log,"[Module Control] External Grip Device Set Up");
 
   test_data=create_start_stop_data();
   test_data->one=mod1;
   test_data->two=mod2;
   test_data->f=ex_force;
   test_data->g=ex_grip;
+  logger_log(log,"[Main] Total Data structure Set Up");
 
   logger_log(log,"[GUI] Creating GUI Object");
   ui=init_gui(NULL);
