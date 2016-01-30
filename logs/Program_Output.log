@@ -1,31 +1,31 @@
-[Fri Jan 29 23:19:37 2016] [Logger] Logging started
-[Fri Jan 29 23:19:37 2016] [Config] Object Created
-[Fri Jan 29 23:19:37 2016] [Config] Loading file: config/main.cfg
-[Fri Jan 29 23:19:37 2016] [Config] File Read, parsed, and loaded
-[Fri Jan 29 23:19:37 2016] [Module Control] Pulling Module Config Values
-[Fri Jan 29 23:19:37 2016] [Module Control] Module 1 Set Up
-[Fri Jan 29 23:19:37 2016] [Module Control] Module 2 Set Up
-[Fri Jan 29 23:19:37 2016] [IOLIB] Initilizing and Setting up ADC
-[Fri Jan 29 23:19:37 2016] [IOLIB] Ready
-[Fri Jan 29 23:19:37 2016] [Module Control] External Force Set Up
-[Fri Jan 29 23:19:37 2016] [Module Control] External Grip Device Set Up
-[Fri Jan 29 23:19:37 2016] [Main] Total Data structure Set Up
-[Fri Jan 29 23:19:37 2016] [GUI] Creating GUI Object
-[Fri Jan 29 23:19:38 2016] [GUI] Window built
-[Fri Jan 29 23:19:38 2016] [GUI] Building GUI
-[Fri Jan 29 23:19:38 2016] [GUI] Adding pictures
-[Fri Jan 29 23:19:49 2016] [GUI] Pictures Added
-[Fri Jan 29 23:19:49 2016] [GUI] Creating Module 1 Layout
-[Fri Jan 29 23:19:49 2016] [GUI] Module 1 Created
-[Fri Jan 29 23:19:49 2016] [GUI] Creating Module 2 Layout
-[Fri Jan 29 23:19:49 2016] [GUI] Module 2 Created
-[Fri Jan 29 23:19:49 2016] [GUI] Creating External Force Measurment Device
-[Fri Jan 29 23:19:49 2016] [GUI] External Force Measurment Device Created
-[Fri Jan 29 23:19:49 2016] [GUI] Creating External Grip Measurment Device
-[Fri Jan 29 23:19:49 2016] [GUI] External Grip Measurment Device Created
-[Fri Jan 29 23:19:49 2016] [GUI] Creating File Output and Start-Stop Buttons
-[Fri Jan 29 23:19:49 2016] [GUI] File Output and Start-Stop Buttons created
-[Fri Jan 29 23:19:49 2016] [GUI] Displaying window
-[Fri Jan 29 23:25:15 2016] [GUI] Shutting down GUI
-[Fri Jan 29 23:25:15 2016] [Config] Closing and Freeing object
-[Fri Jan 29 23:25:15 2016] [Logger] Shutting down
+[Sat Jan 30 01:33:18 2016] [Logger] Logging started
+[Sat Jan 30 01:33:18 2016] [Config] Object Created
+[Sat Jan 30 01:33:18 2016] [Config] Loading file: config/main.cfg
+[Sat Jan 30 01:33:18 2016] [Config] File Read, parsed, and loaded
+[Sat Jan 30 01:33:18 2016] [Module Control] Pulling Module Config Values
+[Sat Jan 30 01:33:18 2016] [Module Control] Module 1 Set Up
+[Sat Jan 30 01:33:18 2016] [Module Control] Module 2 Set Up
+[Sat Jan 30 01:33:18 2016] [IOLIB] Initilizing and Setting up ADC
+[Sat Jan 30 01:33:18 2016] [IOLIB] Ready
+[Sat Jan 30 01:33:18 2016] [Module Control] External Force Set Up
+[Sat Jan 30 01:33:18 2016] [Module Control] External Grip Device Set Up
+[Sat Jan 30 01:33:18 2016] [Main] Total Data structure Set Up
+[Sat Jan 30 01:33:18 2016] [GUI] Creating GUI Object
+[Sat Jan 30 01:33:20 2016] [GUI] Window built
+[Sat Jan 30 01:33:20 2016] [GUI] Building GUI
+[Sat Jan 30 01:33:20 2016] [GUI] Adding pictures
+[Sat Jan 30 01:33:30 2016] [GUI] Pictures Added
+[Sat Jan 30 01:33:30 2016] [GUI] Creating Module 1 Layout
+[Sat Jan 30 01:33:30 2016] [GUI] Module 1 Created
+[Sat Jan 30 01:33:30 2016] [GUI] Creating Module 2 Layout
+[Sat Jan 30 01:33:30 2016] [GUI] Module 2 Created
+[Sat Jan 30 01:33:30 2016] [GUI] Creating External Force Measurment Device
+[Sat Jan 30 01:33:30 2016] [GUI] External Force Measurment Device Created
+[Sat Jan 30 01:33:30 2016] [GUI] Creating External Grip Measurment Device
+[Sat Jan 30 01:33:30 2016] [GUI] External Grip Measurment Device Created
+[Sat Jan 30 01:33:30 2016] [GUI] Creating File Output and Start-Stop Buttons
+[Sat Jan 30 01:33:30 2016] [GUI] File Output and Start-Stop Buttons created
+[Sat Jan 30 01:33:30 2016] [GUI] Displaying window
+[Sat Jan 30 01:35:18 2016] [GUI] Shutting down GUI
+[Sat Jan 30 01:35:18 2016] [Config] Closing and Freeing object
+[Sat Jan 30 01:35:18 2016] [Logger] Shutting down

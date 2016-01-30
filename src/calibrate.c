@@ -11,6 +11,8 @@ int main()
 {
 	int mod_num,AIN;
 	struct module_t* mod;
+  double weight[5];
+  double voltage[5];
 	CONFIG* c=config_init();
 	config_load_file(c,"config/main.cfg");
 	char *enable,
@@ -75,11 +77,37 @@ int main()
 	//Start Testing Phase
 	printf("\nStarting Module\n");
 	mod=setup_actuator_module(enable,dir,step,far_sensor,near_sensor,AIN,0,1);
-
-	//TODO Set Module to desired Value and take Readings
-	//TODO Create offset and slope from Calibration Data
-
-
+  start_actuator(mod,MODE_DISPLACEMENT,20);
+  printf("Please Wait until Motor Stops Moving . . . \n");
+  printf("Press Y when stopped. (Y): ");
+  scanf("%s",&buf);
+  
+  int i=0;
+  for(i=0;i<5;i++){
+    printf("\tEnter mass number %d (in grams): ",i+1);
+    scanf("%lf",&weight[i]);
+    weight[i]=(weight[i]/1000.0)*9.81;
+    printf("\tPress Y when ready to take reading: ");
+    scanf("%s",&buf);
+    voltage[i]=get_current_actuator_force(mod);
+    printf("\tRead Voltage: %lf\n\n",voltage[i]);
+  }
+  
+  
+  printf("Calculating Linerar Regression\n");
+  double meanx,meany;
+  meany=(weight[0]+weight[1]+weight[2]+weight[3]+weight[4])/5;
+  meanx=(voltage[0]+voltage[1]+voltage[2]+voltage[3]+voltage[4])/5;
+  double top=0,bot=0;
+  for(i=0;i<5;i++){
+    top=top+((voltage[i]-meanx)*(weight[i]-meany));
+    bot=bot+((voltage[i]-meanx)*(voltage[i]-meanx));
+  }
+  printf("\nModule %d slope value: %lf\n",mod_num,(top/bot));
+  printf("Module %d offset value: %lf\n\n",mod_num,(meany-((top/bot)*meanx)));
+  
+  
+  stop_actuator(mod);
 #ifdef MICRO
 	iolib_free();
 #endif

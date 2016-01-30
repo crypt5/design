@@ -26,8 +26,12 @@ void* run_motor(void* data)
   struct module_t* mod=data;
   pthread_mutex_lock(&mod->lock);
   int runner=mod->run;
-  WIDGET* output=mod->interface->current_output;
-  GUI* g=mod->g;
+  WIDGET* output;
+  GUI* g;
+  if(mod->interface!=NULL){
+    output=mod->interface->current_output;
+    g=mod->g;
+  }
   pthread_mutex_unlock(&mod->lock);
   char buf[50];
   double steps=0,read_force;
@@ -102,7 +106,7 @@ void* run_motor(void* data)
         }
       }
     }
-    if(count>=100){
+    if(count>=100&&mod->interface!=NULL){
       sprintf(buf,"%0.4lf",read_force);
       //printf("%0.4lf\n",read_force);
       set_textfield_text(output,buf);
@@ -135,8 +139,7 @@ void* run_motor(void* data)
     if(fabs(steps-(disp*(double)STEPS_PER_MM))<0.01){
       pin_high(mod->enable_header,mod->enable_pin);
 		  usleep(100);
-    }
-    else {
+    } else {
       pin_low(mod->enable_header,mod->enable_pin);
       if(steps<(disp*STEPS_PER_MM)){
           if(is_high(mod->near_sensor_header,mod->near_sensor_pin)){
@@ -158,7 +161,7 @@ void* run_motor(void* data)
     
     }
      
-    if(count>=100){
+    if(count>=100&&mod->interface!=NULL){
       sprintf(buf,"%0.4lf",(double)steps/((double)STEPS_PER_MM));
       set_textfield_text(output,buf);
       update_widget(g,output);
@@ -257,6 +260,7 @@ struct module_t* setup_actuator_module(char* enable, char* dir, char* step,
   re->AIN_pin=AIN;
   re->offset=offset_num;
   re->slope=slope_num;
+  re->interface=NULL;
 
 #ifdef MICRO
   
