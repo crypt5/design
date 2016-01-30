@@ -1,5 +1,5 @@
 CC=clang
-CFLAGS=-g -Wall -std=gnu11
+CFLAGS=-g -Wall
 LINKCOM=-Iincludes 
 RPATH=-Wl,-rpath,libs
 LIBS=-Llibs -lgraphics -lpthread -llogger -lconfig -lBBBio -ldata_logger -lm

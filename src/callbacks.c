@@ -175,7 +175,7 @@ void start_module_callback(GUI* g, WIDGET* w,void* data)
   val=strtod(entry,&end);
   mode=get_radio_button_check(gui->force_mode);
   if(mode==MODE_FORCE){//Force mode
-    if(val<10||val>80)
+    if(val<0||val>80.5)
       return;
   }
   else{//Displacement mode

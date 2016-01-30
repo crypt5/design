@@ -52,7 +52,6 @@ void* run_motor(void* data)
 
   //Main Control Loop for force
   int j;
-  int channel=mod->channel;
   double voltage=0,old_voltage,differance,setpoint;
   while(runner && mode==MODE_FORCE){
     old_voltage=voltage;
@@ -131,7 +130,7 @@ void* run_motor(void* data)
 		  voltage=voltage+((double)mod->ain_buffer[j] / (double)4095.0) * (double)1.8;
 	  }
     voltage=voltage/(double)SAMPLE_SIZE;
-	  read_force=(voltage*60.97)+1.56;
+	  read_force=(voltage*slope)+offset;
     
     if(fabs(steps-(disp*(double)STEPS_PER_MM))<0.01){
       pin_high(mod->enable_header,mod->enable_pin);
@@ -224,7 +223,7 @@ int get_pin(char* str)
 }
 
 struct module_t* setup_actuator_module(char* enable, char* dir, char* step,
-		char* far_sensor,char* near_sensor,int AIN, double offset, double slope)
+		char* far_sensor,char* near_sensor,int AIN, double offset_num, double slope_num)
 {
   int mutex_create;
   struct module_t* re=NULL;
@@ -256,8 +255,8 @@ struct module_t* setup_actuator_module(char* enable, char* dir, char* step,
   re->near_sensor_header=get_header(near_sensor);
   re->near_sensor_pin=get_pin(near_sensor);
   re->AIN_pin=AIN;
-  re->offset=offset;
-  re->slope=slope;
+  re->offset=offset_num;
+  re->slope=slope_num;
 
 #ifdef MICRO
   
@@ -324,13 +323,10 @@ void start_actuator(struct module_t* mod,int mode,double desired_value)
 
 void stop_actuator(struct module_t* mod)
 {
-  int mode;
   pthread_mutex_lock(&mod->lock);
   mod->run=0;
-  mode=mod->mode;
   pthread_mutex_unlock(&mod->lock);
-  if(mode>=0)
-    pthread_join(mod->id,NULL);
+  pthread_join(mod->id,NULL);
 }
 
 void set_actuator_desired_force(struct module_t* mod,double value)

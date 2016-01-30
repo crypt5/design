@@ -19,6 +19,8 @@ struct module_t{
   double return_force;
   double set_displacement;
   double return_displacement;
+  double offset;
+  double slope;
   unsigned int ain_buffer[50];
   int dir_header;
   int dir_pin;
@@ -31,8 +33,6 @@ struct module_t{
   int near_sensor_header;
   int near_sensor_pin;
   int AIN_pin;
-  double offset;
-  double slope;
 };
 
 struct extern_force_t{
