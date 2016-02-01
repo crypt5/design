@@ -9,12 +9,12 @@
 
 double get_average(struct module_t* mod)
 {
-	int num=100;
+	int num=1000;
 	int i;
 	double sum=0;
 	for(i=0;i<num;i++){
-		sum+=get_current_actuator_force(mod);
-		usleep(50);
+		sum=sum+get_current_actuator_force(mod);
+		usleep(1000);
 	}
 	return sum/(double)num;
 }

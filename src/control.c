@@ -107,7 +107,7 @@ void* run_motor(void* data)
       }
     }
     if(count>=100&&mod->interface!=NULL){
-      sprintf(buf,"%0.4lf",read_force);
+      sprintf(buf,"%0.3lf",read_force);
       //printf("%0.4lf\n",read_force);
       set_textfield_text(output,buf);
       update_widget(g,output);
@@ -196,7 +196,7 @@ void* run_motor(void* data)
     steps=rand()%101264;
     read_force=(((rand()%160)/100.0)*60.97)+1.56;
     if(count>=100){
-      sprintf(buf,"%0.4lf",(double)steps/((double)STEPS_PER_MM));
+      sprintf(buf,"%0.3lf",(double)steps/((double)STEPS_PER_MM));
       set_textfield_text(output,buf);
       update_widget(g,output);
       count=0;
