@@ -7,6 +7,18 @@
 #include "defs.h"
 
 
+double get_average(struct module_t* mod)
+{
+	int num=100;
+	int i;
+	double sum=0;
+	for(i=0;i<num;i++){
+		sum+=get_current_actuator_force(mod);
+		usleep(50);
+	}
+	return sum/(double)num;
+}
+
 int main()
 {
 	int mod_num,AIN;
@@ -89,7 +101,7 @@ int main()
     weight[i]=(weight[i]/1000.0)*9.81;
     printf("\tPress Y when ready to take reading: ");
     scanf("%s",&buf);
-    voltage[i]=get_current_actuator_force(mod);
+    voltage[i]=get_average(mod);
     printf("\tRead Voltage: %lf\n\n",voltage[i]);
   }
   
