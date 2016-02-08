@@ -1,12 +1,18 @@
 #ifndef CONTROL_H_
 #define CONTROL_H_
 
-#define MODE_FORCE 1
-#define MODE_DISPLACEMENT 2
-
 #include <pthread.h>
 #include "graphics.h"
 #include "data_structures.h"
+
+#define MODE_FORCE 1
+#define MODE_DISPLACEMENT 2
+
+/* Structure for a motor module
+ * Holds pointers to the GUI and
+ * GUI elements, as well as the
+ * Thread, and pin info
+ */
 
 struct module_t{
   struct gui_module_widgets_t* interface;
@@ -35,6 +41,11 @@ struct module_t{
   int AIN_pin;
 };
 
+/*
+ * Structure to hold the pointers to
+ * all the data needed by the External
+ * force Device
+ */
 struct extern_force_t{
   struct gui_extern_force_widgets_t* interface;
   int enable;
@@ -46,6 +57,10 @@ struct extern_force_t{
   int AIN;
 };
 
+/*
+ * structure to hold the pointers to
+ * data needed by the External grip device
+ */
 struct extern_grip_t{
   struct gui_extern_grip_widgets_t* interface;
   int enable;
@@ -63,6 +78,11 @@ struct extern_grip_t{
   int chan_b_pin;
 };
 
+/*
+ * Structure to hold pointers to
+ * every device and what is currently
+ * enabled
+ */
 struct master_start_stop_t{
   struct gui_start_stop_status_t* interface;
   int log_data;
@@ -77,7 +97,6 @@ struct master_start_stop_t{
 };
 
 //Actuator functions
-//TODO Set the offset and Slope from Config per module
 struct module_t* setup_actuator_module(char* enable, char* dir, char* step,char* far_sensor,
 		char* near_sensor,int AIN, double offset, double slope);
 void start_actuator(struct module_t* mod,int mode,double desired_value);
