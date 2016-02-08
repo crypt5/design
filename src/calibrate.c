@@ -6,7 +6,12 @@
 #include "config.h"
 #include "defs.h"
 
-
+/**
+ * This function gets the 1000 sample average
+ * for the supplied module
+ * @param module_t* mod, A pointer to the module to use
+ * @return an 1000 sample average value
+ */
 double get_average(struct module_t* mod)
 {
 	int num=1000;
@@ -19,6 +24,9 @@ double get_average(struct module_t* mod)
 	return sum/(double)num;
 }
 
+/**
+ * Main function for the calibration program.
+ */
 int main()
 {
 	int mod_num,AIN;
@@ -118,7 +126,7 @@ int main()
   printf("\nModule %d slope value: %lf\n",mod_num,(top/bot));
   printf("Module %d offset value: %lf\n\n",mod_num,(meany-((top/bot)*meanx)));
   
-  
+  // Clean up memory
   stop_actuator(mod);
 #ifdef MICRO
 	iolib_free();

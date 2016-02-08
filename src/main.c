@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/time.h>
+#include <unistd.h>
 #include "gui.h"
 #include "logger.h"
 #include "config.h"
@@ -11,8 +12,10 @@
 #include "BBBiolib.h"
 #include "defs.h"
 
-#include <unistd.h>
-
+/**
+ * Main function for the program. The GUI is checked inside of the
+ * Looping at the bottom.
+ */
 int main()
 {
   LOGGER* log=NULL;
@@ -45,6 +48,7 @@ int main()
 
   logger_log(log,"[Module Control] Pulling Module Config Values");
 
+  // Pull Pin assignments from Config
   enable1=config_get_string(config,"module1EnablePin");
   dir1=config_get_string(config,"module1DirectionPin");
   step1=config_get_string(config,"module1StepPin");
@@ -65,7 +69,7 @@ int main()
   slope2=config_get_double(config,"module2Slope");
   logger_log(log,"[Module Control] Module 2 Set Up");
 
-
+// If the code is running on the micro controller
 #ifdef MICRO
   logger_log(log,"[IOLIB] Initilizing and Setting up ADC");
   iolib_init();
@@ -74,18 +78,21 @@ int main()
   logger_log(log,"[IOLIB] Ready");
 #endif
 
+  // Set up data to hold the actuator modules
   mod1=setup_actuator_module(enable1,dir1,step1,far1,near1,AIN1,offset1,slope1);
   mod2=setup_actuator_module(enable2,dir2,step2,far2,near2,AIN2,offset2,slope2);
 
   ex_force=setup_extern_force_device(config_get_int(config,"externalforceSensorAIN"));
   logger_log(log,"[Module Control] External Force Set Up");
 
+  // Pull pin and K value for the grip device
   k=config_get_double(config,"gripKValue")/1000.0;
   gripA=config_get_string(config,"gripChannelA");
   gripB=config_get_string(config,"gripChannelB");
   ex_grip=setup_extern_grip_device(gripA,gripB,k);
   logger_log(log,"[Module Control] External Grip Device Set Up");
 
+  // Create master data structure and fill in values
   test_data=create_start_stop_data();
   test_data->one=mod1;
   test_data->two=mod2;
@@ -93,6 +100,7 @@ int main()
   test_data->g=ex_grip;
   logger_log(log,"[Main] Total Data structure Set Up");
 
+  // Create and Build the GUI
   logger_log(log,"[GUI] Creating GUI Object");
   ui=init_gui(NULL);
   create_main_window(ui,"Hand Study Device");
@@ -112,8 +120,10 @@ int main()
   show_main(ui);
   char* base_name=config_get_string(config, "outputBaseName");
 
+  // While the GUI is still open i.e. being used
   while(gui_running(ui)){ 
     if(test_data->log_data==1){
+    	// If its the first loop create the file and print the colunm headers
       if(first_loop){
         logger_log(log,"[Data Logger] Starting");
         sprintf(buf,"%s-%d.csv",base_name,current_run);
@@ -168,8 +178,11 @@ external grip force (N),external grip displacement (mm)");
       
       sprintf(buf,"%0.4lf,%0.4lf,%0.4lf,%0.4lf,%0.4lf,%0.4lf,%0.4lf,%0.4lf,",time,mot1f,mot1d,mot2f,mot2d,ef,egf,egd);
       data_logger_log(data_out,buf);
+
+      // Time between samples
       usleep(10000);
     }
+    // Reset for next run
     else{
       if(first_loop==0){
         logger_log(log,"[Data Logger] Shutting Down");
@@ -180,6 +193,7 @@ external grip force (N),external grip displacement (mm)");
     }
   }
 
+  //Clean up memory used from devices
   destroy_extern_force_device(ex_force);
   destroy_extern_grip_device(ex_grip);
   destroy_actuator_module(mod1);
@@ -190,6 +204,7 @@ external grip force (N),external grip displacement (mm)");
   iolib_free();
 #endif
 
+  //Clean up the GUI and Logger
   logger_log(log,"[GUI] Shutting down GUI");
   destroy_gui(ui);
   logger_log(log,"[Config] Closing and Freeing object");

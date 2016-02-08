@@ -1,6 +1,11 @@
 #ifndef DATA_STRUCTURES_H_
 #define DATA_STRUCTURES_H_
 
+/**
+ * This data structure holds the pointers for all
+ * the WIDGETS used for the GUI to be used with
+ * a motor module
+ */
 struct gui_module_widgets_t{
   WIDGET* border;
   WIDGET* seperator1;
@@ -23,6 +28,10 @@ struct gui_module_widgets_t{
   WIDGET* device_status;
 };
 
+/**
+ * Data structure holding the pointers for the
+ * External Force device WIDGETS
+ */
 struct gui_extern_force_widgets_t{
   WIDGET* border;
   WIDGET* seperator;
@@ -32,6 +41,10 @@ struct gui_extern_force_widgets_t{
   WIDGET* output_unit;
 };
 
+/**
+ * Data structure holding the pointers for
+ * the External Grip Device GUI Elements
+ */
 struct gui_extern_grip_widgets_t{
   WIDGET* border;
   WIDGET* seperator;
@@ -44,6 +57,10 @@ struct gui_extern_grip_widgets_t{
   WIDGET* force_unit;
 };
 
+/**
+ * Data structure that holds the pointers for the
+ * Master start and Stop functionality
+ */
 struct gui_start_stop_status_t{
   WIDGET* start_test;
   WIDGET* stop_test;
