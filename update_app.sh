@@ -2,24 +2,16 @@
 
 ntpdate -b -s -u pool.ntp.org
 
-git pull
-rm includes/*.h
-rm libs/*.so
-
 cd ../Utilities
 git pull
-make -B
+make -B install clean
 
-cd ..
-cp Utilities/Output/*.h design/includes
-cp Utilities/Output/BBBio/*.h design/includes
-cp Utilities/Output/Graphics/*.h design/includes
+cd ../Graphics
+git pull
+make -B install clean
 
-cp Utilities/Output/*.so design/libs
-cp Utilities/Output/BBBio/*.so design/libs
-cp Utilities/Output/Graphics/*.so design/libs
-
-cd design
-make -B
+cd ../design
+git pull
+make -B all clean
 
 read -p "Press [ENTER] to exit"

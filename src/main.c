@@ -3,13 +3,13 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include "gui.h"
-#include "logger.h"
-#include "config.h"
-#include "graphics.h"
-#include "data_logger.h"
+#include "kenutil/logger.h"
+#include "kenutil/config.h"
+#include "Graphics/graphics.h"
+#include "kenutil/data_logger.h"
 #include "data_structures.h"
 #include "control.h"
-#include "BBBiolib.h"
+#include "BBBio/BBBiolib.h"
 #include "defs.h"
 
 /**

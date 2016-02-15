@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "control.h"
-#include "BBBiolib.h"
-#include "config.h"
+#include "BBBio/BBBiolib.h"
+#include "kenutil/config.h"
 #include "defs.h"
 
 /**
@@ -100,7 +100,7 @@ int main()
   start_actuator(mod,MODE_DISPLACEMENT,20);
   printf("Please Wait until Motor Stops Moving . . . \n");
   printf("Press Y when stopped. (Y): ");
-  scanf("%s",&buf);
+  scanf("%s",buf);
   
   int i=0;
   for(i=0;i<5;i++){
@@ -108,7 +108,7 @@ int main()
     scanf("%lf",&weight[i]);
     weight[i]=(weight[i]/1000.0)*9.81;
     printf("\tPress Y when ready to take reading: ");
-    scanf("%s",&buf);
+    scanf("%s",buf);
     voltage[i]=get_average(mod);
     printf("\tRead Voltage: %lf\n\n",voltage[i]);
   }

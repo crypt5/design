@@ -3,9 +3,9 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <math.h>
-#include "graphics.h"
+#include "Graphics/graphics.h"
 #include "control.h"
-#include "BBBiolib.h"
+#include "BBBio/BBBiolib.h"
 #include "defs.h"
 
 #define BUFFER_SIZE 50

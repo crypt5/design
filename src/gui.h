@@ -1,8 +1,8 @@
 #ifndef GUI_H_
 #define GUI_H_
 
-#include "graphics.h"
-#include "logger.h"
+#include "Graphics/graphics.h"
+#include "kenutil/logger.h"
 #include "data_structures.h"
 #include "control.h"
 

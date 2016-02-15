@@ -2,8 +2,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include "graphics.h"
-#include "logger.h"
+#include "Graphics/graphics.h"
+#include "kenutil/logger.h"
 #include "gui.h"
 #include "data_structures.h"
 #include "callbacks.h"

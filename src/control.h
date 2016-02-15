@@ -2,7 +2,7 @@
 #define CONTROL_H_
 
 #include <pthread.h>
-#include "graphics.h"
+#include "Graphics/graphics.h"
 #include "data_structures.h"
 
 #define MODE_FORCE 1

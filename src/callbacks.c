@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "graphics.h"
+#include "Graphics/graphics.h"
 #include "data_structures.h"
 #include "callbacks.h"
 #include "control.h"
