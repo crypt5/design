@@ -129,7 +129,7 @@ int main()
             if (first_loop) {
                 logger_log(log, "[Data Logger] Starting");
                 sprintf(buf, "%s-%d.csv", base_name, current_run);
-                data_out = data_logger_init(buf);
+                data_out = data_logger_init(buf, 0, 1000);
                 set_textfield_text(test_data->interface->file_display, buf);
                 update_widget(ui, test_data->interface->file_display);
 

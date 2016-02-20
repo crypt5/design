@@ -54,14 +54,13 @@
 			<target name="Full Update" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
 				<buildCommand>sudo</buildCommand>
 				<buildArguments>sh ./update_app.sh</buildArguments>
-				<buildTarget/>
 				<stopOnError>true</stopOnError>
 				<useDefaultCommand>false</useDefaultCommand>
 				<runAllBuilders>true</runAllBuilders>
 			</target>
 			<target name="Recompile" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
 				<buildCommand>make</buildCommand>
-				<buildArguments/>
+				<buildArguments>all clean</buildArguments>
 				<buildTarget/>
 				<stopOnError>true</stopOnError>
 				<useDefaultCommand>false</useDefaultCommand>
